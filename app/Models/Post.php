@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'category_id',
@@ -19,7 +20,11 @@ class Post extends Model
         'excerpt',
         'body',
         'image',
+        'media_id',
         'author',
+        'created_by',
+        'updated_by',
+        'reviewed_by',
         'status',
         'is_featured',
         'views_count',
@@ -31,6 +36,9 @@ class Post extends Model
         'is_homepage_hidden',
         'pinned_until',
         'published_at',
+        'scheduled_for',
+        'seo_title',
+        'seo_description',
     ];
 
     protected function casts(): array
@@ -42,12 +50,43 @@ class Post extends Model
             'is_homepage_hidden' => 'boolean',
             'pinned_until' => 'datetime',
             'published_at' => 'datetime',
+            'scheduled_for' => 'datetime',
         ];
     }
 
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function media(): BelongsTo
+    {
+        return $this->belongsTo(Media::class);
+    }
+
+    public function inlineMedia(): BelongsToMany
+    {
+        return $this->belongsToMany(Media::class);
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function coverUrl(string $variant = 'article'): ?string
+    {
+        return $this->media?->url($variant) ?? $this->image;
     }
 
     public function tags(): BelongsToMany

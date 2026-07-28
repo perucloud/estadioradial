@@ -97,6 +97,25 @@ a {
     transform: translateY(0);
 }
 
+.preview-banner {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    padding: 10px 20px;
+    justify-content: center;
+    gap: 18px;
+    color: #fff;
+    background: #202226;
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.preview-banner a {
+    color: #ff6b63;
+    text-decoration: underline;
+}
+
 .site-header__main,
 .live-bar__inner,
 .sticky-player__inner,

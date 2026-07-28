@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex,nofollow">
     <title>@yield('title', 'Dashboard') — Estación Radial</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    @vite('resources/css/admin.css')
+    @vite(['resources/css/admin.css', 'resources/js/admin.js'])
 </head>
 <body class="admin-body">
     <aside class="admin-sidebar">
@@ -20,7 +20,14 @@
                 <span aria-hidden="true">⌂</span> Resumen
             </a>
             @if (auth()->user()->hasPermission('news.view'))
-                <span class="admin-nav__disabled"><span aria-hidden="true">▤</span> Noticias <small>Próxima fase</small></span>
+                <a class="{{ request()->routeIs('admin.posts.*') ? 'is-active' : '' }}" href="{{ route('admin.posts.index') }}">
+                    <span aria-hidden="true">▤</span> Noticias
+                </a>
+            @endif
+            @if (auth()->user()->hasPermission('media.manage'))
+                <a class="{{ request()->routeIs('admin.media.*') ? 'is-active' : '' }}" href="{{ route('admin.media.index') }}">
+                    <span aria-hidden="true">▧</span> Multimedia
+                </a>
             @endif
             @if (auth()->user()->hasPermission('users.view'))
                 <a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
@@ -59,6 +66,16 @@
             @endif
             @if (session('warning'))
                 <div class="alert alert--warning" role="alert">{{ session('warning') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert--error" role="alert">
+                    <strong>Revisa la información:</strong>
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
             @yield('content')
         </main>

@@ -5,7 +5,7 @@
 | Hito | Estado |
 | --- | --- |
 | A — Acceso, seguridad, roles y dashboard base | Implementado |
-| B — Multimedia y noticias con Tiptap | Pendiente |
+| B — Multimedia y noticias con Tiptap | Implementado |
 | C — Categorías, hero y sliders | Pendiente |
 | D — Programas, horarios y streaming | Pendiente |
 | E — Publicidad, sidebars y apariencia | Pendiente |
@@ -602,15 +602,15 @@ pueda, sin modificar código:
 10. identificar quién realizó un cambio sensible;
 11. consultar indicadores y gráficos según su nivel de acceso.
 
-## 12. Primer bloque a ejecutar
+## 12. Próximo bloque a ejecutar
 
-La implementación debe comenzar por el **Hito A**:
+Los hitos A y B están implementados. El siguiente bloque es el **Hito C**:
 
-1. migración de roles, permisos, estado y seguridad de usuarios;
-2. login, CAPTCHA matemático, recuperación y cambio obligatorio de contraseña;
-3. Policies y middleware por módulo y acción;
-4. layout `/admin`;
-5. comando interactivo para crear la cuenta superadministradora inicial;
-6. pruebas de acceso, jerarquía, recuperación y seguridad.
+1. CRUD y orden editorial de categorías;
+2. gestión de etiquetas;
+3. selección y orden de noticias del hero;
+4. modo, intervalo, bucle y efectos del hero;
+5. configuración del slider de noticias más vistas;
+6. pruebas de portada, prioridades y visibilidad.
 
-No se debe comenzar aún con PWA ni estadísticas avanzadas.
+La PWA y las estadísticas avanzadas permanecen en sus hitos posteriores.

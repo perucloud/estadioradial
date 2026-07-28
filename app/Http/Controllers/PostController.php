@@ -62,7 +62,7 @@ class PostController extends Controller
         $post->increment('views_count');
 
         return view('posts.show', [
-            'post' => $post->load(['category', 'tags']),
+            'post' => $post->load(['category', 'tags', 'media']),
             'relatedPosts' => Post::query()
                 ->with('category')
                 ->published()

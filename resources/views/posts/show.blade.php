@@ -7,7 +7,9 @@
     <article class="article">
         <div class="container article-layout">
             <div class="article-content">
-                <img class="article__cover" src="{{ $post->image }}" alt="">
+                @if ($post->coverUrl())
+                    <img class="article__cover" src="{{ $post->coverUrl() }}" alt="{{ $post->media?->alt_text ?? '' }}">
+                @endif
                 @if ($post->image_credit || $post->image_license)
                     <p class="article__image-credit">
                         {{ collect([$post->image_credit, $post->image_license])->filter()->join(' · ') }}

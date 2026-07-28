@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\PasswordController as AdminPasswordController;
+use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -37,6 +39,40 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
         Route::get('/', AdminDashboardController::class)
             ->middleware('permission:dashboard.view')
             ->name('dashboard');
+
+        Route::middleware('permission:media.manage')->group(function () {
+            Route::get('/multimedia', [AdminMediaController::class, 'index'])->name('media.index');
+            Route::post('/multimedia', [AdminMediaController::class, 'store'])->name('media.store');
+            Route::put('/multimedia/{media}', [AdminMediaController::class, 'update'])->name('media.update');
+            Route::delete('/multimedia/{media}', [AdminMediaController::class, 'destroy'])->name('media.destroy');
+        });
+
+        Route::middleware('permission:news.view')->group(function () {
+            Route::get('/noticias', [AdminPostController::class, 'index'])->name('posts.index');
+            Route::get('/noticias/nueva', [AdminPostController::class, 'create'])
+                ->middleware('permission:news.create')
+                ->name('posts.create');
+            Route::post('/noticias', [AdminPostController::class, 'store'])
+                ->middleware('permission:news.create')
+                ->name('posts.store');
+            Route::get('/noticias/{post}/editar', [AdminPostController::class, 'edit'])
+                ->middleware('permission:news.update')
+                ->name('posts.edit');
+            Route::put('/noticias/{post}', [AdminPostController::class, 'update'])
+                ->middleware('permission:news.update')
+                ->name('posts.update');
+            Route::get('/noticias/{post}/vista-previa', [AdminPostController::class, 'preview'])
+                ->name('posts.preview');
+            Route::post('/noticias/{post}/archivar', [AdminPostController::class, 'archive'])
+                ->middleware('permission:news.update')
+                ->name('posts.archive');
+            Route::post('/noticias/{post}/recuperar', [AdminPostController::class, 'restore'])
+                ->middleware('permission:news.update')
+                ->name('posts.restore');
+            Route::post('/noticias/{post}/duplicar', [AdminPostController::class, 'duplicate'])
+                ->middleware('permission:news.create')
+                ->name('posts.duplicate');
+        });
 
         Route::middleware('permission:users.view')->group(function () {
             Route::get('/usuarios', [AdminUserController::class, 'index'])->name('users.index');

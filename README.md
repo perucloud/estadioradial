@@ -16,6 +16,7 @@ El alcance y las decisiones técnicas están documentados en:
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
 - [`docs/ADMIN_PLAN.md`](docs/ADMIN_PLAN.md)
 - [`docs/ADMIN_SETUP.md`](docs/ADMIN_SETUP.md)
+- [`docs/EDITORIAL_SETUP.md`](docs/EDITORIAL_SETUP.md)
 
 ## Entorno local
 

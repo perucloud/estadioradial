@@ -18,5 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call(PortalSeeder::class);
         $this->call(CurrentNewsSeeder::class);
         $this->call(AppearanceSeeder::class);
+        $this->call(LegacyMediaSeeder::class);
     }
 }
