@@ -41,6 +41,8 @@ La primera versión permitirá:
    hosting compartido.
 7. Las tareas programadas deberán funcionar con un único cron de Laravel.
 8. Cada fase terminará con pruebas antes de comenzar la siguiente.
+9. Todo el sistema utilizará UTF-8 sin BOM; MySQL/MariaDB usará `utf8mb4` y
+   ninguna importación se almacenará sin validar y normalizar su codificación.
 
 ## 4. Roles y permisos
 
@@ -527,6 +529,12 @@ gráficos se construirán después sobre métricas reales.
 - Jobs solamente para operaciones costosas como optimización de imágenes.
 - Scheduler para publicación programada y vencimiento de campañas.
 - SQLite en desarrollo y MySQL/MariaDB en producción.
+- Archivos fuente, Blade, JSON, CSV y respuestas HTTP en UTF-8; páginas con
+  `<meta charset="utf-8">` y cabeceras `Content-Type` correctas.
+- MySQL/MariaDB con `utf8mb4` de extremo a extremo en conexión, tablas y
+  columnas, evitando conversiones implícitas que produzcan mojibake.
+- Importaciones externas detectarán o rechazarán codificaciones desconocidas y
+  normalizarán el texto a UTF-8 antes de validarlo y persistirlo.
 - Diseño compatible con hosting compartido y compilación previa de assets.
 
 ## 9. Estrategia de pruebas
@@ -541,6 +549,9 @@ Cada módulo deberá incluir:
 - estados vacíos y errores;
 - pruebas responsive prioritarias;
 - protección contra acciones no autorizadas.
+- verificación de tildes, eñes, comillas tipográficas, símbolos monetarios y
+  emojis en formularios, base de datos, API, exportaciones y páginas públicas;
+- detección de patrones habituales de mojibake en el código activo.
 
 Antes de cada entrega:
 
