@@ -1,16 +1,5 @@
 @props(['categories'])
 
-<div class="network-bar">
-    <div class="container network-bar__inner">
-        <span>Estación Radial</span>
-        <nav aria-label="Enlaces superiores">
-            <a href="{{ route('posts.index') }}">Noticias</a>
-            <a href="{{ route('schedule') }}">Programación</a>
-            <a href="{{ route('live') }}">Ahora en vivo</a>
-        </nav>
-    </div>
-</div>
-
 <header class="site-header">
     <div class="container site-header__main">
         <a class="brand" href="{{ route('home') }}" aria-label="Estación Radial, inicio">
@@ -44,4 +33,3 @@
         </div>
     </div>
 </header>
-
