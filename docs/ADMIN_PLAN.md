@@ -24,7 +24,9 @@ La primera versión permitirá:
 - configurar sliders, sidebars, redes sociales y datos institucionales;
 - administrar publicidad y sus periodos de vigencia;
 - editar SEO básico;
-- consultar un resumen de actividad y contenido pendiente.
+- editar noticias con Tiptap Rich Text Editor;
+- consultar un dashboard estadístico con indicadores y gráficos;
+- consultar actividad y contenido pendiente.
 
 ## 3. Principios
 
@@ -42,29 +44,47 @@ La primera versión permitirá:
 
 ## 4. Roles y permisos
 
-| Acción | Administrador | Editor | Autor |
-| --- | --- | --- | --- |
-| Acceder al dashboard | Sí | Sí | Sí |
-| Administrar usuarios | Sí | No | No |
-| Configuración general y streaming | Sí | No | No |
-| Publicidad y apariencia | Sí | Lectura | No |
-| Crear noticias | Sí | Sí | Sí |
-| Editar cualquier noticia | Sí | Sí | No |
-| Editar noticias propias | Sí | Sí | Sí |
-| Publicar o programar | Sí | Sí | No |
-| Archivar/restaurar | Sí | Sí | Solo propias |
-| Categorías y etiquetas | Sí | Sí | Lectura |
-| Programas y horarios | Sí | Sí | Lectura |
-| Biblioteca multimedia | Sí | Sí | Sí |
+El rol **Superadministrador** es el “Maestro” del sistema: tiene acceso
+irrestricto a todos los módulos y puede crear otro superadministrador,
+administradores, editores y locutores.
 
-Los permisos se implementarán con middleware y Policies de Laravel. No se
-ocultarán solamente los botones: el servidor verificará cada acción.
+| Acción | Superadministrador | Administrador | Editor | Locutor |
+| --- | --- | --- | --- | --- |
+| Acceder al dashboard | Todo | Sí | Sí | Sí |
+| Administrar módulos y permisos | Todo | Solo los delegados | No | No |
+| Crear superadministradores | Sí | No | No | No |
+| Crear administradores | Sí | No | No | No |
+| Crear editores y locutores | Sí | Sí | No | No |
+| Configuración general y streaming | Todo | Según permiso | No | Según permiso |
+| Publicidad y apariencia | Todo | Según permiso | Lectura opcional | No |
+| Crear y editar noticias | Todo | Según permiso | Sí | No |
+| Publicar o programar noticias | Todo | Según permiso | Según permiso | No |
+| Categorías, etiquetas y multimedia | Todo | Según permiso | Según permiso | No |
+| Programas y horarios | Todo | Según permiso | Lectura opcional | Asignados |
+| Estadísticas y actividad | Todo | Módulos delegados | Editoriales | Propias |
+
+La autorización será granular por módulo y acción mediante roles, permisos,
+middleware y Policies de Laravel. El superadministrador omite las restricciones
+mediante una regla central controlada; los demás usuarios solo reciben permisos
+explícitos.
+
+Un administrador:
+
+- solo administra los módulos que le asignó un superadministrador;
+- puede crear editores y locutores, pero no administradores ni
+  superadministradores;
+- no puede conceder permisos que él mismo no posee;
+- no puede editar, desactivar ni elevar una cuenta de mayor jerarquía.
+
+No se ocultarán solamente los botones: cada petición será verificada nuevamente
+en el servidor. Los cambios de rol, permiso, activación y contraseña quedarán en
+la auditoría.
 
 ## 5. Navegación prevista del dashboard
 
 ```text
 /admin
-├── Resumen
+├── Resumen y estadísticas
 ├── Noticias
 │   ├── Todas
 │   ├── Nueva noticia
@@ -84,7 +104,9 @@ ocultarán solamente los botones: el servidor verificará cada acción.
 │   ├── Datos del portal
 │   ├── Redes sociales
 │   ├── SEO
-│   └── Usuarios
+│   ├── Usuarios
+│   ├── Roles y permisos
+│   └── Seguridad
 └── Actividad
 ```
 
@@ -97,21 +119,56 @@ Todas las rutas administrativas utilizarán el prefijo `/admin`, nombres
 
 #### Trabajo
 
-- Implementar login, logout, recuperación/cambio de contraseña y limitación de
-  intentos.
-- Ampliar `users` con `role`, `is_active`, `last_login_at` y foto opcional.
+- Implementar login y logout con correo y contraseña.
+- Incorporar CAPTCHA matemático de números o suma, generado y validado en el
+  servidor, de un solo uso y con expiración.
+- Permitir configurar si el CAPTCHA aparece siempre o después de varios
+  intentos fallidos; nunca sustituirá el rate limiting.
+- Implementar “Olvidé mi contraseña” mediante correo, token firmado, de un solo
+  uso y con expiración; limitar solicitudes y cerrar sesiones anteriores al
+  completar el cambio.
+- Implementar cambio voluntario de contraseña y cambio obligatorio durante el
+  primer acceso de una cuenta nueva o restablecida.
+- Usar hash seguro de Laravel, regeneración de sesión, cookies `HttpOnly`,
+  `Secure` y `SameSite`, protección CSRF, bloqueo progresivo y auditoría.
+- Ampliar `users` con estado, foto opcional, `must_change_password`,
+  `password_changed_at`, `last_login_at`, `failed_login_attempts` y
+  `locked_until`.
+- Crear tablas de roles, permisos, asignación usuario/rol y permisos por rol,
+  evitando un único campo rígido para toda la autorización.
 - Crear middleware de usuario activo y Policies.
 - Crear layout administrativo responsive, menú, breadcrumbs y mensajes.
-- Crear comando seguro para generar el primer administrador.
+- Crear un comando interactivo para generar el primer superadministrador,
+  solicitando la contraseña de forma oculta.
 - Separar visualmente el dashboard del portal público.
+
+#### Cuenta maestra inicial
+
+- Correo inicial: `superadmin@gmail.com`.
+- La contraseña inicial será la credencial privada proporcionada por el
+  propietario y deberá cambiarse obligatoriamente en el primer acceso.
+- La contraseña no se escribirá en este documento, seeders, migraciones,
+  historial Git, registros ni capturas.
+- El alta se realizará con un comando similar a
+  `php artisan admin:create-superadmin superadmin@gmail.com`, que solicitará la
+  clave de manera interactiva y almacenará solamente su hash.
+- En producción se exigirá una contraseña robusta distinta de la credencial
+  temporal de desarrollo.
 
 #### Criterios de aceptación
 
 - Un visitante no puede acceder a `/admin`.
 - Un usuario desactivado no puede iniciar sesión.
 - Cada rol recibe únicamente sus acciones autorizadas.
+- El CAPTCHA rechaza respuestas vencidas, reutilizadas o incorrectas.
+- La recuperación usa un enlace temporal de un solo uso y no revela si un
+  correo existe.
+- El administrador no puede ampliar sus propios permisos ni crear cuentas de
+  mayor jerarquía.
+- Una cuenta nueva debe cambiar su contraseña antes de usar el dashboard.
 - No existe una contraseña administrativa incluida en el repositorio.
-- Login, logout, CSRF, rate limiting y permisos tienen pruebas.
+- Login, logout, recuperación, CAPTCHA, bloqueo, CSRF, sesiones y permisos
+  tienen pruebas.
 
 ### Fase 2 — Biblioteca multimedia
 
@@ -164,17 +221,30 @@ Crear `media` con:
 - Tabla con filtros por estado, categoría, autor y fecha.
 - Formulario de creación y edición.
 - Selector de categoría, etiquetas y multimedia.
-- Editor de contenido con formato controlado.
+- **Tiptap Rich Text Editor** como editor oficial del cuerpo de noticias.
 - Vista previa sin publicar.
 - Acciones de enviar a revisión, aprobar, programar, publicar y archivar.
 - Duplicar noticia.
 
+#### Configuración de Tiptap
+
+- Barra editorial con párrafos, encabezados permitidos, negrita, cursiva,
+  subrayado, listas, citas, enlaces, tablas y deshacer/rehacer.
+- Inserción de imágenes desde la biblioteca multimedia, conservando texto
+  alternativo, pie, crédito y licencia.
+- Embeds de audio o video solo mediante bloques controlados y proveedores
+  autorizados; no se aceptarán scripts o iframes libres.
+- Autoguardado de borrador, aviso de cambios sin guardar, contador de palabras
+  y vista previa responsive.
+- Salida HTML semántica y compatible con el diseño del artículo público.
+
 #### Reglas
 
 - El slug se sugiere desde el título, pero sigue siendo editable y único.
-- Un autor no puede publicarse a sí mismo.
+- Un editor sin permiso de publicación no puede aprobarse a sí mismo.
 - Una noticia programada se publica mediante el scheduler.
-- El HTML se limpia para evitar scripts o contenido inseguro.
+- El backend sanitiza el HTML con una lista permitida; nunca confía únicamente
+  en la configuración del editor del navegador.
 - La fuente, URL, crédito y licencia continúan disponibles.
 
 #### Criterios de aceptación
@@ -327,15 +397,46 @@ Editar `article.sidebar` y `section.sidebar`:
 
 ### Fase 8 — Dashboard, actividad y mantenimiento
 
-#### Dashboard inicial
+#### Dashboard estadístico
 
-- noticias por estado;
+- tarjetas de noticias publicadas, borradores, pendientes y programadas;
+- visitas totales y publicaciones del periodo;
 - contenido pendiente de revisión;
 - publicaciones programadas;
 - noticias más vistas;
 - estado de audio/video;
 - espacios publicitarios activos y próximos a vencer;
 - actividad editorial reciente.
+
+Gráficos iniciales:
+
+- publicaciones y visitas por día, semana o mes;
+- noticias por categoría y estado editorial;
+- ranking de noticias más leídas;
+- rendimiento de categorías configuradas como relevantes;
+- reproducciones o clics de audio/video cuando exista consentimiento y
+  medición confiable;
+- impresiones y clics de publicidad cuando se habilite esa medición.
+
+Todos los gráficos admitirán periodos de 7, 30 y 90 días y rango personalizado.
+La información se limitará según el rol: el superadministrador ve todo, un
+administrador sus módulos delegados, un editor la operación editorial y un
+locutor sus programas. Cada gráfico tendrá resumen tabular accesible.
+
+Para que funcione bien en hosting compartido se usarán agregados diarios,
+consultas indexadas y caché; no se cargarán eventos sin límite en cada visita.
+No se almacenarán datos personales innecesarios. Las métricas disponibles se
+definirán antes de mostrar cifras y se diferenciarán datos reales de estados sin
+información.
+
+#### Criterios de aceptación del dashboard
+
+- Los indicadores coinciden con consultas verificables de la base de datos.
+- Los filtros actualizan tarjetas, gráficos y tablas con el mismo periodo.
+- Un usuario no puede consultar estadísticas fuera de sus permisos.
+- Los estados sin datos se muestran claramente y nunca se rellenan con cifras
+  simuladas.
+- Las consultas principales tienen índices, caché y pruebas de autorización.
 
 #### Auditoría
 
@@ -410,14 +511,17 @@ PWA + despliegue
 ```
 
 La interfaz del dashboard no debe comenzar por gráficos o estadísticas. Primero
-debe resolver correctamente autenticación, permisos y formularios de contenido.
+debe resolver correctamente autenticación, permisos y captura de datos. Los
+gráficos se construirán después sobre métricas reales.
 
 ## 8. Decisiones técnicas
 
 - Blade y JavaScript ligero, coherentes con el portal actual.
 - Sin SPA obligatoria.
+- Tiptap se integrará como componente JavaScript aislado dentro del formulario
+  Laravel, sin convertir todo el panel en una SPA.
 - Formularios Laravel con Form Requests.
-- Policies para permisos.
+- Roles, permisos granulares, middleware y Policies para autorización.
 - Transacciones para publicaciones, horarios y cambios relacionados.
 - Paginación y filtros en todas las tablas administrativas.
 - Jobs solamente para operaciones costosas como optimización de imágenes.
@@ -450,12 +554,12 @@ npm run build
 
 | Hito | Resultado demostrable |
 | --- | --- |
-| A | Login, roles y estructura del dashboard |
-| B | Multimedia y noticias administrables |
+| A | Login, CAPTCHA, recuperación, roles y estructura del dashboard |
+| B | Multimedia y noticias administrables con Tiptap |
 | C | Categorías, hero y sliders configurables |
 | D | Programas, horarios y streaming configurables |
 | E | Publicidad, sidebars, redes y apariencia |
-| F | Auditoría, SEO, páginas y mantenimiento |
+| F | Dashboard estadístico, auditoría, SEO, páginas y mantenimiento |
 | G | PWA y paquete validado para hosting |
 
 ## 11. Definición de “autoadministrable”
@@ -463,7 +567,7 @@ npm run build
 La primera versión se considerará autoadministrable cuando un administrador
 pueda, sin modificar código:
 
-1. crear usuarios editoriales;
+1. crear usuarios respetando la jerarquía y los módulos delegados;
 2. publicar una noticia completa con imagen, categoría y etiquetas;
 3. cambiar lo destacado y el orden de portada;
 4. modificar programas y horarios;
@@ -472,17 +576,18 @@ pueda, sin modificar código:
 7. editar redes, sidebars y datos principales;
 8. comprobar los cambios en el portal público;
 9. recuperar contenido archivado;
-10. identificar quién realizó un cambio sensible.
+10. identificar quién realizó un cambio sensible;
+11. consultar indicadores y gráficos según su nivel de acceso.
 
 ## 12. Primer bloque a ejecutar
 
 La implementación debe comenzar por el **Hito A**:
 
-1. migración de roles y estado de usuarios;
-2. autenticación;
-3. Policies y middleware;
+1. migración de roles, permisos, estado y seguridad de usuarios;
+2. login, CAPTCHA matemático, recuperación y cambio obligatorio de contraseña;
+3. Policies y middleware por módulo y acción;
 4. layout `/admin`;
-5. comando para crear el primer administrador;
-6. pruebas de acceso y seguridad.
+5. comando interactivo para crear la cuenta superadministradora inicial;
+6. pruebas de acceso, jerarquía, recuperación y seguridad.
 
 No se debe comenzar aún con PWA ni estadísticas avanzadas.
