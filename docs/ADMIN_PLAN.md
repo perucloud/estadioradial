@@ -1,5 +1,17 @@
 # Plan del sistema autoadministrable
 
+## Estado de ejecución
+
+| Hito | Estado |
+| --- | --- |
+| A — Acceso, seguridad, roles y dashboard base | Implementado |
+| B — Multimedia y noticias con Tiptap | Pendiente |
+| C — Categorías, hero y sliders | Pendiente |
+| D — Programas, horarios y streaming | Pendiente |
+| E — Publicidad, sidebars y apariencia | Pendiente |
+| F — Estadísticas, auditoría, SEO y mantenimiento | Pendiente |
+| G — PWA y despliegue | Pendiente |
+
 ## 1. Objetivo
 
 Convertir el portal público actual en una plataforma administrable desde
