@@ -86,7 +86,7 @@
         </div>
     </section>
 
-    <section class="section" aria-labelledby="latest-title">
+    <section class="section latest-news" aria-labelledby="latest-title">
         <div class="container">
             <div class="section-heading">
                 <div>
@@ -95,11 +95,110 @@
                 </div>
                 <a class="text-link" href="{{ route('posts.index') }}">Ver todas las noticias →</a>
             </div>
-            <div class="news-grid">
-                @foreach ($latestPosts as $post)
-                    <x-news-card :post="$post" />
-                @endforeach
-            </div>
+
+            @if ($latestPosts->isNotEmpty())
+                @php($latestLead = $latestPosts->first())
+
+                <div class="latest-layout">
+                    <article class="latest-lead">
+                        <a class="latest-lead__image" href="{{ route('posts.show', [$latestLead->category, $latestLead]) }}">
+                            <img src="{{ $latestLead->image }}" alt="" loading="lazy">
+                            <span class="latest-lead__status">Último minuto</span>
+                        </a>
+                        <div class="latest-lead__body">
+                            <a
+                                class="category-pill"
+                                style="--category-color: {{ $latestLead->category->color }}"
+                                href="{{ route('posts.category', $latestLead->category) }}"
+                            >{{ $latestLead->category->name }}</a>
+                            <h3>
+                                <a href="{{ route('posts.show', [$latestLead->category, $latestLead]) }}">
+                                    {{ $latestLead->title }}
+                                </a>
+                            </h3>
+                            <p>{{ $latestLead->excerpt }}</p>
+                            <div class="editorial-meta">
+                                <time datetime="{{ $latestLead->published_at->toIso8601String() }}">
+                                    {{ $latestLead->published_at->diffForHumans() }}
+                                </time>
+                                <span>{{ number_format($latestLead->views_count) }} lecturas</span>
+                            </div>
+                        </div>
+                    </article>
+
+                    <div class="latest-secondary" aria-label="Noticias secundarias">
+                        @foreach ($latestPosts->skip(1)->take(4) as $post)
+                            <article class="secondary-story">
+                                <a class="secondary-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
+                                    <img src="{{ $post->image }}" alt="" loading="lazy">
+                                </a>
+                                <div class="secondary-story__body">
+                                    <a
+                                        class="category-pill"
+                                        style="--category-color: {{ $post->category->color }}"
+                                        href="{{ route('posts.category', $post->category) }}"
+                                    >{{ $post->category->name }}</a>
+                                    <h3>
+                                        <a href="{{ route('posts.show', [$post->category, $post]) }}">{{ $post->title }}</a>
+                                    </h3>
+                                    <p>{{ $post->excerpt }}</p>
+                                    <time datetime="{{ $post->published_at->toIso8601String() }}">
+                                        {{ $post->published_at->diffForHumans() }}
+                                    </time>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+
+                    <div class="ad-rail">
+                        @foreach ($advertisements as $advertisement)
+                            <x-ad-slot :advertisement="$advertisement" :position="$loop->iteration" />
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            @if ($mostViewedPosts->isNotEmpty())
+                <section class="most-viewed" aria-labelledby="most-viewed-title">
+                    <div class="most-viewed__heading">
+                        <div>
+                            <span class="eyebrow">Tendencias</span>
+                            <h3 id="most-viewed-title">Las noticias más vistas</h3>
+                        </div>
+                        <div class="slider-controls" aria-label="Controles del slider">
+                            <button type="button" data-slider-prev aria-label="Noticias anteriores" disabled>←</button>
+                            <button type="button" data-slider-next aria-label="Noticias siguientes">→</button>
+                        </div>
+                    </div>
+
+                    <div class="slider-shell" data-news-slider>
+                        <div class="popular-track" data-slider-track tabindex="0">
+                            @foreach ($mostViewedPosts as $post)
+                                <article class="popular-card">
+                                    <a class="popular-card__image" href="{{ route('posts.show', [$post->category, $post]) }}">
+                                        <img src="{{ $post->image }}" alt="" loading="lazy">
+                                        <span>{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                                    </a>
+                                    <div class="popular-card__body">
+                                        <a
+                                            class="category-pill"
+                                            style="--category-color: {{ $post->category->color }}"
+                                            href="{{ route('posts.category', $post->category) }}"
+                                        >{{ $post->category->name }}</a>
+                                        <h4>
+                                            <a href="{{ route('posts.show', [$post->category, $post]) }}">{{ $post->title }}</a>
+                                        </h4>
+                                        <p>{{ $post->excerpt }}</p>
+                                        <div class="editorial-meta">
+                                            <span>{{ number_format($post->views_count) }} lecturas</span>
+                                        </div>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+                    </div>
+                </section>
+            @endif
         </div>
     </section>
 

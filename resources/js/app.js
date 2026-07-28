@@ -42,6 +42,34 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+document.querySelectorAll('[data-news-slider]').forEach((slider) => {
+    const section = slider.closest('.most-viewed');
+    const track = slider.querySelector('[data-slider-track]');
+    const previous = section?.querySelector('[data-slider-prev]');
+    const next = section?.querySelector('[data-slider-next]');
+
+    if (!track || !previous || !next) return;
+
+    const updateControls = () => {
+        const maximum = track.scrollWidth - track.clientWidth;
+        previous.disabled = track.scrollLeft <= 4;
+        next.disabled = track.scrollLeft >= maximum - 4;
+    };
+
+    const move = (direction) => {
+        track.scrollBy({
+            left: direction * track.clientWidth * 0.86,
+            behavior: 'smooth',
+        });
+    };
+
+    previous.addEventListener('click', () => move(-1));
+    next.addEventListener('click', () => move(1));
+    track.addEventListener('scroll', updateControls, { passive: true });
+    window.addEventListener('resize', updateControls);
+    updateControls();
+});
+
 const player = document.querySelector('[data-player]');
 
 if (player) {

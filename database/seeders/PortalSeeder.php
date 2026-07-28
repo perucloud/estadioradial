@@ -19,6 +19,10 @@ class PortalSeeder extends Seeder
             ['name' => 'Nacional', 'slug' => 'nacional', 'color' => '#ef5b2a'],
             ['name' => 'Cultura', 'slug' => 'cultura', 'color' => '#8b3fc7'],
             ['name' => 'Deportes', 'slug' => 'deportes', 'color' => '#18895b'],
+            ['name' => 'Economía', 'slug' => 'economia', 'color' => '#b7791f'],
+            ['name' => 'Salud', 'slug' => 'salud', 'color' => '#087f8c'],
+            ['name' => 'Tecnología', 'slug' => 'tecnologia', 'color' => '#2563a8'],
+            ['name' => 'Educación', 'slug' => 'educacion', 'color' => '#6d4bc3'],
         ])->mapWithKeys(function (array $data) {
             $category = Category::query()->updateOrCreate(['slug' => $data['slug']], $data);
 
@@ -36,6 +40,7 @@ class PortalSeeder extends Seeder
                 'author' => 'Redacción Estación Radial',
                 'featured' => true,
                 'minutes_ago' => 12,
+                'views_count' => 1840,
             ],
             [
                 'category' => 'politica',
@@ -47,6 +52,7 @@ class PortalSeeder extends Seeder
                 'author' => 'Mesa de noticias',
                 'featured' => true,
                 'minutes_ago' => 35,
+                'views_count' => 3260,
             ],
             [
                 'category' => 'nacional',
@@ -58,6 +64,7 @@ class PortalSeeder extends Seeder
                 'author' => 'Redacción Nacional',
                 'featured' => true,
                 'minutes_ago' => 58,
+                'views_count' => 2150,
             ],
             [
                 'category' => 'cultura',
@@ -69,6 +76,7 @@ class PortalSeeder extends Seeder
                 'author' => 'Redacción Cultural',
                 'featured' => false,
                 'minutes_ago' => 84,
+                'views_count' => 4810,
             ],
             [
                 'category' => 'deportes',
@@ -80,6 +88,7 @@ class PortalSeeder extends Seeder
                 'author' => 'Redacción Deportes',
                 'featured' => false,
                 'minutes_ago' => 120,
+                'views_count' => 3920,
             ],
             [
                 'category' => 'actualidad',
@@ -91,6 +100,55 @@ class PortalSeeder extends Seeder
                 'author' => 'Mesa de noticias',
                 'featured' => false,
                 'minutes_ago' => 175,
+                'views_count' => 2870,
+            ],
+            [
+                'category' => 'economia',
+                'title' => 'Mercados regionales impulsan nuevas oportunidades para pequeños productores',
+                'slug' => 'mercados-regionales-impulsan-oportunidades-para-productores',
+                'excerpt' => 'Ferias comerciales y alianzas locales facilitan el acceso de emprendimientos a nuevos consumidores.',
+                'body' => '<p>Productores de distintas provincias participan en ruedas comerciales y espacios de capacitación para fortalecer sus negocios.</p>',
+                'image' => '/images/demo/news-economy.svg',
+                'author' => 'Redacción Economía',
+                'featured' => false,
+                'minutes_ago' => 220,
+                'views_count' => 5570,
+            ],
+            [
+                'category' => 'salud',
+                'title' => 'Jornada preventiva acerca servicios de salud a familias de zonas rurales',
+                'slug' => 'jornada-preventiva-acerca-servicios-de-salud-a-familias',
+                'excerpt' => 'Equipos itinerantes brindarán orientación, controles básicos y atención especializada.',
+                'body' => '<p>La jornada incluye evaluaciones preventivas y actividades educativas dirigidas a personas de todas las edades.</p>',
+                'image' => '/images/demo/news-health.svg',
+                'author' => 'Redacción Salud',
+                'featured' => false,
+                'minutes_ago' => 250,
+                'views_count' => 4450,
+            ],
+            [
+                'category' => 'tecnologia',
+                'title' => 'Radios locales incorporan herramientas digitales para ampliar su cobertura',
+                'slug' => 'radios-locales-incorporan-herramientas-digitales',
+                'excerpt' => 'Nuevas plataformas permiten distribuir contenidos en vivo y fortalecer la participación de la audiencia.',
+                'body' => '<p>La transformación digital abre nuevas posibilidades para que las emisoras locales lleguen a oyentes dentro y fuera de sus regiones.</p>',
+                'image' => '/images/demo/news-technology.svg',
+                'author' => 'Redacción Tecnología',
+                'featured' => false,
+                'minutes_ago' => 290,
+                'views_count' => 3640,
+            ],
+            [
+                'category' => 'educacion',
+                'title' => 'Bibliotecas escolares renuevan sus espacios para promover la lectura',
+                'slug' => 'bibliotecas-escolares-renuevan-espacios-para-promover-la-lectura',
+                'excerpt' => 'Estudiantes y docentes participan en clubes de lectura y actividades de creación literaria.',
+                'body' => '<p>Los nuevos espacios buscan convertir la lectura en una experiencia cercana, participativa y cotidiana.</p>',
+                'image' => '/images/demo/news-education.svg',
+                'author' => 'Redacción Educación',
+                'featured' => false,
+                'minutes_ago' => 340,
+                'views_count' => 3010,
             ],
         ];
 
@@ -106,6 +164,7 @@ class PortalSeeder extends Seeder
                     'author' => $item['author'],
                     'status' => 'published',
                     'is_featured' => $item['featured'],
+                    'views_count' => $item['views_count'],
                     'published_at' => now()->subMinutes($item['minutes_ago']),
                 ],
             );

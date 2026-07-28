@@ -21,6 +21,7 @@ class Post extends Model
         'author',
         'status',
         'is_featured',
+        'views_count',
         'published_at',
     ];
 
@@ -28,6 +29,7 @@ class Post extends Model
     {
         return [
             'is_featured' => 'boolean',
+            'views_count' => 'integer',
             'published_at' => 'datetime',
         ];
     }

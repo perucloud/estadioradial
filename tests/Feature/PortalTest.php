@@ -27,6 +27,9 @@ class PortalTest extends TestCase
             ->assertSee('Programas')
             ->assertSee('Ahora en vivo')
             ->assertSee('Festival reúne música, memoria y tradiciones de distintas regiones')
+            ->assertSee('Las noticias más vistas')
+            ->assertSee('Conecta tu marca con nuestra audiencia')
+            ->assertSee('data-news-slider', false)
             ->assertSeeInOrder([
                 'aria-label="Facebook"',
                 'aria-label="X"',
@@ -36,6 +39,17 @@ class PortalTest extends TestCase
                 'aria-label="Abrir búsqueda"',
                 'aria-label="Abrir menú"',
             ], false);
+    }
+
+    public function test_most_viewed_news_are_ordered_by_view_count(): void
+    {
+        $mostViewed = Post::query()->orderByDesc('views_count')->firstOrFail();
+
+        $this->assertSame(
+            'mercados-regionales-impulsan-oportunidades-para-productores',
+            $mostViewed->slug
+        );
+        $this->assertSame(5570, $mostViewed->views_count);
     }
 
     public function test_news_can_be_searched_from_the_header(): void
@@ -50,10 +64,16 @@ class PortalTest extends TestCase
     public function test_news_can_be_opened_from_category_and_post_slugs(): void
     {
         $post = Post::query()->with('category')->firstOrFail();
+        $initialViews = $post->views_count;
 
         $this->get(route('posts.show', [$post->category, $post]))
             ->assertOk()
             ->assertSee($post->title);
+
+        $this->assertDatabaseHas('posts', [
+            'id' => $post->id,
+            'views_count' => $initialViews + 1,
+        ]);
     }
 
     public function test_post_with_wrong_category_returns_not_found(): void

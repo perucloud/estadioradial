@@ -56,6 +56,8 @@ class PostController extends Controller
             404
         );
 
+        $post->increment('views_count');
+
         return view('posts.show', [
             'post' => $post->load('category'),
             'relatedPosts' => Post::query()

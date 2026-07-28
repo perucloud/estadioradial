@@ -23,8 +23,17 @@ class HomeController extends Controller
         $latestPosts = Post::query()
             ->with('category')
             ->published()
+            ->whereNotIn('id', $featuredPosts->pluck('id'))
             ->latest('published_at')
-            ->take(6)
+            ->take(5)
+            ->get();
+
+        $mostViewedPosts = Post::query()
+            ->with('category')
+            ->published()
+            ->orderByDesc('views_count')
+            ->latest('published_at')
+            ->take(8)
             ->get();
 
         $programs = Program::query()
@@ -51,6 +60,21 @@ class HomeController extends Controller
         return view('home', [
             'featuredPosts' => $featuredPosts,
             'latestPosts' => $latestPosts,
+            'mostViewedPosts' => $mostViewedPosts,
+            'advertisements' => [
+                [
+                    'eyebrow' => 'Espacio disponible',
+                    'title' => 'Conecta tu marca con nuestra audiencia',
+                    'description' => 'Publicidad visible en noticias, radio y programación.',
+                    'tone' => 'dark',
+                ],
+                [
+                    'eyebrow' => 'Anuncia aquí',
+                    'title' => 'Tu campaña puede ocupar este espacio',
+                    'description' => 'Formato adaptable para escritorio y dispositivos móviles.',
+                    'tone' => 'red',
+                ],
+            ],
             'programs' => $programs,
             'currentSchedule' => $currentSchedule ?? $todaySchedules->first(),
             'nextSchedule' => $nextSchedule ?? $todaySchedules->skip(1)->first(),
