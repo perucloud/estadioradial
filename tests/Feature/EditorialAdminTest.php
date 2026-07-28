@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\AdminAccess;
+use App\Support\PostHtmlSanitizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -60,7 +61,34 @@ class EditorialAdminTest extends TestCase
             ->assertOk()
             ->assertSee('data-tiptap', false)
             ->assertSee('Copia local activa')
+            ->assertSee('Biblioteca Media')
+            ->assertSee('data-editor-fullscreen', false)
+            ->assertSee('data-editor-video', false)
+            ->assertSee('data-editor-highlight', false)
             ->assertSee('Imagen principal');
+    }
+
+    public function test_superadmin_sidebar_has_flyout_navigation_and_planned_modules(): void
+    {
+        $superadmin = $this->userWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Dashboard')
+            ->assertSee('data-admin-nav-group', false)
+            ->assertSee('Crear noticia')
+            ->assertSee('Todas las noticias')
+            ->assertSee('Categorías')
+            ->assertSee('Media')
+            ->assertSee('Programación radial')
+            ->assertSee('Programas')
+            ->assertSee('Locutores')
+            ->assertSee('Publicidad')
+            ->assertSee('Banners Pub')
+            ->assertSee('Apariencia')
+            ->assertSee('Configurar')
+            ->assertSee('Ajustes');
     }
 
     public function test_upload_rejects_an_image_without_alt_text(): void
@@ -144,6 +172,80 @@ class EditorialAdminTest extends TestCase
             ->assertSessionHas('status');
         $this->assertSame('draft', $post->refresh()->status);
         $this->assertNull($post->published_at);
+    }
+
+    public function test_news_list_supports_page_sizes_and_soft_delete_actions(): void
+    {
+        $editor = $this->userWithRole('editor');
+        $category = $this->category();
+
+        foreach (range(1, 24) as $number) {
+            Post::query()->create([
+                'category_id' => $category->id,
+                'title' => "Noticia de prueba {$number}",
+                'slug' => "noticia-de-prueba-{$number}",
+                'excerpt' => 'Resumen para comprobar la paginación administrativa.',
+                'body' => '<p>Contenido editorial suficiente para la noticia de prueba.</p>',
+                'status' => 'draft',
+            ]);
+        }
+
+        $response = $this->actingAs($editor)
+            ->get(route('admin.posts.index', ['per_page' => 10]))
+            ->assertOk()
+            ->assertSee('10 por página')
+            ->assertSee('images/admin/icons/vista.png', false)
+            ->assertSee('images/admin/icons/editar.png', false)
+            ->assertSee('images/admin/icons/eliminar2.png', false);
+
+        $this->assertSame(10, $response->viewData('posts')->perPage());
+        $this->assertSame(24, $response->viewData('posts')->total());
+
+        $post = Post::query()->firstOrFail();
+        $this->actingAs($editor)
+            ->delete(route('admin.posts.destroy', $post))
+            ->assertSessionHas('status', 'Noticia enviada a la papelera.');
+
+        $this->assertSoftDeleted('posts', ['id' => $post->id]);
+
+        $this->actingAs($editor)
+            ->get(route('admin.posts.index', ['status' => 'trash']))
+            ->assertOk()
+            ->assertSee($post->title)
+            ->assertSee('Restaurar');
+
+        $this->actingAs($editor)
+            ->post(route('admin.posts.restore-deleted', $post))
+            ->assertSessionHas('status', 'Noticia restaurada desde la papelera.');
+
+        $this->assertDatabaseHas('posts', ['id' => $post->id, 'deleted_at' => null]);
+    }
+
+    public function test_professional_editor_html_keeps_safe_formatting_and_rejects_unsafe_embeds(): void
+    {
+        $sanitizer = app(PostHtmlSanitizer::class);
+        $html = <<<'HTML'
+            <h2 style="text-align: center; position: fixed">Titular</h2>
+            <p><span style="color: #c91f26; background-image: url(javascript:alert(1))">Texto</span></p>
+            <mark style="background-color: #fff2a8">Dato</mark>
+            <pre><code>echo "seguro";</code></pre>
+            <div data-youtube-video><iframe src="https://www.youtube-nocookie.com/embed/abc123" width="800" height="450"></iframe></div>
+            <div data-youtube-video><iframe src="https://example.com/embed/unsafe"></iframe></div>
+            HTML;
+
+        $clean = $sanitizer->sanitize($html);
+
+        $this->assertStringContainsString('text-align: center', $clean);
+        $this->assertStringContainsString('color: #c91f26', $clean);
+        $this->assertStringContainsString('background-color: #fff2a8', $clean);
+        $this->assertStringContainsString(
+            '<pre><code>echo "seguro";</code></pre>',
+            html_entity_decode($clean, ENT_QUOTES | ENT_HTML5),
+        );
+        $this->assertStringContainsString('youtube-nocookie.com/embed/abc123', $clean);
+        $this->assertStringNotContainsString('position:', $clean);
+        $this->assertStringNotContainsString('background-image', $clean);
+        $this->assertStringNotContainsString('example.com', $clean);
     }
 
     public function test_scheduled_posts_are_published_when_their_time_arrives(): void

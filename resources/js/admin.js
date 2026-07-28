@@ -1,8 +1,13 @@
 import { Editor } from '@tiptap/core';
 import CharacterCount from '@tiptap/extension-character-count';
+import Highlight from '@tiptap/extension-highlight';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { TableKit } from '@tiptap/extension-table';
+import TextAlign from '@tiptap/extension-text-align';
+import { Color, TextStyle } from '@tiptap/extension-text-style';
+import Typography from '@tiptap/extension-typography';
+import Youtube from '@tiptap/extension-youtube';
 import StarterKit from '@tiptap/starter-kit';
 
 const normaliseUrl = (value) => {
@@ -13,10 +18,40 @@ const normaliseUrl = (value) => {
     return `https://${url}`;
 };
 
+const adminNavGroups = [...document.querySelectorAll('[data-admin-nav-group]')];
+
+adminNavGroups.forEach((group) => {
+    group.addEventListener('toggle', () => {
+        if (!group.open) return;
+
+        adminNavGroups
+            .filter((candidate) => candidate !== group)
+            .forEach((candidate) => candidate.removeAttribute('open'));
+    });
+});
+
+document.addEventListener('click', (event) => {
+    if (event.target.closest('[data-admin-nav-group]')) return;
+    adminNavGroups.forEach((group) => group.removeAttribute('open'));
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    adminNavGroups.forEach((group) => group.removeAttribute('open'));
+});
+
+document.querySelectorAll('[data-confirm-delete]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (window.confirm(form.dataset.confirmDelete)) return;
+        event.preventDefault();
+    });
+});
+
 document.querySelectorAll('[data-tiptap]').forEach((wrapper) => {
     const input = wrapper.querySelector('[data-tiptap-input]');
     const surface = wrapper.querySelector('[data-tiptap-surface]');
     const counter = wrapper.querySelector('[data-tiptap-count]');
+    const characterCounter = wrapper.querySelector('[data-tiptap-character-count]');
     const autosaveStatus = wrapper.querySelector('[data-autosave-status]');
     const form = wrapper.closest('form');
     const draftKey = `estacionradial:post-draft:${wrapper.dataset.draftKey || 'new'}`;
@@ -38,6 +73,14 @@ document.querySelectorAll('[data-tiptap]').forEach((wrapper) => {
             window.localStorage.removeItem(draftKey);
         }
     }
+
+    const updateCounters = (currentEditor) => {
+        const words = currentEditor.storage.characterCount.words();
+        const characters = currentEditor.storage.characterCount.characters();
+
+        if (counter) counter.textContent = `${words} ${words === 1 ? 'palabra' : 'palabras'}`;
+        if (characterCounter) characterCounter.textContent = `${characters.toLocaleString('es-PE')} caracteres`;
+    };
 
     const editor = new Editor({
         element: surface,
@@ -61,6 +104,21 @@ document.querySelectorAll('[data-tiptap]').forEach((wrapper) => {
                 inline: false,
                 allowBase64: false,
             }),
+            TextStyle,
+            Color,
+            Highlight.configure({
+                multicolor: true,
+            }),
+            TextAlign.configure({
+                types: ['heading', 'paragraph'],
+            }),
+            Typography,
+            Youtube.configure({
+                nocookie: true,
+                modestBranding: true,
+                width: 800,
+                height: 450,
+            }),
             Placeholder.configure({
                 placeholder: 'Escribe el contenido completo de la noticia…',
             }),
@@ -76,7 +134,7 @@ document.querySelectorAll('[data-tiptap]').forEach((wrapper) => {
         onUpdate: ({ editor: currentEditor }) => {
             input.value = currentEditor.getHTML();
             wrapper.dataset.dirty = 'true';
-            counter.textContent = `${currentEditor.storage.characterCount.words()} palabras`;
+            updateCounters(currentEditor);
 
             window.clearTimeout(wrapper.autosaveTimer);
             wrapper.autosaveTimer = window.setTimeout(() => {
@@ -89,22 +147,38 @@ document.querySelectorAll('[data-tiptap]').forEach((wrapper) => {
         },
     });
 
-    counter.textContent = `${editor.storage.characterCount.words()} palabras`;
+    updateCounters(editor);
 
     const updateToolbar = () => {
         wrapper.querySelectorAll('[data-editor-command]').forEach((button) => {
             const command = button.dataset.editorCommand;
-            const attributes = command === 'heading2'
-                ? ['heading', { level: 2 }]
-                : command === 'heading3'
-                    ? ['heading', { level: 3 }]
-                    : [command];
+            const headingLevel = /^heading([234])$/.exec(command)?.[1];
+            const attributes = headingLevel
+                ? ['heading', { level: Number(headingLevel) }]
+                : [command];
             button.classList.toggle('is-active', editor.isActive(...attributes));
         });
+
+        wrapper.querySelectorAll('[data-editor-align]').forEach((button) => {
+            button.classList.toggle('is-active', editor.isActive({ textAlign: button.dataset.editorAlign }));
+        });
+
+        wrapper.querySelectorAll('[data-table-command]').forEach((button) => {
+            button.disabled = !editor.isActive('table');
+        });
+
+        const blockSelect = wrapper.querySelector('[data-editor-block]');
+        if (blockSelect) {
+            blockSelect.value = [2, 3, 4]
+                .map((level) => [`heading${level}`, editor.isActive('heading', { level })])
+                .find(([, active]) => active)?.[0]
+                || (editor.isActive('codeBlock') ? 'codeBlock' : 'paragraph');
+        }
     };
 
     editor.on('selectionUpdate', updateToolbar);
     editor.on('transaction', updateToolbar);
+    updateToolbar();
 
     wrapper.querySelectorAll('[data-editor-command]').forEach((button) => {
         button.addEventListener('click', () => {
@@ -118,20 +192,53 @@ document.querySelectorAll('[data-tiptap]').forEach((wrapper) => {
                 strike: () => chain.toggleStrike().run(),
                 heading2: () => chain.toggleHeading({ level: 2 }).run(),
                 heading3: () => chain.toggleHeading({ level: 3 }).run(),
+                heading4: () => chain.toggleHeading({ level: 4 }).run(),
+                paragraph: () => chain.setParagraph().run(),
                 bulletList: () => chain.toggleBulletList().run(),
                 orderedList: () => chain.toggleOrderedList().run(),
                 blockquote: () => chain.toggleBlockquote().run(),
+                codeBlock: () => chain.toggleCodeBlock().run(),
                 horizontalRule: () => chain.setHorizontalRule().run(),
                 undo: () => chain.undo().run(),
                 redo: () => chain.redo().run(),
                 table: () => chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
+                addRowAfter: () => chain.addRowAfter().run(),
+                addColumnAfter: () => chain.addColumnAfter().run(),
+                deleteRow: () => chain.deleteRow().run(),
+                deleteColumn: () => chain.deleteColumn().run(),
+                deleteTable: () => chain.deleteTable().run(),
             };
 
             commands[command]?.();
         });
     });
 
-    wrapper.querySelector('[data-editor-link]')?.addEventListener('click', () => {
+    wrapper.querySelector('[data-editor-block]')?.addEventListener('change', (event) => {
+        const command = event.target.value;
+        const chain = editor.chain().focus();
+
+        if (command === 'paragraph') chain.setParagraph().run();
+        if (command === 'codeBlock') chain.toggleCodeBlock().run();
+        if (/^heading[234]$/.test(command)) {
+            chain.setHeading({ level: Number(command.slice(-1)) }).run();
+        }
+    });
+
+    wrapper.querySelectorAll('[data-editor-align]').forEach((button) => {
+        button.addEventListener('click', () => {
+            editor.chain().focus().setTextAlign(button.dataset.editorAlign).run();
+        });
+    });
+
+    wrapper.querySelector('[data-editor-color]')?.addEventListener('input', (event) => {
+        editor.chain().focus().setColor(event.target.value).run();
+    });
+
+    wrapper.querySelector('[data-editor-highlight]')?.addEventListener('input', (event) => {
+        editor.chain().focus().setHighlight({ color: event.target.value }).run();
+    });
+
+    wrapper.querySelectorAll('[data-editor-link]').forEach((button) => button.addEventListener('click', () => {
         const previous = editor.getAttributes('link').href || '';
         const value = window.prompt('Dirección del enlace', previous);
 
@@ -142,13 +249,51 @@ document.querySelectorAll('[data-tiptap]').forEach((wrapper) => {
         }
 
         editor.chain().focus().extendMarkRange('link').setLink({ href: normaliseUrl(value) }).run();
+    }));
+
+    wrapper.querySelector('[data-editor-video]')?.addEventListener('click', () => {
+        const value = window.prompt('Pega la dirección de un video de YouTube');
+        if (!value) return;
+
+        try {
+            const url = new URL(normaliseUrl(value));
+            const allowedHosts = ['youtube.com', 'www.youtube.com', 'm.youtube.com', 'youtu.be', 'music.youtube.com'];
+
+            if (!allowedHosts.includes(url.hostname.toLowerCase())) throw new Error('unsupported-host');
+
+            editor.chain().focus().setYoutubeVideo({ src: url.toString(), width: 800, height: 450 }).run();
+        } catch {
+            window.alert('Ingresa una dirección válida de YouTube.');
+        }
+    });
+
+    wrapper.querySelector('[data-editor-clear]')?.addEventListener('click', () => {
+        editor.chain().focus().unsetAllMarks().clearNodes().run();
+    });
+
+    wrapper.querySelector('[data-editor-fullscreen]')?.addEventListener('click', () => {
+        const enabled = wrapper.classList.toggle('is-fullscreen');
+        document.body.classList.toggle('has-editor-fullscreen', enabled);
+        wrapper.querySelector('[data-editor-fullscreen] span').textContent = enabled
+            ? 'Salir de pantalla completa'
+            : 'Pantalla completa';
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape' || !wrapper.classList.contains('is-fullscreen')) return;
+
+        wrapper.classList.remove('is-fullscreen');
+        document.body.classList.remove('has-editor-fullscreen');
+        wrapper.querySelector('[data-editor-fullscreen] span').textContent = 'Pantalla completa';
     });
 
     const dialog = document.querySelector('[data-media-dialog]');
     const inlineMediaInput = form.querySelector('[name="inline_media_ids"]');
     const inlineIds = new Set((inlineMediaInput?.value || '').split(',').filter(Boolean));
 
-    wrapper.querySelector('[data-editor-image]')?.addEventListener('click', () => dialog?.showModal());
+    wrapper.querySelectorAll('[data-editor-image]').forEach((button) => {
+        button.addEventListener('click', () => dialog?.showModal());
+    });
     dialog?.querySelector('[data-dialog-close]')?.addEventListener('click', () => dialog.close());
     dialog?.querySelectorAll('[data-insert-media]').forEach((button) => {
         button.addEventListener('click', () => {

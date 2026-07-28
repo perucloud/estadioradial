@@ -232,24 +232,28 @@ Crear `media` con:
 
 #### Pantallas
 
-- Tabla con filtros por estado, categoría, autor y fecha.
+- Tabla con filtros por estado y categoría, selector de 10, 20, 50 o 100
+  registros y paginación conservando la consulta.
 - Formulario de creación y edición.
 - Selector de categoría, etiquetas y multimedia.
 - **Tiptap Rich Text Editor** como editor oficial del cuerpo de noticias.
 - Vista previa sin publicar.
 - Acciones de enviar a revisión, aprobar, programar, publicar y archivar.
 - Duplicar noticia.
+- Acciones visuales de vista previa, edición y eliminación recuperable.
+- Papelera filtrable y restauración desde el mismo listado.
 
 #### Configuración de Tiptap
 
-- Barra editorial con párrafos, encabezados permitidos, negrita, cursiva,
-  subrayado, listas, citas, enlaces, tablas y deshacer/rehacer.
+- Barra editorial profesional con párrafos, encabezados permitidos, negrita,
+  cursiva, subrayado, tachado, color, resaltado, alineación, listas, citas,
+  enlaces, tablas, código y deshacer/rehacer.
 - Inserción de imágenes desde la biblioteca multimedia, conservando texto
   alternativo, pie, crédito y licencia.
-- Embeds de audio o video solo mediante bloques controlados y proveedores
-  autorizados; no se aceptarán scripts o iframes libres.
+- Videos de YouTube mediante un bloque controlado y dominio autorizado; no se
+  aceptan scripts ni iframes libres.
 - Autoguardado de borrador, aviso de cambios sin guardar, contador de palabras
-  y vista previa responsive.
+  y caracteres, modo de pantalla completa y vista previa responsive.
 - Salida HTML semántica y compatible con el diseño del artículo público.
 
 #### Reglas
@@ -267,6 +271,8 @@ Crear `media` con:
 - Los cambios se reflejan sin editar seeders.
 - Categorías, etiquetas, búsquedas y vistas relacionadas siguen funcionando.
 - Publicar, despublicar, programar y recuperar tienen pruebas.
+- El menú Noticias agrupa en un flyout Crear noticia, Todas las noticias,
+  Categorías y Etiquetas.
 
 ### Fase 4 — Categorías, etiquetas y portada editorial
 

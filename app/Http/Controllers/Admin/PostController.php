@@ -25,10 +25,15 @@ class PostController extends Controller
         $search = mb_substr(trim((string) $request->query('q')), 0, 100);
         $status = (string) $request->query('status');
         $categoryId = $request->integer('category');
+        $perPage = in_array($request->integer('per_page'), [10, 20, 50, 100], true)
+            ? $request->integer('per_page')
+            : 20;
+        $statuses = [...$this->statuses(), 'trash'];
 
         return view('admin.posts.index', [
             'posts' => Post::query()
                 ->with(['category', 'media', 'creator'])
+                ->when($status === 'trash', fn (Builder $query) => $query->onlyTrashed())
                 ->when($search !== '', fn (Builder $query) => $query
                     ->where(fn (Builder $query) => $query
                         ->where('title', 'like', "%{$search}%")
@@ -36,13 +41,14 @@ class PostController extends Controller
                 ->when(in_array($status, $this->statuses(), true), fn (Builder $query) => $query->where('status', $status))
                 ->when($categoryId > 0, fn (Builder $query) => $query->where('category_id', $categoryId))
                 ->latest('updated_at')
-                ->paginate(20)
+                ->paginate($perPage)
                 ->withQueryString(),
             'categories' => Category::query()->orderBy('name')->get(),
-            'statuses' => $this->statuses(),
+            'statuses' => $statuses,
             'search' => $search,
             'selectedStatus' => $status,
             'selectedCategory' => $categoryId,
+            'perPage' => $perPage,
         ]);
     }
 
@@ -142,6 +148,27 @@ class PostController extends Controller
         $this->log($request, 'post.restored', $post);
 
         return back()->with('status', 'Noticia recuperada como borrador.');
+    }
+
+    public function destroy(Request $request, Post $post): RedirectResponse
+    {
+        $this->log($request, 'post.deleted', $post, [
+            'status' => $post->status,
+            'title' => $post->title,
+        ]);
+        $post->delete();
+
+        return back()->with('status', 'Noticia enviada a la papelera.');
+    }
+
+    public function restoreDeleted(Request $request, Post $post): RedirectResponse
+    {
+        abort_unless($post->trashed(), 404);
+
+        $post->restore();
+        $this->log($request, 'post.restored_from_trash', $post);
+
+        return back()->with('status', 'Noticia restaurada desde la papelera.');
     }
 
     public function duplicate(Request $request, Post $post): RedirectResponse

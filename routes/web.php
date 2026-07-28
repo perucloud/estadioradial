@@ -72,6 +72,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
             Route::post('/noticias/{post}/recuperar', [AdminPostController::class, 'restore'])
                 ->middleware('permission:news.update')
                 ->name('posts.restore');
+            Route::delete('/noticias/{post}', [AdminPostController::class, 'destroy'])
+                ->middleware('permission:news.update')
+                ->name('posts.destroy');
+            Route::post('/noticias/{post}/restaurar-papelera', [AdminPostController::class, 'restoreDeleted'])
+                ->withTrashed()
+                ->middleware('permission:news.update')
+                ->name('posts.restore-deleted');
             Route::post('/noticias/{post}/duplicar', [AdminPostController::class, 'duplicate'])
                 ->middleware('permission:news.create')
                 ->name('posts.duplicate');

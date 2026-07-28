@@ -11,6 +11,22 @@ Cada noticia dispone de `editorial_priority`, fijación temporal mediante
 `pinned_until`, ocultamiento de portada, fuente, enlace, crédito y licencia de
 imagen. Los asuntos específicos se clasifican con etiquetas.
 
+## Edición y listado administrativo
+
+El flyout **Noticias** del dashboard reúne creación, listado, categorías y
+etiquetas. El listado admite 10, 20, 50 o 100 registros por página, conserva
+los filtros durante la paginación y ofrece acciones iconográficas de vista
+previa, edición y eliminación.
+
+Eliminar utiliza `SoftDeletes`: la noticia pasa al filtro **Papelera** y puede
+restaurarse sin perder contenido, relaciones ni metadatos.
+
+Tiptap ofrece formato editorial, color y resaltado controlados, alineación,
+listas, citas, enlaces, biblioteca Media, tablas, código, YouTube y pantalla
+completa. El backend vuelve a sanitizar siempre el HTML. Solo conserva
+propiedades visuales permitidas y únicamente admite iframes de YouTube o
+YouTube Privacy Enhanced Mode.
+
 ## Cambiar la prioridad
 
 El responsable del portal administra categorías, relevancia y orden desde:

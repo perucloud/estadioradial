@@ -17,40 +17,163 @@
 
         <nav class="admin-nav" aria-label="Administración">
             <a class="{{ request()->routeIs('admin.dashboard') ? 'is-active' : '' }}" href="{{ route('admin.dashboard') }}">
-                <span aria-hidden="true">⌂</span> Resumen
+                <x-admin-nav-icon name="dashboard2.png" /> Dashboard
             </a>
+
             @if (auth()->user()->hasPermission('news.view'))
-                <a class="{{ request()->routeIs('admin.posts.*') ? 'is-active' : '' }}" href="{{ route('admin.posts.index') }}">
-                    <span aria-hidden="true">▤</span> Noticias
-                </a>
+                <details
+                    class="admin-nav-group {{ request()->routeIs('admin.posts.*', 'admin.categories.*', 'admin.tags.*') ? 'is-active' : '' }}"
+                    data-admin-nav-group
+                >
+                    <summary>
+                        <x-admin-nav-icon name="lista3.png" />
+                        <span>Noticias</span>
+                        <span class="admin-nav-group__chevron" aria-hidden="true">›</span>
+                    </summary>
+                    <div class="admin-nav-flyout">
+                        <strong>Noticias</strong>
+                        @if (auth()->user()->hasPermission('news.create'))
+                            <a class="{{ request()->routeIs('admin.posts.create') ? 'is-active' : '' }}" href="{{ route('admin.posts.create') }}">
+                                <x-admin-nav-icon name="añadir.png" /> Crear noticia
+                            </a>
+                        @endif
+                        <a class="{{ request()->routeIs('admin.posts.index') ? 'is-active' : '' }}" href="{{ route('admin.posts.index') }}">
+                            <x-admin-nav-icon name="lista.png" /> Todas las noticias
+                        </a>
+                        @if (auth()->user()->hasPermission('categories.manage'))
+                            <a class="{{ request()->routeIs('admin.categories.*') ? 'is-active' : '' }}" href="{{ route('admin.categories.index') }}">
+                                <x-admin-nav-icon name="carpetas.png" /> Categorías
+                            </a>
+                            <a class="{{ request()->routeIs('admin.tags.*') ? 'is-active' : '' }}" href="{{ route('admin.tags.index') }}">
+                                <x-admin-nav-icon name="etiqueta.png" /> Etiquetas
+                            </a>
+                        @endif
+                    </div>
+                </details>
             @endif
+
             @if (auth()->user()->hasPermission('media.manage'))
                 <a class="{{ request()->routeIs('admin.media.*') ? 'is-active' : '' }}" href="{{ route('admin.media.index') }}">
-                    <span aria-hidden="true">▧</span> Multimedia
+                    <x-admin-nav-icon name="galeria.png" /> Media
                 </a>
             @endif
-            @if (auth()->user()->hasPermission('categories.manage'))
-                <a class="{{ request()->routeIs('admin.categories.*') ? 'is-active' : '' }}" href="{{ route('admin.categories.index') }}">
-                    <span aria-hidden="true">◫</span> Categorías
-                </a>
-                <a class="{{ request()->routeIs('admin.tags.*') ? 'is-active' : '' }}" href="{{ route('admin.tags.index') }}">
-                    <span aria-hidden="true">#</span> Etiquetas
-                </a>
+
+            @if (auth()->user()->hasPermission('schedule.manage'))
+                <span class="admin-nav__disabled">
+                    <x-admin-nav-icon name="lista.png" /> Programación radial <small>Próximamente</small>
+                </span>
             @endif
+
+            @if (auth()->user()->hasPermission('programs.manage'))
+                <span class="admin-nav__disabled">
+                    <x-admin-nav-icon name="lista2.png" /> Programas <small>Próximamente</small>
+                </span>
+            @endif
+
+            @if (auth()->user()->hasPermission('users.view'))
+                <span class="admin-nav__disabled">
+                    <x-admin-nav-icon name="group.png" /> Locutores <small>Próximamente</small>
+                </span>
+            @endif
+
+            @if (auth()->user()->hasPermission('advertising.manage'))
+                <span class="admin-nav__disabled">
+                    <x-admin-nav-icon name="publicidad.gif" /> Publicidad <small>Próximamente</small>
+                </span>
+                <span class="admin-nav__disabled">
+                    <x-admin-nav-icon name="baner.png" /> Banners Pub <small>Próximamente</small>
+                </span>
+            @endif
+
             @if (auth()->user()->hasPermission('appearance.manage'))
-                <a class="{{ request()->routeIs('admin.appearance.*') ? 'is-active' : '' }}" href="{{ route('admin.appearance.homepage.edit') }}">
-                    <span aria-hidden="true">◉</span> Portada
-                </a>
+                <details
+                    class="admin-nav-group {{ request()->routeIs('admin.appearance.*') ? 'is-active' : '' }}"
+                    data-admin-nav-group
+                >
+                    <summary>
+                        <x-admin-nav-icon name="color.png" />
+                        <span>Apariencia</span>
+                        <span class="admin-nav-group__chevron" aria-hidden="true">›</span>
+                    </summary>
+                    <div class="admin-nav-flyout">
+                        <strong>Apariencia</strong>
+                        <span class="admin-nav-flyout__disabled">
+                            <x-admin-nav-icon name="menu.png" /> Menú <small>Próximamente</small>
+                        </span>
+                        <a class="{{ request()->routeIs('admin.appearance.homepage.*') ? 'is-active' : '' }}" href="{{ route('admin.appearance.homepage.edit') }}">
+                            <x-admin-nav-icon name="portada.png" /> Portada
+                        </a>
+                    </div>
+                </details>
             @endif
+
+            @if (auth()->user()->hasPermission('settings.manage'))
+                <details class="admin-nav-group" data-admin-nav-group>
+                    <summary>
+                        <x-admin-nav-icon name="configurar.png" />
+                        <span>Configurar</span>
+                        <span class="admin-nav-group__chevron" aria-hidden="true">›</span>
+                    </summary>
+                    <div class="admin-nav-flyout admin-nav-flyout--long">
+                        <strong>Configuración del portal</strong>
+                        @foreach ([
+                            ['home.png', 'Logo'],
+                            ['editar1.png', 'Nombre de radio'],
+                            ['etiqueta.png', 'Slogan'],
+                            ['audio.png', 'Frecuencia'],
+                            ['home.png', 'Dirección'],
+                            ['perfil.png', 'Teléfono'],
+                            ['whatsapp.png', 'WhatsApp'],
+                            ['correo.png', 'Correo'],
+                            ['fb.png', 'Redes sociales'],
+                            ['color.png', 'Colores del sitio'],
+                            ['buscar.png', 'SEO'],
+                        ] as [$icon, $label])
+                            <span class="admin-nav-flyout__disabled">
+                                <x-admin-nav-icon :name="$icon" /> {{ $label }}
+                            </span>
+                        @endforeach
+                    </div>
+                </details>
+
+                <details class="admin-nav-group" data-admin-nav-group>
+                    <summary>
+                        <x-admin-nav-icon name="ajustes.png" />
+                        <span>Ajustes</span>
+                        <span class="admin-nav-group__chevron" aria-hidden="true">›</span>
+                    </summary>
+                    <div class="admin-nav-flyout">
+                        <strong>Ajustes del sistema</strong>
+                        @foreach ([
+                            ['etiqueta.png', 'Idioma'],
+                            ['calendar.png', 'Zona horaria'],
+                            ['calendario.png', 'Formato de fecha'],
+                            ['correo.png', 'SMTP (correo)'],
+                            ['nube.png', 'Caché'],
+                            ['tools.png', 'Mantenimiento'],
+                            ['guardar.png', 'Respaldos'],
+                            ['bloquear.png', 'Seguridad'],
+                        ] as [$icon, $label])
+                            <span class="admin-nav-flyout__disabled">
+                                <x-admin-nav-icon :name="$icon" /> {{ $label }}
+                            </span>
+                        @endforeach
+                    </div>
+                </details>
+            @endif
+
             @if (auth()->user()->hasPermission('users.view'))
                 <a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
-                    <span aria-hidden="true">♙</span> Usuarios
+                    <x-admin-nav-icon name="group.png" /> Usuarios
                 </a>
             @endif
+
             <span class="admin-nav__section">Sistema</span>
-            <a href="{{ route('home') }}" target="_blank"><span aria-hidden="true">↗</span> Ver portal</a>
+            <a href="{{ route('home') }}" target="_blank" rel="noopener">
+                <x-admin-nav-icon name="external.png" /> Ver portal
+            </a>
             <a class="{{ request()->routeIs('admin.password.*') ? 'is-active' : '' }}" href="{{ route('admin.password.change') }}">
-                <span aria-hidden="true">⚿</span> Seguridad
+                <x-admin-nav-icon name="password.png" /> Seguridad
             </a>
         </nav>
     </aside>
