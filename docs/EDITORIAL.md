@@ -29,6 +29,21 @@ php artisan editorial:prioritize locales regionales deportes --hide-missing
 El primer slug recibe la mayor relevancia. El comando valida que todos los slugs
 existan antes de guardar cambios.
 
+## Slider de noticias más vistas
+
+El slider funciona automáticamente por defecto, con un intervalo de seis
+segundos, navegación manual, pausa voluntaria y pausa durante la interacción.
+Los valores provisionales se administran en `.env`:
+
+```dotenv
+MOST_VIEWED_SLIDER_MODE=automatic
+MOST_VIEWED_SLIDER_INTERVAL=6000
+MOST_VIEWED_SLIDER_LOOP=true
+```
+
+El modo acepta `automatic` o `manual`. El dashboard podrá guardar estos mismos
+valores en su módulo de configuración sin cambiar el código del componente.
+
 ## Criterio de fuentes
 
 Los textos del lote inicial son resúmenes editoriales propios. Cada registro

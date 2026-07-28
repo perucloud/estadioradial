@@ -1142,6 +1142,14 @@ a {
     transition: background .2s ease, transform .2s ease, opacity .2s ease;
 }
 
+.slider-controls button[hidden] {
+    display: none;
+}
+
+.slider-autoplay-toggle {
+    font-size: .88rem !important;
+}
+
 .slider-controls button:hover:not(:disabled),
 .slider-controls button:focus-visible:not(:disabled) {
     background: var(--red);

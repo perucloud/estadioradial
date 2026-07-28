@@ -30,6 +30,9 @@ class PortalTest extends TestCase
             ->assertSee('Las noticias más vistas')
             ->assertSee('Conecta tu marca con nuestra audiencia')
             ->assertSee('data-news-slider', false)
+            ->assertSee('data-slider-mode="automatic"', false)
+            ->assertSee('data-slider-interval="6000"', false)
+            ->assertSee('data-slider-autoplay-toggle', false)
             ->assertSeeInOrder([
                 'aria-label="Facebook"',
                 'aria-label="X"',

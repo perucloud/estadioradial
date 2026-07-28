@@ -166,12 +166,25 @@
                             <h3 id="most-viewed-title">Las noticias más vistas</h3>
                         </div>
                         <div class="slider-controls" aria-label="Controles del slider">
+                            <button
+                                class="slider-autoplay-toggle"
+                                type="button"
+                                data-slider-autoplay-toggle
+                                aria-label="Pausar movimiento automático"
+                                aria-pressed="false"
+                            >Ⅱ</button>
                             <button type="button" data-slider-prev aria-label="Noticias anteriores" disabled>←</button>
                             <button type="button" data-slider-next aria-label="Noticias siguientes">→</button>
                         </div>
                     </div>
 
-                    <div class="slider-shell" data-news-slider>
+                    <div
+                        class="slider-shell"
+                        data-news-slider
+                        data-slider-mode="{{ config('editorial.most_viewed_slider.mode') }}"
+                        data-slider-interval="{{ config('editorial.most_viewed_slider.interval') }}"
+                        data-slider-loop="{{ config('editorial.most_viewed_slider.loop') ? 'true' : 'false' }}"
+                    >
                         <div class="popular-track" data-slider-track tabindex="0">
                             @foreach ($mostViewedPosts as $post)
                                 <article class="popular-card">
