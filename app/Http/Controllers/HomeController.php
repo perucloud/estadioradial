@@ -13,24 +13,27 @@ class HomeController extends Controller
     public function __invoke(): View
     {
         $featuredPosts = Post::query()
-            ->with('category')
+            ->with(['category', 'tags'])
             ->published()
+            ->visibleOnHome()
             ->orderByDesc('is_featured')
-            ->latest('published_at')
+            ->editorialOrder()
             ->take(4)
             ->get();
 
         $latestPosts = Post::query()
-            ->with('category')
+            ->with(['category', 'tags'])
             ->published()
+            ->visibleOnHome()
             ->whereNotIn('id', $featuredPosts->pluck('id'))
-            ->latest('published_at')
+            ->editorialOrder()
             ->take(5)
             ->get();
 
         $mostViewedPosts = Post::query()
-            ->with('category')
+            ->with(['category', 'tags'])
             ->published()
+            ->visibleOnHome()
             ->orderByDesc('views_count')
             ->latest('published_at')
             ->take(8)

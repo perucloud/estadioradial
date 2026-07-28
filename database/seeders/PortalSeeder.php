@@ -14,17 +14,28 @@ class PortalSeeder extends Seeder
     public function run(): void
     {
         $categories = collect([
-            ['name' => 'Actualidad', 'slug' => 'actualidad', 'color' => '#e5261f'],
-            ['name' => 'Política', 'slug' => 'politica', 'color' => '#d91f18'],
-            ['name' => 'Nacional', 'slug' => 'nacional', 'color' => '#ef5b2a'],
-            ['name' => 'Cultura', 'slug' => 'cultura', 'color' => '#8b3fc7'],
-            ['name' => 'Deportes', 'slug' => 'deportes', 'color' => '#18895b'],
-            ['name' => 'Economía', 'slug' => 'economia', 'color' => '#b7791f'],
-            ['name' => 'Salud', 'slug' => 'salud', 'color' => '#087f8c'],
-            ['name' => 'Tecnología', 'slug' => 'tecnologia', 'color' => '#2563a8'],
-            ['name' => 'Educación', 'slug' => 'educacion', 'color' => '#6d4bc3'],
+            ['name' => 'Regionales', 'slug' => 'regionales', 'color' => '#a61b1b', 'display_order' => 10, 'relevance_weight' => 100],
+            ['name' => 'Locales', 'slug' => 'locales', 'color' => '#c4312f', 'display_order' => 20, 'relevance_weight' => 95],
+            ['name' => 'Política', 'slug' => 'politica', 'color' => '#d91f18', 'display_order' => 30, 'relevance_weight' => 90],
+            ['name' => 'Economía', 'slug' => 'economia', 'color' => '#9a6a13', 'display_order' => 40, 'relevance_weight' => 85],
+            ['name' => 'Nacional', 'slug' => 'nacional', 'color' => '#df4b20', 'display_order' => 50, 'relevance_weight' => 80],
+            ['name' => 'Cultura', 'slug' => 'cultura', 'color' => '#7837a8', 'display_order' => 60, 'relevance_weight' => 70],
+            ['name' => 'Deportes', 'slug' => 'deportes', 'color' => '#18744f', 'display_order' => 70, 'relevance_weight' => 65],
+            ['name' => 'Educación', 'slug' => 'educacion', 'color' => '#6046ad', 'display_order' => 80, 'relevance_weight' => 60],
+            ['name' => 'Salud', 'slug' => 'salud', 'color' => '#08727d', 'display_order' => 90, 'relevance_weight' => 55],
+            ['name' => 'Tecnología', 'slug' => 'tecnologia', 'color' => '#235d98', 'display_order' => 100, 'relevance_weight' => 50],
+            ['name' => 'Actualidad', 'slug' => 'actualidad', 'color' => '#e5261f', 'display_order' => 110, 'relevance_weight' => 45],
         ])->mapWithKeys(function (array $data) {
-            $category = Category::query()->updateOrCreate(['slug' => $data['slug']], $data);
+            $category = Category::query()->updateOrCreate(
+                ['slug' => $data['slug']],
+                $data + [
+                    'is_active' => true,
+                    'show_in_menu' => true,
+                    'show_on_home' => true,
+                    'homepage_limit' => 4,
+                    'homepage_layout' => 'standard',
+                ],
+            );
 
             return [$data['slug'] => $category];
         });

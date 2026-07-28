@@ -20,12 +20,33 @@
                         {{ $post->published_at->translatedFormat('d \d\e F \d\e Y, H:i') }}
                     </time>
                 </div>
+                @if ($post->tags->isNotEmpty())
+                    <div class="article__tags" aria-label="Temas relacionados">
+                        @foreach ($post->tags as $tag)
+                            <span>#{{ $tag->name }}</span>
+                        @endforeach
+                    </div>
+                @endif
             </div>
         </header>
 
         <div class="container container--article">
             <img class="article__cover" src="{{ $post->image }}" alt="">
+            @if ($post->image_credit || $post->image_license)
+                <p class="article__image-credit">
+                    {{ collect([$post->image_credit, $post->image_license])->filter()->join(' · ') }}
+                </p>
+            @endif
             <div class="article__body">{!! $post->body !!}</div>
+            @if ($post->source_name && $post->source_url)
+                <aside class="article__source">
+                    <span>Fuente consultada</span>
+                    <a href="{{ $post->source_url }}" target="_blank" rel="noopener noreferrer nofollow">
+                        {{ $post->source_name }} ↗
+                    </a>
+                    <p>Estación Radial elaboró un resumen editorial propio a partir de la información enlazada.</p>
+                </aside>
+            @endif
         </div>
     </article>
 
@@ -44,4 +65,3 @@
         </section>
     @endif
 @endsection
-
