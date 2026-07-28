@@ -12,13 +12,17 @@
 <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
 
-    <x-header :categories="$navigationCategories" :social-links="$socialLinks" />
+    <x-header
+        :categories="$navigationCategories"
+        :social-links="$socialLinks"
+        :contact-email="$contactEmail"
+    />
 
     <main id="contenido">
         @yield('content')
     </main>
 
-    <x-footer />
+    <x-footer :contact-email="$contactEmail" />
     <x-player :stream="$globalAudioStream" />
 
     @stack('scripts')

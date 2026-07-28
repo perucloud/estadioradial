@@ -70,6 +70,11 @@ alternativo, URL de destino, orden, estado y fechas de vigencia. El dashboard
 visual deberá editar estos registros y no introducir contenido directamente en
 las plantillas.
 
+El correo público se obtiene de `site.contact.email`. Este dato alimenta el
+acceso de correo del menú hamburguesa y del pie de página. Ambos lugares también
+ofrecen un acceso a `/admin`; cuando no existe una sesión autenticada, el
+middleware conduce al formulario de ingreso y conserva el destino solicitado.
+
 Las páginas de noticias, categorías, búsquedas, programas y programación usan
 la configuración independiente `section.sidebar` y anuncios con la ubicación
 `section_sidebar`. En escritorio, el modo `adaptive` compara la altura del

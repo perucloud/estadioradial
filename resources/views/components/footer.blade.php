@@ -1,3 +1,5 @@
+@props(['contactEmail'])
+
 <footer class="site-footer">
     <div class="container footer-grid">
         <div>
@@ -22,8 +24,7 @@
         <div>
             <h2>Contacto</h2>
             <span>Ciudad, Perú</span>
-            <a href="mailto:contacto@estacionradial.test">contacto@estacionradial.test</a>
-            <span>Redes sociales próximamente</span>
+            <x-utility-access-links :email="$contactEmail" surface="footer" />
         </div>
     </div>
     <div class="footer-bottom">
@@ -33,4 +34,3 @@
         </div>
     </div>
 </footer>
-

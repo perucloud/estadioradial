@@ -31,6 +31,9 @@ class AppServiceProvider extends ServiceProvider
                 'instagram' => 'https://www.instagram.com/',
                 'youtube' => 'https://www.youtube.com/',
             ]);
+            $contact = PortalSetting::value('site.contact', []);
+            $contactEmail = filter_var($contact['email'] ?? null, FILTER_VALIDATE_EMAIL)
+                ?: 'contacto@estacionradial.test';
 
             $view->with([
                 'navigationCategories' => Category::query()
@@ -45,6 +48,7 @@ class AppServiceProvider extends ServiceProvider
                     ->orderBy('sort_order')
                     ->first(),
                 'socialLinks' => $socialLinks,
+                'contactEmail' => $contactEmail,
             ]);
         });
     }

@@ -1,4 +1,4 @@
-@props(['categories', 'socialLinks'])
+@props(['categories', 'socialLinks', 'contactEmail'])
 
 <header class="site-header">
     <div class="container site-header__main">
@@ -77,13 +77,7 @@
 
     <div id="header-menu-panel" class="header-panel menu-panel" hidden>
         <div class="container menu-panel__grid">
-            <nav aria-label="Accesos del menú">
-                <span>Explorar</span>
-                <a href="{{ route('home') }}">Inicio</a>
-                <a href="{{ route('live') }}">En vivo</a>
-                <a href="{{ route('programs.index') }}">Programas</a>
-                <a href="{{ route('schedule') }}">Programación</a>
-            </nav>
+            <x-utility-access-links :email="$contactEmail" surface="menu" />
             <nav aria-label="Categorías de noticias">
                 <span>Categorías</span>
                 @foreach ($categories as $category)

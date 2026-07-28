@@ -26,6 +26,17 @@ class AppearanceSeeder extends Seeder
         );
 
         PortalSetting::query()->firstOrCreate(
+            ['key' => 'site.contact'],
+            [
+                'group' => 'site',
+                'value' => [
+                    'email' => 'contacto@estacionradial.test',
+                ],
+                'is_public' => true,
+            ],
+        );
+
+        PortalSetting::query()->firstOrCreate(
             ['key' => 'article.sidebar'],
             [
                 'group' => 'article',

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Models\Program;
 use Database\Seeders\PortalSeeder;
@@ -57,6 +58,26 @@ class PortalTest extends TestCase
             $mostViewed->slug
         );
         $this->assertSame(5570, $mostViewed->views_count);
+    }
+
+    public function test_menu_and_footer_show_contact_and_dashboard_accesses(): void
+    {
+        PortalSetting::put('site.contact', [
+            'email' => 'redaccion@estacionradial.test',
+        ], 'site');
+
+        $response = $this->get('/')->assertOk();
+        $content = $response->getContent();
+
+        $response
+            ->assertDontSee('<span>Explorar</span>', false)
+            ->assertSee('Correo electrónico')
+            ->assertSee('Acceder al dashboard')
+            ->assertSee('mailto:redaccion@estacionradial.test', false)
+            ->assertSee('href="'.route('admin.dashboard').'"', false);
+
+        $this->assertSame(2, substr_count($content, 'mailto:redaccion@estacionradial.test'));
+        $this->assertSame(2, substr_count($content, 'href="'.route('admin.dashboard').'"'));
     }
 
     public function test_news_can_be_searched_from_the_header(): void
