@@ -4,19 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Post;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PostController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $search = mb_substr(trim((string) $request->query('q')), 0, 100);
+
+        $posts = Post::query()
+            ->with('category')
+            ->published()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query
+                        ->where('title', 'like', "%{$search}%")
+                        ->orWhere('excerpt', 'like', "%{$search}%");
+                });
+            })
+            ->latest('published_at')
+            ->paginate(9)
+            ->withQueryString();
+
         return view('posts.index', [
-            'title' => 'Últimas noticias',
-            'posts' => Post::query()
-                ->with('category')
-                ->published()
-                ->latest('published_at')
-                ->paginate(9),
+            'title' => $search === '' ? 'Últimas noticias' : "Resultados para “{$search}”",
+            'posts' => $posts,
+            'search' => $search,
         ]);
     }
 

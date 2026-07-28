@@ -114,6 +114,7 @@ a {
 }
 
 .site-header__main {
+    gap: 28px;
     min-height: 88px;
 }
 
@@ -197,20 +198,182 @@ a {
     transform: scaleX(1);
 }
 
-.menu-toggle {
-    display: none;
-    width: 44px;
-    height: 44px;
-    padding: 10px;
-    background: transparent;
-    border: 0;
+.header-tools,
+.social-links {
+    display: flex;
+    align-items: center;
 }
 
-.menu-toggle span:not(.sr-only) {
+.header-tools {
+    gap: 10px;
+}
+
+.social-links {
+    gap: 15px;
+    margin-right: 5px;
+}
+
+.social-links a {
+    display: grid;
+    width: 23px;
+    height: 34px;
+    color: #8a8d92;
+    place-items: center;
+    transition: color .2s ease, transform .2s ease;
+}
+
+.social-links a:hover,
+.social-links a:focus-visible {
+    color: var(--red);
+    transform: translateY(-2px);
+}
+
+.social-links svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+}
+
+.social-links a:nth-child(2) svg,
+.social-links a:nth-child(4) svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+}
+
+.social-links__play {
+    fill: var(--white);
+}
+
+.header-action {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    color: #25282c;
+    background: #ececed;
+    border: 0;
+    border-radius: 5px;
+    cursor: pointer;
+    place-items: center;
+    transition: color .2s ease, background .2s ease;
+}
+
+.header-action:hover,
+.header-action:focus-visible,
+.header-action[aria-expanded='true'] {
+    color: var(--white);
+    background: var(--red);
+}
+
+.search-toggle svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 2.4;
+}
+
+.menu-toggle {
+    padding: 10px;
+}
+
+.menu-toggle span {
     display: block;
-    height: 2px;
-    margin: 5px 0;
-    background: var(--ink);
+    width: 22px;
+    height: 3px;
+    margin: 2px 0;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.menu-toggle[aria-expanded='true'] span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.menu-toggle[aria-expanded='true'] span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle[aria-expanded='true'] span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.header-panel {
+    color: var(--ink);
+    background: var(--white);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 14px 28px rgb(0 0 0 / 10%);
+}
+
+.search-panel .container {
+    padding-block: 18px;
+}
+
+.search-panel form {
+    display: flex;
+    gap: 10px;
+}
+
+.search-panel input {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 15px;
+    border: 1px solid #cfd2d5;
+    border-radius: 6px;
+    outline: none;
+}
+
+.search-panel input:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgb(217 37 27 / 12%);
+}
+
+.search-panel button {
+    padding: 10px 22px;
+    color: var(--white);
+    background: var(--red);
+    border: 0;
+    border-radius: 6px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.menu-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 50px;
+    padding-block: 25px 30px;
+}
+
+.menu-panel nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px 20px;
+}
+
+.menu-panel nav > span {
+    flex: 0 0 100%;
+    color: var(--red);
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.menu-panel a {
+    font-size: .9rem;
+    font-weight: 700;
+}
+
+.menu-panel a:hover,
+.menu-panel a:focus-visible {
+    color: var(--red);
 }
 
 .live-bar {
@@ -1080,6 +1243,16 @@ a {
     font-weight: 700;
 }
 
+@media (max-width: 1120px) {
+    .social-links {
+        display: none;
+    }
+
+    .main-nav {
+        gap: 20px;
+    }
+}
+
 @media (max-width: 980px) {
     .main-nav {
         gap: 18px;
@@ -1139,32 +1312,21 @@ a {
         min-height: 72px;
     }
 
+    .header-tools {
+        margin-left: auto;
+    }
+
     .menu-toggle {
-        display: block;
-    }
-
-    .main-nav {
-        position: absolute;
-        top: 72px;
-        right: 0;
-        left: 0;
-        display: none;
-        align-items: stretch;
-        padding: 12px 20px 24px;
-        background: var(--white);
-        box-shadow: var(--shadow);
-    }
-
-    .main-nav.is-open {
         display: grid;
     }
 
-    .main-nav a {
-        padding: 10px;
+    .main-nav {
+        display: none;
     }
 
-    .main-nav a::after {
-        bottom: 3px;
+    .menu-panel__grid {
+        grid-template-columns: 1fr;
+        gap: 22px;
     }
 
     .live-bar__inner {

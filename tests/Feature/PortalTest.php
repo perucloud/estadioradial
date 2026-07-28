@@ -26,7 +26,25 @@ class PortalTest extends TestCase
             ->assertSee('Últimas noticias')
             ->assertSee('Programas')
             ->assertSee('Ahora en vivo')
-            ->assertSee('Festival reúne música, memoria y tradiciones de distintas regiones');
+            ->assertSee('Festival reúne música, memoria y tradiciones de distintas regiones')
+            ->assertSeeInOrder([
+                'aria-label="Facebook"',
+                'aria-label="X"',
+                'aria-label="TikTok"',
+                'aria-label="Instagram"',
+                'aria-label="YouTube"',
+                'aria-label="Abrir búsqueda"',
+                'aria-label="Abrir menú"',
+            ], false);
+    }
+
+    public function test_news_can_be_searched_from_the_header(): void
+    {
+        $this->get(route('posts.index', ['q' => 'cuidado responsable']))
+            ->assertOk()
+            ->assertSee('Resultados para “cuidado responsable”')
+            ->assertSee('Campaña ciudadana promueve el cuidado responsable del agua')
+            ->assertDontSee('Clubes locales se preparan para una nueva jornada deportiva');
     }
 
     public function test_news_can_be_opened_from_category_and_post_slugs(): void
