@@ -120,6 +120,12 @@ class EditorialConfigurationTest extends TestCase
         $this->get(route('posts.show', [$post->category, $post]))
             ->assertOk()
             ->assertSeeInOrder([
+                'src="'.$post->image.'"',
+                '<h1>'.$post->title.'</h1>',
+                $post->excerpt,
+                'Por '.$post->author,
+            ], false)
+            ->assertSeeInOrder([
                 'Las más leídas',
                 'Últimas noticias',
                 'Publicidad',

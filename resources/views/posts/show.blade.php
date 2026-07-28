@@ -5,31 +5,6 @@
 
 @section('content')
     <article class="article">
-        <header class="article__header">
-            <div class="container container--article">
-                <a
-                    class="category-pill"
-                    style="--category-color: {{ $post->category->color }}"
-                    href="{{ route('posts.category', $post->category) }}"
-                >{{ $post->category->name }}</a>
-                <h1>{{ $post->title }}</h1>
-                <p class="article__lead">{{ $post->excerpt }}</p>
-                <div class="article__meta">
-                    <span>Por {{ $post->author }}</span>
-                    <time datetime="{{ $post->published_at->toIso8601String() }}">
-                        {{ $post->published_at->translatedFormat('d \d\e F \d\e Y, H:i') }}
-                    </time>
-                </div>
-                @if ($post->tags->isNotEmpty())
-                    <div class="article__tags" aria-label="Temas relacionados">
-                        @foreach ($post->tags as $tag)
-                            <span>#{{ $tag->name }}</span>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-        </header>
-
         <div class="container article-layout">
             <div class="article-content">
                 <img class="article__cover" src="{{ $post->image }}" alt="">
@@ -38,6 +13,31 @@
                         {{ collect([$post->image_credit, $post->image_license])->filter()->join(' · ') }}
                     </p>
                 @endif
+                <header class="article__header">
+                    <div class="article__kicker">
+                        <a
+                            class="category-pill"
+                            style="--category-color: {{ $post->category->color }}"
+                            href="{{ route('posts.category', $post->category) }}"
+                        >{{ $post->category->name }}</a>
+                        <time datetime="{{ $post->published_at->toIso8601String() }}">
+                            {{ $post->published_at->translatedFormat('d \d\e F \d\e Y, H:i') }}
+                        </time>
+                    </div>
+                    <h1>{{ $post->title }}</h1>
+                    <p class="article__lead">{{ $post->excerpt }}</p>
+                    <div class="article__meta">
+                        <span>Por {{ $post->author }}</span>
+                        <span>{{ number_format($post->views_count) }} lecturas</span>
+                    </div>
+                    @if ($post->tags->isNotEmpty())
+                        <div class="article__tags" aria-label="Temas relacionados">
+                            @foreach ($post->tags as $tag)
+                                <span>#{{ $tag->name }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+                </header>
                 <div class="article__body">{!! $post->body !!}</div>
                 @if ($post->source_name && $post->source_url)
                     <aside class="article__source">
