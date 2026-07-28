@@ -1,9 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\HomepageController as AdminHomepageController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\PasswordController as AdminPasswordController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
+use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -72,6 +75,25 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
             Route::post('/noticias/{post}/duplicar', [AdminPostController::class, 'duplicate'])
                 ->middleware('permission:news.create')
                 ->name('posts.duplicate');
+        });
+
+        Route::middleware('permission:categories.manage')->group(function () {
+            Route::get('/categorias', [AdminCategoryController::class, 'index'])->name('categories.index');
+            Route::post('/categorias', [AdminCategoryController::class, 'store'])->name('categories.store');
+            Route::put('/categorias/{category:id}', [AdminCategoryController::class, 'update'])->name('categories.update');
+            Route::delete('/categorias/{category:id}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
+            Route::post('/categorias/orden', [AdminCategoryController::class, 'reorder'])->name('categories.reorder');
+
+            Route::get('/etiquetas', [AdminTagController::class, 'index'])->name('tags.index');
+            Route::post('/etiquetas', [AdminTagController::class, 'store'])->name('tags.store');
+            Route::put('/etiquetas/{tag:id}', [AdminTagController::class, 'update'])->name('tags.update');
+            Route::post('/etiquetas/{tag:id}/combinar', [AdminTagController::class, 'merge'])->name('tags.merge');
+            Route::delete('/etiquetas/{tag:id}', [AdminTagController::class, 'destroy'])->name('tags.destroy');
+        });
+
+        Route::middleware('permission:appearance.manage')->group(function () {
+            Route::get('/apariencia/portada', [AdminHomepageController::class, 'edit'])->name('appearance.homepage.edit');
+            Route::put('/apariencia/portada', [AdminHomepageController::class, 'update'])->name('appearance.homepage.update');
         });
 
         Route::middleware('permission:users.view')->group(function () {

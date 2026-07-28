@@ -106,7 +106,7 @@
                 <div class="latest-layout">
                     <article class="latest-lead">
                         <a class="latest-lead__image" href="{{ route('posts.show', [$latestLead->category, $latestLead]) }}">
-                            <img src="{{ $latestLead->image }}" alt="" loading="lazy">
+                            <img src="{{ $latestLead->coverUrl('card') }}" alt="{{ $latestLead->media?->alt_text ?? '' }}" loading="lazy">
                             <span class="latest-lead__status">Último minuto</span>
                         </a>
                         <div class="latest-lead__body">
@@ -134,7 +134,7 @@
                         @foreach ($latestPosts->skip(1)->take(4) as $post)
                             <article class="secondary-story">
                                 <a class="secondary-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
-                                    <img src="{{ $post->image }}" alt="" loading="lazy">
+                                    <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}" loading="lazy">
                                 </a>
                                 <div class="secondary-story__body">
                                     <a
@@ -185,15 +185,15 @@
                     <div
                         class="slider-shell"
                         data-news-slider
-                        data-slider-mode="{{ config('editorial.most_viewed_slider.mode') }}"
-                        data-slider-interval="{{ config('editorial.most_viewed_slider.interval') }}"
-                        data-slider-loop="{{ config('editorial.most_viewed_slider.loop') ? 'true' : 'false' }}"
+                        data-slider-mode="{{ $sliderSettings['mode'] }}"
+                        data-slider-interval="{{ $sliderSettings['interval'] }}"
+                        data-slider-loop="{{ $sliderSettings['loop'] ? 'true' : 'false' }}"
                     >
                         <div class="popular-track" data-slider-track tabindex="0">
                             @foreach ($mostViewedPosts as $post)
                                 <article class="popular-card">
                                     <a class="popular-card__image" href="{{ route('posts.show', [$post->category, $post]) }}">
-                                        <img src="{{ $post->image }}" alt="" loading="lazy">
+                                        <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}" loading="lazy">
                                         <span>{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                                     </a>
                                     <div class="popular-card__body">

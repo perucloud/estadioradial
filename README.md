@@ -5,9 +5,10 @@ video en línea.
 
 ## Estado
 
-El proyecto se encuentra en su fase inicial. La descarga original realizada con
-HTTrack se conserva localmente en `oldweb/` como referencia y no forma parte de
-la aplicación ni del despliegue.
+Los hitos de acceso, gestión editorial y configuración de portada están
+implementados. La descarga original realizada con HTTrack se conserva
+localmente en `oldweb/` como referencia y no forma parte de la aplicación ni
+del despliegue.
 
 El alcance y las decisiones técnicas están documentados en:
 
@@ -17,6 +18,7 @@ El alcance y las decisiones técnicas están documentados en:
 - [`docs/ADMIN_PLAN.md`](docs/ADMIN_PLAN.md)
 - [`docs/ADMIN_SETUP.md`](docs/ADMIN_SETUP.md)
 - [`docs/EDITORIAL_SETUP.md`](docs/EDITORIAL_SETUP.md)
+- [`docs/EDITORIAL.md`](docs/EDITORIAL.md)
 
 ## Entorno local
 

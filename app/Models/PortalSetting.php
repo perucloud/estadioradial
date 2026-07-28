@@ -23,4 +23,16 @@ class PortalSetting extends Model
     {
         return static::query()->where('key', $key)->value('value') ?? $default;
     }
+
+    public static function put(string $key, mixed $value, string $group, bool $isPublic = true): static
+    {
+        return static::query()->updateOrCreate(
+            ['key' => $key],
+            [
+                'group' => $group,
+                'value' => $value,
+                'is_public' => $isPublic,
+            ],
+        );
+    }
 }

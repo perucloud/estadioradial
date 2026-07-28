@@ -6,7 +6,7 @@
 | --- | --- |
 | A — Acceso, seguridad, roles y dashboard base | Implementado |
 | B — Multimedia y noticias con Tiptap | Implementado |
-| C — Categorías, hero y sliders | Pendiente |
+| C — Categorías, hero y sliders | Implementado |
 | D — Programas, horarios y streaming | Pendiente |
 | E — Publicidad, sidebars y apariencia | Pendiente |
 | F — Estadísticas, auditoría, SEO y mantenimiento | Pendiente |
@@ -604,13 +604,13 @@ pueda, sin modificar código:
 
 ## 12. Próximo bloque a ejecutar
 
-Los hitos A y B están implementados. El siguiente bloque es el **Hito C**:
+Los hitos A, B y C están implementados. El siguiente bloque es el **Hito D**:
 
-1. CRUD y orden editorial de categorías;
-2. gestión de etiquetas;
-3. selección y orden de noticias del hero;
-4. modo, intervalo, bucle y efectos del hero;
-5. configuración del slider de noticias más vistas;
-6. pruebas de portada, prioridades y visibilidad.
+1. CRUD de programas y perfiles de locutores;
+2. programación semanal sin cruces de horario;
+3. configuración de señales de audio;
+4. configuración opcional de video;
+5. estado y señal alternativa cuando el proveedor no esté disponible;
+6. pruebas de reproductor, horarios y permisos de locutor.
 
 La PWA y las estadísticas avanzadas permanecen en sus hitos posteriores.

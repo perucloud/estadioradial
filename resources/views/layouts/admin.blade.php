@@ -29,6 +29,19 @@
                     <span aria-hidden="true">▧</span> Multimedia
                 </a>
             @endif
+            @if (auth()->user()->hasPermission('categories.manage'))
+                <a class="{{ request()->routeIs('admin.categories.*') ? 'is-active' : '' }}" href="{{ route('admin.categories.index') }}">
+                    <span aria-hidden="true">◫</span> Categorías
+                </a>
+                <a class="{{ request()->routeIs('admin.tags.*') ? 'is-active' : '' }}" href="{{ route('admin.tags.index') }}">
+                    <span aria-hidden="true">#</span> Etiquetas
+                </a>
+            @endif
+            @if (auth()->user()->hasPermission('appearance.manage'))
+                <a class="{{ request()->routeIs('admin.appearance.*') ? 'is-active' : '' }}" href="{{ route('admin.appearance.homepage.edit') }}">
+                    <span aria-hidden="true">◉</span> Portada
+                </a>
+            @endif
             @if (auth()->user()->hasPermission('users.view'))
                 <a class="{{ request()->routeIs('admin.users.*') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">
                     <span aria-hidden="true">♙</span> Usuarios

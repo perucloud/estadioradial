@@ -221,3 +221,34 @@ document.querySelectorAll('[data-media-upload]').forEach((form) => {
         });
     });
 });
+
+document.querySelectorAll('[data-sortable-categories]').forEach((body) => {
+    let dragged;
+
+    const updateOrder = () => {
+        [...body.querySelectorAll('[data-category-row]')].forEach((row, index) => {
+            const input = row.querySelector('.order-input');
+            if (input) input.value = (index + 1) * 10;
+        });
+    };
+
+    body.querySelectorAll('[data-category-row]').forEach((row) => {
+        row.addEventListener('dragstart', () => {
+            dragged = row;
+            row.classList.add('is-dragging');
+        });
+        row.addEventListener('dragend', () => {
+            row.classList.remove('is-dragging');
+            dragged = undefined;
+            updateOrder();
+        });
+        row.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            if (!dragged || dragged === row) return;
+
+            const bounds = row.getBoundingClientRect();
+            const insertAfter = event.clientY > bounds.top + (bounds.height / 2);
+            body.insertBefore(dragged, insertAfter ? row.nextSibling : row);
+        });
+    });
+});

@@ -39,6 +39,8 @@ class PostController extends Controller
 
     public function category(Category $category): View
     {
+        abort_unless($category->is_active, 404);
+
         return view('posts.index', [
             'title' => $category->name,
             'category' => $category,

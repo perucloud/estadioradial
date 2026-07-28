@@ -31,7 +31,7 @@ class HomeController extends Controller
         $heroNewsLimit = min(8, max(4, (int) $heroSettings['news_limit']));
 
         $featuredQuery = Post::query()
-            ->with(['category', 'tags'])
+            ->with(['category', 'tags', 'media'])
             ->published()
             ->visibleOnHome()
             ->orderByDesc('is_featured')
@@ -69,7 +69,7 @@ class HomeController extends Controller
         }
 
         $latestPosts = Post::query()
-            ->with(['category', 'tags'])
+            ->with(['category', 'tags', 'media'])
             ->published()
             ->visibleOnHome()
             ->whereNotIn('id', $featuredPosts->pluck('id'))
@@ -77,13 +77,30 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
+        $sliderDefaults = [
+            'mode' => 'automatic',
+            'interval' => 6000,
+            'loop' => true,
+            'news_limit' => 8,
+            'period_days' => 30,
+        ];
+        $storedSliderSettings = PortalSetting::value('home.most_viewed_slider', []);
+        $sliderSettings = array_replace(
+            $sliderDefaults,
+            is_array($storedSliderSettings) ? $storedSliderSettings : [],
+        );
+        $sliderLimit = min(12, max(4, (int) $sliderSettings['news_limit']));
+        $sliderPeriod = max(0, (int) $sliderSettings['period_days']);
+
         $mostViewedPosts = Post::query()
-            ->with(['category', 'tags'])
+            ->with(['category', 'tags', 'media'])
             ->published()
             ->visibleOnHome()
+            ->when($sliderPeriod > 0, fn ($query) => $query
+                ->where('published_at', '>=', now()->subDays($sliderPeriod)))
             ->orderByDesc('views_count')
             ->latest('published_at')
-            ->take(8)
+            ->take($sliderLimit)
             ->get();
 
         $programs = Program::query()
@@ -112,6 +129,7 @@ class HomeController extends Controller
             'heroSettings' => $heroSettings,
             'latestPosts' => $latestPosts,
             'mostViewedPosts' => $mostViewedPosts,
+            'sliderSettings' => $sliderSettings,
             'advertisements' => [
                 [
                     'eyebrow' => 'Espacio disponible',

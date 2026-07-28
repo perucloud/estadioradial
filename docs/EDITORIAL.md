@@ -13,8 +13,14 @@ imagen. Los asuntos específicos se clasifican con etiquetas.
 
 ## Cambiar la prioridad
 
-Hasta incorporar la interfaz visual del panel, el responsable del portal puede
-definir el orden desde la terminal:
+El responsable del portal administra categorías, relevancia y orden desde:
+
+```text
+/admin/categorias
+```
+
+La pantalla permite crear, editar, activar, ocultar y ordenar categorías. Como
+alternativa operativa, el orden también puede definirse desde la terminal:
 
 ```bash
 php artisan editorial:prioritize regionales locales politica economia nacional
@@ -31,18 +37,23 @@ existan antes de guardar cambios.
 
 ## Slider de noticias más vistas
 
-El slider funciona automáticamente por defecto, con un intervalo de seis
-segundos, navegación manual, pausa voluntaria y pausa durante la interacción.
-Los valores provisionales se administran en `.env`:
+El slider se configura en:
 
-```dotenv
-MOST_VIEWED_SLIDER_MODE=automatic
-MOST_VIEWED_SLIDER_INTERVAL=6000
-MOST_VIEWED_SLIDER_LOOP=true
+```text
+/admin/apariencia/portada
 ```
 
-El modo acepta `automatic` o `manual`. El dashboard podrá guardar estos mismos
-valores en su módulo de configuración sin cambiar el código del componente.
+El dashboard controla:
+
+- movimiento automático o manual;
+- intervalo;
+- repetición;
+- cantidad de tarjetas;
+- periodo de publicaciones utilizado por el ranking.
+
+La configuración se guarda en `home.most_viewed_slider`; ya no depende de
+variables de `.env`. Mientras no exista analítica histórica diaria, el periodo
+filtra la fecha de publicación y el orden utiliza las lecturas acumuladas.
 
 ## Columna lateral de artículos
 
@@ -76,6 +87,16 @@ La configuración `home.hero_rotator` controla la rotación del bloque principal
 - `news_limit`: entre cuatro y ocho noticias participantes;
 - `selection_mode`: selección editorial `automatic` o `manual`;
 - `post_ids`: orden explícito cuando la selección es manual.
+
+Estos valores y las prioridades individuales de cada noticia se administran en
+`/admin/apariencia/portada`. El dashboard también permite fijar una noticia
+temporalmente, marcarla como destacada u ocultarla de la portada.
+
+## Etiquetas
+
+La ruta `/admin/etiquetas` permite crear, editar y eliminar etiquetas sin uso.
+Cuando existen duplicados, la acción **Combinar** mueve todas las relaciones a
+la etiqueta elegida antes de retirar la anterior.
 
 La interfaz ofrece flechas, indicadores, pausa, teclado y gesto horizontal. El
 autoplay se detiene durante la interacción, fuera de pantalla y al ocultar la

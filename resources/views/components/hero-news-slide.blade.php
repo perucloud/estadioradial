@@ -10,7 +10,7 @@
     <div class="hero-grid">
         <article class="lead-story">
             <a class="lead-story__image" href="{{ route('posts.show', [$leadPost->category, $leadPost]) }}">
-                <img src="{{ $leadPost->image }}" alt="">
+                <img src="{{ $leadPost->coverUrl('article') }}" alt="{{ $leadPost->media?->alt_text ?? '' }}">
                 <span
                     class="category-pill"
                     style="--category-color: {{ $leadPost->category->color }}"
@@ -41,7 +41,7 @@
             @foreach ($secondaryPosts as $post)
                 <article class="hero-story {{ $loop->even ? 'hero-story--reversed' : '' }}">
                     <a class="hero-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
-                        <img src="{{ $post->image }}" alt="">
+                        <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}">
                     </a>
                     <div class="hero-story__body">
                         <a

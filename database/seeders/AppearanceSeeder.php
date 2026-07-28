@@ -10,7 +10,7 @@ class AppearanceSeeder extends Seeder
 {
     public function run(): void
     {
-        PortalSetting::query()->updateOrCreate(
+        PortalSetting::query()->firstOrCreate(
             ['key' => 'social.links'],
             [
                 'group' => 'social',
@@ -25,7 +25,7 @@ class AppearanceSeeder extends Seeder
             ],
         );
 
-        PortalSetting::query()->updateOrCreate(
+        PortalSetting::query()->firstOrCreate(
             ['key' => 'article.sidebar'],
             [
                 'group' => 'article',
@@ -39,7 +39,7 @@ class AppearanceSeeder extends Seeder
             ],
         );
 
-        PortalSetting::query()->updateOrCreate(
+        PortalSetting::query()->firstOrCreate(
             ['key' => 'section.sidebar'],
             [
                 'group' => 'section',
@@ -54,7 +54,7 @@ class AppearanceSeeder extends Seeder
             ],
         );
 
-        PortalSetting::query()->updateOrCreate(
+        PortalSetting::query()->firstOrCreate(
             ['key' => 'home.hero_rotator'],
             [
                 'group' => 'home',
@@ -67,6 +67,21 @@ class AppearanceSeeder extends Seeder
                     'news_limit' => 4,
                     'selection_mode' => 'automatic',
                     'post_ids' => [],
+                ],
+                'is_public' => true,
+            ],
+        );
+
+        PortalSetting::query()->firstOrCreate(
+            ['key' => 'home.most_viewed_slider'],
+            [
+                'group' => 'home',
+                'value' => [
+                    'mode' => 'automatic',
+                    'interval' => 6000,
+                    'loop' => true,
+                    'news_limit' => 8,
+                    'period_days' => 30,
                 ],
                 'is_public' => true,
             ],
