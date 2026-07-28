@@ -31,6 +31,9 @@ HTTrack se conserva únicamente como referencia visual en `oldweb/`.
 - [ ] Banners y secciones destacadas de la portada.
 - [ ] Datos institucionales, redes sociales y SEO.
 
+El alcance, orden de trabajo, permisos y criterios de aceptación están
+detallados en [`ADMIN_PLAN.md`](ADMIN_PLAN.md).
+
 ## Etapas
 
 ### 0. Preparación

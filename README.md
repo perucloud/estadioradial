@@ -14,6 +14,7 @@ El alcance y las decisiones técnicas están documentados en:
 - [`docs/PLAN.md`](docs/PLAN.md)
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
 - [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)
+- [`docs/ADMIN_PLAN.md`](docs/ADMIN_PLAN.md)
 
 ## Entorno local
 
