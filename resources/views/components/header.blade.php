@@ -1,4 +1,4 @@
-@props(['categories'])
+@props(['categories', 'socialLinks'])
 
 <header class="site-header">
     <div class="container site-header__main">
@@ -19,19 +19,19 @@
 
         <div class="header-tools">
             <nav class="social-links" aria-label="Redes sociales">
-                <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+                <a href="{{ $socialLinks['facebook'] }}" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
                     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14 8h3V4h-3c-3 0-5 2-5 5v2H6v4h3v7h4v-7h3l1-4h-4V9c0-.7.3-1 1-1z"/></svg>
                 </a>
-                <a href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X">
+                <a href="{{ $socialLinks['x'] }}" target="_blank" rel="noopener noreferrer" aria-label="X">
                     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4l14 16M19 4L5 20"/></svg>
                 </a>
-                <a href="https://www.tiktok.com/" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                <a href="{{ $socialLinks['tiktok'] }}" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
                     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M15 3c.4 2.5 1.8 4 4 4.4v3.3a8 8 0 0 1-4-1.3v6.1A5.5 5.5 0 1 1 10 10v3.4a2.3 2.3 0 1 0 1.7 2.2V3z"/></svg>
                 </a>
-                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                <a href="{{ $socialLinks['instagram'] }}" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
                     <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.7" r="1"/></svg>
                 </a>
-                <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                <a href="{{ $socialLinks['youtube'] }}" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
                     <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 8.2a3 3 0 0 0-2.1-2.1C17 5.6 12 5.6 12 5.6s-5 0-6.9.5A3 3 0 0 0 3 8.2a20 20 0 0 0-.5 3.8 20 20 0 0 0 .5 3.8 3 3 0 0 0 2.1 2.1c1.9.5 6.9.5 6.9.5s5 0 6.9-.5a3 3 0 0 0 2.1-2.1 20 20 0 0 0 .5-3.8 20 20 0 0 0-.5-3.8z"/><path class="social-links__play" d="M10 9l5 3-5 3z"/></svg>
                 </a>
             </nav>

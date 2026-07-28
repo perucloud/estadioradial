@@ -30,23 +30,34 @@
             </div>
         </header>
 
-        <div class="container container--article">
-            <img class="article__cover" src="{{ $post->image }}" alt="">
-            @if ($post->image_credit || $post->image_license)
-                <p class="article__image-credit">
-                    {{ collect([$post->image_credit, $post->image_license])->filter()->join(' · ') }}
-                </p>
-            @endif
-            <div class="article__body">{!! $post->body !!}</div>
-            @if ($post->source_name && $post->source_url)
-                <aside class="article__source">
-                    <span>Fuente consultada</span>
-                    <a href="{{ $post->source_url }}" target="_blank" rel="noopener noreferrer nofollow">
-                        {{ $post->source_name }} ↗
-                    </a>
-                    <p>Estación Radial elaboró un resumen editorial propio a partir de la información enlazada.</p>
-                </aside>
-            @endif
+        <div class="container article-layout">
+            <div class="article-content">
+                <img class="article__cover" src="{{ $post->image }}" alt="">
+                @if ($post->image_credit || $post->image_license)
+                    <p class="article__image-credit">
+                        {{ collect([$post->image_credit, $post->image_license])->filter()->join(' · ') }}
+                    </p>
+                @endif
+                <div class="article__body">{!! $post->body !!}</div>
+                @if ($post->source_name && $post->source_url)
+                    <aside class="article__source">
+                        <span>Fuente consultada</span>
+                        <a href="{{ $post->source_url }}" target="_blank" rel="noopener noreferrer nofollow">
+                            {{ $post->source_name }} ↗
+                        </a>
+                        <p>Estación Radial elaboró un resumen editorial propio a partir de la información enlazada.</p>
+                    </aside>
+                @endif
+            </div>
+
+            <x-article-sidebar
+                :settings="$sidebarSettings"
+                :most-read="$sidebarMostRead"
+                :latest="$sidebarLatest"
+                :advertisements="$sidebarAdvertisements"
+                :categories="$sidebarCategories"
+                :social-links="$sidebarSocialLinks"
+            />
         </div>
     </article>
 

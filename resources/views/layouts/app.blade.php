@@ -12,7 +12,7 @@
 <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
 
-    <x-header :categories="$navigationCategories" />
+    <x-header :categories="$navigationCategories" :social-links="$socialLinks" />
 
     <main id="contenido">
         @yield('content')

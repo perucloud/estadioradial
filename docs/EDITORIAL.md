@@ -44,6 +44,21 @@ MOST_VIEWED_SLIDER_LOOP=true
 El modo acepta `automatic` o `manual`. El dashboard podrá guardar estos mismos
 valores en su módulo de configuración sin cambiar el código del componente.
 
+## Columna lateral de artículos
+
+La página de noticia consulta la configuración `article.sidebar` de la tabla
+`portal_settings`. Allí se controlan:
+
+- orden y visibilidad de los módulos;
+- cantidad de noticias más leídas y últimas noticias;
+- comportamiento fijo de la columna en escritorio.
+
+Los enlaces de redes se guardan en `social.links`. Los anuncios se administran
+como registros independientes en `advertisements`, con ubicación, imagen, texto
+alternativo, URL de destino, orden, estado y fechas de vigencia. El dashboard
+visual deberá editar estos registros y no introducir contenido directamente en
+las plantillas.
+
 ## Criterio de fuentes
 
 Los textos del lote inicial son resúmenes editoriales propios. Cada registro

@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\Category;
+use App\Models\PortalSetting;
 use App\Models\Stream;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +24,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         View::composer('layouts.app', function ($view) {
+            $socialLinks = PortalSetting::value('social.links', [
+                'facebook' => 'https://www.facebook.com/',
+                'x' => 'https://x.com/',
+                'tiktok' => 'https://www.tiktok.com/',
+                'instagram' => 'https://www.instagram.com/',
+                'youtube' => 'https://www.youtube.com/',
+            ]);
+
             $view->with([
                 'navigationCategories' => Category::query()
                     ->where('is_active', true)
@@ -35,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
                     ->where('is_active', true)
                     ->orderBy('sort_order')
                     ->first(),
+                'socialLinks' => $socialLinks,
             ]);
         });
     }

@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Advertisement;
 use App\Models\Category;
+use App\Models\PortalSetting;
 use App\Models\Post;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -97,5 +99,49 @@ class EditorialConfigurationTest extends TestCase
                 ->pluck('slug')
                 ->all(),
         );
+    }
+
+    public function test_article_displays_configurable_editorial_sidebar(): void
+    {
+        $post = Post::query()
+            ->where('slug', 'keiko-fujimori-asume-presidencia-cambio-de-mando-2026')
+            ->firstOrFail();
+
+        PortalSetting::query()->where('key', 'social.links')->update([
+            'value' => json_encode([
+                'facebook' => 'https://social.example/facebook',
+                'x' => 'https://social.example/x',
+                'tiktok' => 'https://social.example/tiktok',
+                'instagram' => 'https://social.example/instagram',
+                'youtube' => 'https://social.example/youtube',
+            ]),
+        ]);
+
+        $this->get(route('posts.show', [$post->category, $post]))
+            ->assertOk()
+            ->assertSeeInOrder([
+                'Las más leídas',
+                'Últimas noticias',
+                'Publicidad',
+                'Síguenos',
+                'Categorías',
+            ])
+            ->assertSee('https://social.example/facebook', false)
+            ->assertSee('/images/demo/ad-business.svg', false)
+            ->assertSee('article-sidebar--sticky', false);
+    }
+
+    public function test_inactive_advertisements_are_not_rendered(): void
+    {
+        Advertisement::query()->where('name', 'Campaña comercial principal')->update([
+            'is_active' => false,
+        ]);
+
+        $post = Post::query()->with('category')->firstOrFail();
+
+        $this->get(route('posts.show', [$post->category, $post]))
+            ->assertOk()
+            ->assertDontSee('/images/demo/ad-business.svg', false)
+            ->assertSee('/images/demo/ad-community.svg', false);
     }
 }

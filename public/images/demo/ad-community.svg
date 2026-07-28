@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 500" role="img" aria-labelledby="title desc">
+  <title id="title">Espacio publicitario regional</title>
+  <desc id="desc">Ilustración de montañas, sol y comunidad para una campaña regional.</desc>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#fff4ec"/>
+      <stop offset="1" stop-color="#efc8b5"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="500" rx="24" fill="url(#sky)"/>
+  <circle cx="470" cy="105" r="60" fill="#d9251b"/>
+  <path d="m0 350 155-172 92 102 84-91 269 261v50H0Z" fill="#6e3030"/>
+  <path d="m0 408 170-124 102 72 110-88 218 163v69H0Z" fill="#24262b"/>
+  <g fill="#fff">
+    <circle cx="106" cy="353" r="25"/><path d="M62 429c3-46 20-67 44-67s41 21 44 67Z"/>
+    <circle cx="190" cy="340" r="25"/><path d="M146 429c3-46 20-67 44-67s41 21 44 67Z"/>
+    <circle cx="274" cy="356" r="25"/><path d="M230 429c3-46 20-67 44-67s41 21 44 67Z"/>
+  </g>
+  <rect x="40" y="40" width="124" height="34" rx="17" fill="#202226"/>
+  <text x="102" y="63" fill="#fff" font-family="Arial, sans-serif" font-size="16" font-weight="700" text-anchor="middle">PUBLICIDAD</text>
+  <text x="40" y="122" fill="#202226" font-family="Arial, sans-serif" font-size="35" font-weight="800">CONECTA</text>
+  <text x="40" y="158" fill="#202226" font-family="Arial, sans-serif" font-size="23">con cada región</text>
+  <rect x="376" y="420" width="184" height="46" rx="8" fill="#d9251b"/>
+  <text x="468" y="450" fill="#fff" font-family="Arial, sans-serif" font-size="17" font-weight="700" text-anchor="middle">TU CAMPAÑA</text>
+</svg>
