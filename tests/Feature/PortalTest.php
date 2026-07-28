@@ -25,7 +25,8 @@ class PortalTest extends TestCase
             ->assertOk()
             ->assertSee('Últimas noticias')
             ->assertSee('Programas')
-            ->assertSee('Ahora en vivo');
+            ->assertSee('Ahora en vivo')
+            ->assertSee('Festival reúne música, memoria y tradiciones de distintas regiones');
     }
 
     public function test_news_can_be_opened_from_category_and_post_slugs(): void

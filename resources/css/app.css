@@ -316,18 +316,150 @@ a {
 }
 
 .hero {
-    background: linear-gradient(#f1f2f3, #fff);
+    padding-block: 34px 64px;
+    background: linear-gradient(135deg, #f2f2f2, #dcdcdc);
+}
+
+.hero-banner {
+    display: block;
+    overflow: hidden;
+    margin: 0 auto 30px;
+    background: var(--white);
+    border-radius: 2px;
+}
+
+.hero-banner img {
+    width: 100%;
+    aspect-ratio: 7.6 / 1;
+    object-fit: cover;
 }
 
 .hero-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.65fr) minmax(300px, .85fr);
-    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    min-height: 560px;
 }
 
 .hero-grid__side {
     display: grid;
-    gap: 16px;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.lead-story,
+.hero-story {
+    overflow: hidden;
+    background: var(--white);
+    border: 1px solid #d5d5d5;
+    border-radius: var(--radius);
+    box-shadow: 0 4px 14px rgb(0 0 0 / 4%);
+}
+
+.lead-story {
+    display: flex;
+    flex-direction: column;
+}
+
+.lead-story__image {
+    position: relative;
+    display: block;
+    flex: 1 1 auto;
+    min-height: 330px;
+    overflow: hidden;
+}
+
+.lead-story__image img,
+.hero-story__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .35s ease;
+}
+
+.lead-story:hover .lead-story__image img,
+.hero-story:hover .hero-story__image img {
+    transform: scale(1.025);
+}
+
+.lead-story__image .category-pill {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+}
+
+.lead-story__body {
+    flex: 0 0 auto;
+    padding: 20px 22px 22px;
+}
+
+.lead-story__body h1 {
+    margin: 0 0 12px;
+    font-size: clamp(1.28rem, 2vw, 1.7rem);
+    line-height: 1.2;
+    letter-spacing: -.035em;
+}
+
+.lead-story__body p {
+    display: -webkit-box;
+    margin: 0 0 10px;
+    overflow: hidden;
+    color: #3f4348;
+    line-height: 1.45;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.lead-story__body time,
+.hero-story__body time {
+    font-size: .72rem;
+    font-style: italic;
+    font-weight: 700;
+}
+
+.lead-story__body h1 a:hover,
+.hero-story__body h2 a:hover {
+    color: var(--red);
+}
+
+.hero-story {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 0;
+}
+
+.hero-story__image {
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.hero-story__body {
+    display: flex;
+    min-width: 0;
+    padding: 14px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.hero-story__body h2 {
+    display: -webkit-box;
+    margin: 9px 0 12px;
+    overflow: hidden;
+    font-size: clamp(.92rem, 1.4vw, 1.08rem);
+    line-height: 1.22;
+    letter-spacing: -.02em;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.hero-story--reversed .hero-story__image {
+    order: 2;
+}
+
+.hero-story--reversed .hero-story__body {
+    order: 1;
 }
 
 .news-card {
@@ -976,10 +1108,16 @@ a {
 
     .hero-grid {
         grid-template-columns: 1fr;
+        min-height: 0;
     }
 
     .hero-grid__side {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(3, minmax(170px, auto));
+    }
+
+    .lead-story__image {
+        aspect-ratio: 16 / 9;
     }
 
     .on-air__grid {
@@ -1066,10 +1204,22 @@ a {
         padding-block: 50px;
     }
 
+    .hero {
+        padding-block: 24px 48px;
+    }
+
+    .hero-banner {
+        margin-bottom: 20px;
+    }
+
     .hero-grid__side,
     .news-grid,
     .program-grid {
         grid-template-columns: 1fr;
+    }
+
+    .lead-story__image {
+        min-height: 280px;
     }
 
     .news-card--featured {
@@ -1152,6 +1302,28 @@ a {
     .player-identity small,
     .player-status {
         display: none;
+    }
+}
+
+@media (max-width: 560px) {
+    .hero-story {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-story__image,
+    .hero-story--reversed .hero-story__image {
+        order: 1;
+        aspect-ratio: 16 / 8;
+    }
+
+    .hero-story__body,
+    .hero-story--reversed .hero-story__body {
+        order: 2;
+        padding: 16px 18px 18px;
+    }
+
+    .hero-story__body h2 {
+        font-size: 1rem;
     }
 }
 

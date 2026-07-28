@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1520 200" role="img" aria-label="Estación Radial, voces que conectan">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1">
+      <stop stop-color="#fff"/>
+      <stop offset=".72" stop-color="#f7f7f7"/>
+      <stop offset="1" stop-color="#f1d8d5"/>
+    </linearGradient>
+    <linearGradient id="red" x1="0" y1="1" x2="1">
+      <stop stop-color="#a91913"/>
+      <stop offset="1" stop-color="#ef493d"/>
+    </linearGradient>
+  </defs>
+  <rect width="1520" height="200" fill="url(#bg)"/>
+  <g fill="#d9251b" opacity=".13">
+    <rect x="-30" y="18" width="120" height="120" transform="rotate(45 30 78)"/>
+    <rect x="125" y="-65" width="110" height="110" transform="rotate(45 180 -10)"/>
+    <rect x="1415" y="-38" width="115" height="115" transform="rotate(45 1472 20)"/>
+    <rect x="1320" y="128" width="95" height="95" transform="rotate(45 1367 175)"/>
+  </g>
+  <g transform="translate(135 12)">
+    <g transform="translate(0 8)"><circle cx="72" cy="50" r="31" fill="#664239"/><path d="M16 188c5-78 27-111 56-111s51 33 56 111z" fill="#293d55"/><path d="M25 122l47 29 47-29" fill="none" stroke="#ed6b55" stroke-width="16"/></g>
+    <g transform="translate(120 0)"><circle cx="72" cy="50" r="31" fill="#a66e55"/><path d="M16 188c5-78 27-111 56-111s51 33 56 111z" fill="#7d2756"/><path d="M25 120l47 31 47-31" fill="none" stroke="#f2b64b" stroke-width="16"/></g>
+    <g transform="translate(240 12)"><circle cx="72" cy="50" r="31" fill="#d2a181"/><path d="M16 188c5-78 27-111 56-111s51 33 56 111z" fill="#282b31"/><path d="M35 88h74" stroke="#fff" stroke-width="8" opacity=".75"/></g>
+    <g transform="translate(360 4)"><circle cx="72" cy="50" r="31" fill="#754a3b"/><path d="M16 188c5-78 27-111 56-111s51 33 56 111z" fill="#d9251b"/><path d="M22 130h100" stroke="#fff" stroke-width="13" opacity=".7"/></g>
+    <g transform="translate(480 9)"><circle cx="72" cy="50" r="31" fill="#b57859"/><path d="M16 188c5-78 27-111 56-111s51 33 56 111z" fill="#214b5e"/><path d="M72 82v96" stroke="#e1b287" stroke-width="15"/></g>
+    <g transform="translate(600 1)"><circle cx="72" cy="50" r="31" fill="#8c5e4e"/><path d="M16 188c5-78 27-111 56-111s51 33 56 111z" fill="#714787"/><path d="M30 118l42 35 42-35" fill="none" stroke="#f1d25c" stroke-width="14"/></g>
+    <g transform="translate(720 10)"><circle cx="72" cy="50" r="31" fill="#d4a184"/><path d="M16 188c5-78 27-111 56-111s51 33 56 111z" fill="#344239"/><circle cx="72" cy="132" r="31" fill="#17191c"/><circle cx="72" cy="132" r="10" fill="#d9251b"/></g>
+  </g>
+  <g transform="translate(1070 48)">
+    <g transform="translate(0 15)" fill="url(#red)"><rect width="14" height="35" transform="skew(-14)"/><rect x="24" y="-13" width="14" height="48" transform="skew(-14)"/><rect x="48" y="-28" width="14" height="63" transform="skew(-14)"/></g>
+    <text x="90" y="38" fill="#26282b" font-family="Arial, sans-serif" font-size="27" font-weight="700" letter-spacing="1">ESTACIÓN</text>
+    <text x="90" y="78" fill="#d9251b" font-family="Arial, sans-serif" font-size="43" font-weight="900" letter-spacing="-1">RADIAL</text>
+    <text x="90" y="104" fill="#656970" font-family="Arial, sans-serif" font-size="16">voces que conectan</text>
+  </g>
+</svg>

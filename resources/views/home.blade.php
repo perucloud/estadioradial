@@ -3,14 +3,59 @@
 @section('title', 'Estación Radial | Noticias y radio en vivo')
 
 @section('content')
-    <section class="hero section">
+    <section class="hero">
         <div class="container">
             @if ($featuredPosts->isNotEmpty())
+                <a class="hero-banner" href="{{ route('programs.index') }}" aria-label="Conoce nuestra programación">
+                    <img src="/images/demo/banner-radio.svg" alt="Estación Radial, voces que conectan">
+                </a>
+
                 <div class="hero-grid">
-                    <x-news-card :post="$featuredPosts->first()" featured class="hero-grid__main" />
+                    @php($leadPost = $featuredPosts->first())
+
+                    <article class="lead-story">
+                        <a class="lead-story__image" href="{{ route('posts.show', [$leadPost->category, $leadPost]) }}">
+                            <img src="{{ $leadPost->image }}" alt="">
+                            <span
+                                class="category-pill"
+                                style="--category-color: {{ $leadPost->category->color }}"
+                            >{{ $leadPost->category->name }}</span>
+                        </a>
+                        <div class="lead-story__body">
+                            <h1>
+                                <a href="{{ route('posts.show', [$leadPost->category, $leadPost]) }}">
+                                    {{ $leadPost->title }}
+                                </a>
+                            </h1>
+                            <p>{{ $leadPost->excerpt }}</p>
+                            <time datetime="{{ $leadPost->published_at->toIso8601String() }}">
+                                {{ $leadPost->published_at->format('H:i') }} HS.
+                            </time>
+                        </div>
+                    </article>
+
                     <div class="hero-grid__side">
-                        @foreach ($featuredPosts->skip(1) as $post)
-                            <x-news-card :post="$post" />
+                        @foreach ($featuredPosts->skip(1)->take(3) as $post)
+                            <article class="hero-story {{ $loop->even ? 'hero-story--reversed' : '' }}">
+                                <a class="hero-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
+                                    <img src="{{ $post->image }}" alt="">
+                                </a>
+                                <div class="hero-story__body">
+                                    <a
+                                        class="category-pill"
+                                        style="--category-color: {{ $post->category->color }}"
+                                        href="{{ route('posts.category', $post->category) }}"
+                                    >{{ $post->category->name }}</a>
+                                    <h2>
+                                        <a href="{{ route('posts.show', [$post->category, $post]) }}">
+                                            {{ $post->title }}
+                                        </a>
+                                    </h2>
+                                    <time datetime="{{ $post->published_at->toIso8601String() }}">
+                                        {{ $post->published_at->format('H:i') }} HS.
+                                    </time>
+                                </div>
+                            </article>
                         @endforeach
                     </div>
                 </div>
@@ -86,4 +131,3 @@
         </div>
     </section>
 @endsection
-

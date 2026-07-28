@@ -15,9 +15,9 @@ class HomeController extends Controller
         $featuredPosts = Post::query()
             ->with('category')
             ->published()
-            ->where('is_featured', true)
+            ->orderByDesc('is_featured')
             ->latest('published_at')
-            ->take(3)
+            ->take(4)
             ->get();
 
         $latestPosts = Post::query()
