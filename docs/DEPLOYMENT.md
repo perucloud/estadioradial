@@ -37,3 +37,14 @@ separar el núcleo de Laravel y publicar solamente el contenido de `public/`.
 
 `oldweb/` no se incluirá en el paquete de producción.
 
+Los valores locales `estacionradial.test` nunca deben copiarse literalmente al
+servidor. En producción se configurarán como mínimo:
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://dominio-real.com
+ASSET_URL=https://dominio-real.com
+SESSION_DOMAIN=dominio-real.com
+SESSION_SECURE_COOKIE=true
+```

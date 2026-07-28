@@ -17,6 +17,16 @@ El alcance y las decisiones técnicas están documentados en:
 
 ## Entorno local
 
+El origen canónico de desarrollo es:
+
+```text
+https://estacionradial.test
+```
+
+Laragon debe apuntar el virtual host a `C:/laragon/www/estacionradial/public`.
+El acceso HTTP redirige a HTTPS. No es necesario ejecutar `php artisan serve`
+para el trabajo habitual.
+
 ```bash
 composer install
 copy .env.example .env
@@ -24,11 +34,12 @@ php artisan key:generate
 php artisan migrate
 npm install
 npm run build
-php artisan serve
 ```
 
 La configuración inicial utiliza SQLite para facilitar el desarrollo. En
-producción se utilizará MySQL o MariaDB.
+producción se utilizará MySQL o MariaDB. `APP_URL`, `ASSET_URL`,
+`SESSION_DOMAIN` y las opciones HTTPS del `.env` deben reemplazarse por los
+valores del dominio real al desplegar.
 
 ## Tecnologías
 
@@ -38,4 +49,3 @@ producción se utilizará MySQL o MariaDB.
 - Vite
 - SQLite en desarrollo
 - MySQL/MariaDB en producción
-
