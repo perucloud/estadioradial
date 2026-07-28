@@ -66,6 +66,22 @@ contenido principal y retira módulos desde el final del orden configurado hasta
 evitar una columna desproporcionada. Si solo queda el primer módulo, reduce sus
 últimos elementos; en móvil restaura todo el contenido debajo de la sección.
 
+## Hero rotatorio de portada
+
+La configuración `home.hero_rotator` controla la rotación del bloque principal:
+
+- `mode`: `automatic` o `manual`;
+- `interval`: intervalo en milisegundos, inicialmente `8000`;
+- `loop`, `effect` y `parallax`;
+- `news_limit`: entre cuatro y ocho noticias participantes;
+- `selection_mode`: selección editorial `automatic` o `manual`;
+- `post_ids`: orden explícito cuando la selección es manual.
+
+La interfaz ofrece flechas, indicadores, pausa, teclado y gesto horizontal. El
+autoplay se detiene durante la interacción, fuera de pantalla y al ocultar la
+pestaña. La preferencia del sistema para reducir movimiento desactiva el avance
+automático y simplifica las transiciones.
+
 ## Criterio de fuentes
 
 Los textos del lote inicial son resúmenes editoriales propios. Cada registro

@@ -179,4 +179,49 @@ class EditorialConfigurationTest extends TestCase
             'is_active' => true,
         ]);
     }
+
+    public function test_home_hero_has_persistent_eight_second_rotation_configuration(): void
+    {
+        $setting = PortalSetting::query()->where('key', 'home.hero_rotator')->firstOrFail();
+
+        $this->assertSame('automatic', $setting->value['mode']);
+        $this->assertSame(8000, $setting->value['interval']);
+        $this->assertSame('parallax', $setting->value['effect']);
+        $this->assertTrue($setting->value['parallax']);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('data-hero-interval="8000"', false)
+            ->assertSee('aria-roledescription="carrusel"', false)
+            ->assertSee('data-hero-status', false);
+    }
+
+    public function test_dashboard_can_define_manual_news_order_for_home_hero(): void
+    {
+        $posts = Post::query()->published()->take(4)->get();
+        $manualOrder = $posts->pluck('id')->reverse()->values();
+
+        PortalSetting::query()->where('key', 'home.hero_rotator')->update([
+            'value' => json_encode([
+                'mode' => 'manual',
+                'interval' => 8000,
+                'loop' => true,
+                'effect' => 'fade',
+                'parallax' => false,
+                'news_limit' => 4,
+                'selection_mode' => 'manual',
+                'post_ids' => $manualOrder->all(),
+            ]),
+        ]);
+
+        $response = $this->get(route('home'))->assertOk();
+
+        $this->assertSame(
+            $manualOrder->all(),
+            $response->viewData('featuredPosts')->pluck('id')->all(),
+        );
+        $response
+            ->assertSee('data-hero-mode="manual"', false)
+            ->assertSee('data-hero-effect="fade"', false);
+    }
 }

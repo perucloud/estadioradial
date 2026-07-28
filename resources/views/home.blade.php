@@ -10,55 +10,59 @@
                     <img src="/images/demo/banner-radio.svg" alt="Estación Radial, voces que conectan">
                 </a>
 
-                <div class="hero-grid">
-                    @php($leadPost = $featuredPosts->first())
-
-                    <article class="lead-story">
-                        <a class="lead-story__image" href="{{ route('posts.show', [$leadPost->category, $leadPost]) }}">
-                            <img src="{{ $leadPost->image }}" alt="">
-                            <span
-                                class="category-pill"
-                                style="--category-color: {{ $leadPost->category->color }}"
-                            >{{ $leadPost->category->name }}</span>
-                        </a>
-                        <div class="lead-story__body">
-                            <h1>
-                                <a href="{{ route('posts.show', [$leadPost->category, $leadPost]) }}">
-                                    {{ $leadPost->title }}
-                                </a>
-                            </h1>
-                            <p>{{ $leadPost->excerpt }}</p>
-                            <time datetime="{{ $leadPost->published_at->toIso8601String() }}">
-                                {{ $leadPost->published_at->format('H:i') }} HS.
-                            </time>
-                        </div>
-                    </article>
-
-                    <div class="hero-grid__side">
-                        @foreach ($featuredPosts->skip(1)->take(3) as $post)
-                            <article class="hero-story {{ $loop->even ? 'hero-story--reversed' : '' }}">
-                                <a class="hero-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
-                                    <img src="{{ $post->image }}" alt="">
-                                </a>
-                                <div class="hero-story__body">
-                                    <a
-                                        class="category-pill"
-                                        style="--category-color: {{ $post->category->color }}"
-                                        href="{{ route('posts.category', $post->category) }}"
-                                    >{{ $post->category->name }}</a>
-                                    <h2>
-                                        <a href="{{ route('posts.show', [$post->category, $post]) }}">
-                                            {{ $post->title }}
-                                        </a>
-                                    </h2>
-                                    <time datetime="{{ $post->published_at->toIso8601String() }}">
-                                        {{ $post->published_at->format('H:i') }} HS.
-                                    </time>
-                                </div>
-                            </article>
+                <section
+                    class="hero-rotator"
+                    data-hero-rotator
+                    data-hero-mode="{{ $heroSettings['mode'] }}"
+                    data-hero-interval="{{ $heroSettings['interval'] }}"
+                    data-hero-loop="{{ $heroSettings['loop'] ? 'true' : 'false' }}"
+                    data-hero-effect="{{ $heroSettings['effect'] }}"
+                    data-hero-parallax="{{ $heroSettings['parallax'] ? 'true' : 'false' }}"
+                    aria-label="Noticias principales"
+                    aria-roledescription="carrusel"
+                >
+                    <div class="hero-rotator__stage">
+                        @foreach ($featuredPosts as $leadPost)
+                            @php
+                                $offsets = $featuredPosts->count() > 1
+                                    ? range(1, min(3, $featuredPosts->count() - 1))
+                                    : [];
+                                $secondaryPosts = collect($offsets)
+                                    ->map(fn ($offset) => $featuredPosts[($loop->index + $offset) % $featuredPosts->count()]);
+                            @endphp
+                            <x-hero-news-slide
+                                :lead-post="$leadPost"
+                                :secondary-posts="$secondaryPosts"
+                                :is-first="$loop->first"
+                                :position="$loop->iteration"
+                            />
                         @endforeach
                     </div>
-                </div>
+
+                    @if ($featuredPosts->count() > 1)
+                        <button class="hero-rotator__arrow hero-rotator__arrow--previous" type="button" data-hero-prev aria-label="Noticia anterior">←</button>
+                        <button class="hero-rotator__arrow hero-rotator__arrow--next" type="button" data-hero-next aria-label="Noticia siguiente">→</button>
+
+                        <div class="hero-rotator__navigation">
+                            <div class="hero-rotator__dots" aria-label="Seleccionar noticia principal">
+                                @foreach ($featuredPosts as $post)
+                                    <button
+                                        type="button"
+                                        class="{{ $loop->first ? 'is-active' : '' }}"
+                                        data-hero-dot="{{ $loop->index }}"
+                                        aria-label="Mostrar noticia {{ $loop->iteration }}"
+                                        aria-controls="hero-news-slide-{{ $loop->iteration }}"
+                                        aria-current="{{ $loop->first ? 'true' : 'false' }}"
+                                    ></button>
+                                @endforeach
+                            </div>
+                            <button class="hero-rotator__pause" type="button" data-hero-pause aria-label="Pausar rotación automática" aria-pressed="false">
+                                <span aria-hidden="true">Ⅱ</span>
+                            </button>
+                        </div>
+                        <p class="sr-only" data-hero-status aria-live="polite">Noticia 1 de {{ $featuredPosts->count() }}</p>
+                    @endif
+                </section>
             @endif
         </div>
     </section>

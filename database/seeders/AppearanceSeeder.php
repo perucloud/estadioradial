@@ -54,6 +54,24 @@ class AppearanceSeeder extends Seeder
             ],
         );
 
+        PortalSetting::query()->updateOrCreate(
+            ['key' => 'home.hero_rotator'],
+            [
+                'group' => 'home',
+                'value' => [
+                    'mode' => 'automatic',
+                    'interval' => 8000,
+                    'loop' => true,
+                    'effect' => 'parallax',
+                    'parallax' => true,
+                    'news_limit' => 4,
+                    'selection_mode' => 'automatic',
+                    'post_ids' => [],
+                ],
+                'is_public' => true,
+            ],
+        );
+
         $campaigns = [
             [
                 'name' => 'Campaña comercial principal',

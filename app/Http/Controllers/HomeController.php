@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Models\Program;
 use App\Models\Schedule;
@@ -12,14 +13,60 @@ class HomeController extends Controller
 {
     public function __invoke(): View
     {
-        $featuredPosts = Post::query()
+        $heroDefaults = [
+            'mode' => 'automatic',
+            'interval' => 8000,
+            'loop' => true,
+            'effect' => 'parallax',
+            'parallax' => true,
+            'news_limit' => 4,
+            'selection_mode' => 'automatic',
+            'post_ids' => [],
+        ];
+        $storedHeroSettings = PortalSetting::value('home.hero_rotator', []);
+        $heroSettings = array_replace(
+            $heroDefaults,
+            is_array($storedHeroSettings) ? $storedHeroSettings : [],
+        );
+        $heroNewsLimit = min(8, max(4, (int) $heroSettings['news_limit']));
+
+        $featuredQuery = Post::query()
             ->with(['category', 'tags'])
             ->published()
             ->visibleOnHome()
             ->orderByDesc('is_featured')
-            ->editorialOrder()
-            ->take(4)
-            ->get();
+            ->editorialOrder();
+
+        $manualPostIds = collect($heroSettings['post_ids'] ?? [])
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->take($heroNewsLimit);
+
+        if ($heroSettings['selection_mode'] === 'manual' && $manualPostIds->isNotEmpty()) {
+            $manualPosts = (clone $featuredQuery)
+                ->whereIn('id', $manualPostIds)
+                ->get()
+                ->keyBy('id');
+
+            $featuredPosts = $manualPostIds
+                ->map(fn (int $id) => $manualPosts->get($id))
+                ->filter()
+                ->values();
+
+            if ($featuredPosts->count() < $heroNewsLimit) {
+                $featuredPosts = $featuredPosts
+                    ->concat(
+                        (clone $featuredQuery)
+                            ->whereNotIn('id', $featuredPosts->pluck('id'))
+                            ->take($heroNewsLimit - $featuredPosts->count())
+                            ->get()
+                    )
+                    ->values();
+            }
+        } else {
+            $featuredPosts = $featuredQuery->take($heroNewsLimit)->get();
+        }
 
         $latestPosts = Post::query()
             ->with(['category', 'tags'])
@@ -62,6 +109,7 @@ class HomeController extends Controller
 
         return view('home', [
             'featuredPosts' => $featuredPosts,
+            'heroSettings' => $heroSettings,
             'latestPosts' => $latestPosts,
             'mostViewedPosts' => $mostViewedPosts,
             'advertisements' => [

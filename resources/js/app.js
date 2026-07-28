@@ -42,6 +42,202 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
+    const slides = [...rotator.querySelectorAll('[data-hero-slide]')];
+    const previous = rotator.querySelector('[data-hero-prev]');
+    const next = rotator.querySelector('[data-hero-next]');
+    const dots = [...rotator.querySelectorAll('[data-hero-dot]')];
+    const pauseButton = rotator.querySelector('[data-hero-pause]');
+    const status = rotator.querySelector('[data-hero-status]');
+
+    if (slides.length < 2 || !previous || !next) return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const finePointer = window.matchMedia('(pointer: fine)');
+    const automaticMode = rotator.dataset.heroMode === 'automatic';
+    const shouldLoop = rotator.dataset.heroLoop !== 'false';
+    const parallaxEnabled = rotator.dataset.heroParallax !== 'false';
+    const configuredInterval = Number.parseInt(rotator.dataset.heroInterval ?? '', 10);
+    const interval = Number.isFinite(configuredInterval)
+        ? Math.max(4000, configuredInterval)
+        : 8000;
+    const pauseReasons = new Set();
+    let current = 0;
+    let timer;
+    let pausedByUser = false;
+    let visible = true;
+    let pointerStart;
+
+    const updateControls = () => {
+        previous.disabled = !shouldLoop && current === 0;
+        next.disabled = !shouldLoop && current === slides.length - 1;
+
+        dots.forEach((dot, index) => {
+            const active = index === current;
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-current', String(active));
+        });
+
+        if (pauseButton) {
+            pauseButton.hidden = !automaticMode || reducedMotion.matches;
+            pauseButton.setAttribute('aria-pressed', String(pausedByUser));
+            pauseButton.setAttribute(
+                'aria-label',
+                pausedByUser ? 'Reanudar rotación automática' : 'Pausar rotación automática',
+            );
+            pauseButton.querySelector('span').textContent = pausedByUser ? '▶' : 'Ⅱ';
+        }
+    };
+
+    const stopAutoplay = () => {
+        window.clearTimeout(timer);
+        timer = undefined;
+    };
+
+    const autoplayAllowed = () => automaticMode
+        && !reducedMotion.matches
+        && !pausedByUser
+        && pauseReasons.size === 0
+        && !document.hidden
+        && visible;
+
+    const scheduleAutoplay = () => {
+        stopAutoplay();
+
+        if (!autoplayAllowed()) return;
+
+        timer = window.setTimeout(() => {
+            show(current + 1);
+        }, interval);
+    };
+
+    const normaliseIndex = (requested) => {
+        if (shouldLoop) {
+            return (requested + slides.length) % slides.length;
+        }
+
+        return Math.min(slides.length - 1, Math.max(0, requested));
+    };
+
+    const show = (requested, announce = false) => {
+        const target = normaliseIndex(requested);
+
+        if (target === current && requested !== current) {
+            stopAutoplay();
+            updateControls();
+            return;
+        }
+
+        slides[current].classList.remove('is-active');
+        slides[current].setAttribute('aria-hidden', 'true');
+        slides[current].inert = true;
+
+        current = target;
+
+        slides[current].classList.add('is-active');
+        slides[current].setAttribute('aria-hidden', 'false');
+        slides[current].inert = false;
+        rotator.style.setProperty('--hero-parallax-x', '0px');
+        rotator.style.setProperty('--hero-parallax-y', '0px');
+
+        if (announce && status) {
+            status.textContent = `Noticia ${current + 1} de ${slides.length}`;
+        }
+
+        updateControls();
+        scheduleAutoplay();
+    };
+
+    previous.addEventListener('click', () => show(current - 1, true));
+    next.addEventListener('click', () => show(current + 1, true));
+    dots.forEach((dot) => {
+        dot.addEventListener('click', () => show(Number.parseInt(dot.dataset.heroDot, 10), true));
+    });
+
+    pauseButton?.addEventListener('click', () => {
+        pausedByUser = !pausedByUser;
+        updateControls();
+        scheduleAutoplay();
+    });
+
+    rotator.addEventListener('mouseenter', () => {
+        pauseReasons.add('hover');
+        stopAutoplay();
+    });
+    rotator.addEventListener('mouseleave', () => {
+        pauseReasons.delete('hover');
+        scheduleAutoplay();
+        rotator.style.setProperty('--hero-parallax-x', '0px');
+        rotator.style.setProperty('--hero-parallax-y', '0px');
+    });
+    rotator.addEventListener('focusin', () => {
+        pauseReasons.add('focus');
+        stopAutoplay();
+    });
+    rotator.addEventListener('focusout', (event) => {
+        if (rotator.contains(event.relatedTarget)) return;
+        pauseReasons.delete('focus');
+        scheduleAutoplay();
+    });
+    rotator.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            show(current - 1, true);
+        }
+
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            show(current + 1, true);
+        }
+    });
+    rotator.addEventListener('pointerdown', (event) => {
+        pointerStart = event.clientX;
+        pauseReasons.add('pointer');
+        stopAutoplay();
+    });
+    rotator.addEventListener('pointerup', (event) => {
+        if (Number.isFinite(pointerStart)) {
+            const distance = event.clientX - pointerStart;
+
+            if (Math.abs(distance) > 55) {
+                show(current + (distance < 0 ? 1 : -1), true);
+            }
+        }
+
+        pointerStart = undefined;
+        pauseReasons.delete('pointer');
+        scheduleAutoplay();
+    });
+    rotator.addEventListener('pointermove', (event) => {
+        if (!parallaxEnabled || reducedMotion.matches || !finePointer.matches) return;
+
+        const bounds = rotator.getBoundingClientRect();
+        const x = ((event.clientX - bounds.left) / bounds.width) - .5;
+        const y = ((event.clientY - bounds.top) / bounds.height) - .5;
+
+        rotator.style.setProperty('--hero-parallax-x', `${x * -12}px`);
+        rotator.style.setProperty('--hero-parallax-y', `${y * -7}px`);
+    });
+
+    document.addEventListener('visibilitychange', scheduleAutoplay);
+    reducedMotion.addEventListener('change', () => {
+        updateControls();
+        scheduleAutoplay();
+    });
+
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(([entry]) => {
+            visible = entry.isIntersecting;
+            scheduleAutoplay();
+        }, { threshold: 0.2 });
+
+        observer.observe(rotator);
+    }
+
+    updateControls();
+    scheduleAutoplay();
+});
+
 document.querySelectorAll('[data-news-slider]').forEach((slider) => {
     const section = slider.closest('.most-viewed');
     const track = slider.querySelector('[data-slider-track]');
