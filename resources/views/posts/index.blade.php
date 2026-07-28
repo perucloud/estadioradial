@@ -9,21 +9,31 @@
     </x-page-hero>
 
     <section class="section">
-        <div class="container">
-            @if ($posts->isEmpty())
-                <div class="empty-state">
-                    <h2>Aún no hay publicaciones</h2>
-                    <p>Estamos preparando nuevo contenido para esta sección.</p>
-                </div>
-            @else
-                <div class="news-grid">
-                    @foreach ($posts as $post)
-                        <x-news-card :post="$post" />
-                    @endforeach
-                </div>
-                <div class="pagination-wrap">{{ $posts->links() }}</div>
-            @endif
+        <div class="container section-sidebar-layout" data-sidebar-layout>
+            <div class="section-sidebar-main" data-sidebar-main>
+                @if ($posts->isEmpty())
+                    <div class="empty-state">
+                        <h2>Aún no hay publicaciones</h2>
+                        <p>Estamos preparando nuevo contenido para esta sección.</p>
+                    </div>
+                @else
+                    <div class="news-grid">
+                        @foreach ($posts as $post)
+                            <x-news-card :post="$post" />
+                        @endforeach
+                    </div>
+                    <div class="pagination-wrap">{{ $posts->links() }}</div>
+                @endif
+            </div>
+
+            <x-article-sidebar
+                :settings="$sidebarSettings"
+                :most-read="$sidebarMostRead"
+                :latest="$sidebarLatest"
+                :advertisements="$sidebarAdvertisements"
+                :categories="$sidebarCategories"
+                :social-links="$sidebarSocialLinks"
+            />
         </div>
     </section>
 @endsection
-

@@ -8,14 +8,24 @@
     </x-page-hero>
 
     <section class="section">
-        <div class="container">
-            <div class="program-grid">
-                @foreach ($programs as $program)
-                    <x-program-card :program="$program" />
-                @endforeach
+        <div class="container section-sidebar-layout" data-sidebar-layout>
+            <div class="section-sidebar-main" data-sidebar-main>
+                <div class="program-grid">
+                    @foreach ($programs as $program)
+                        <x-program-card :program="$program" />
+                    @endforeach
+                </div>
+                <div class="pagination-wrap">{{ $programs->links() }}</div>
             </div>
-            <div class="pagination-wrap">{{ $programs->links() }}</div>
+
+            <x-article-sidebar
+                :settings="$sidebarSettings"
+                :most-read="$sidebarMostRead"
+                :latest="$sidebarLatest"
+                :advertisements="$sidebarAdvertisements"
+                :categories="$sidebarCategories"
+                :social-links="$sidebarSocialLinks"
+            />
         </div>
     </section>
 @endsection
-

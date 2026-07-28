@@ -190,6 +190,73 @@ document.querySelectorAll('[data-news-slider]').forEach((slider) => {
     scheduleAutoplay();
 });
 
+document.querySelectorAll('[data-sidebar-layout]').forEach((layout) => {
+    const main = layout.querySelector('[data-sidebar-main]');
+    const sidebar = layout.querySelector('[data-adaptive-sidebar]');
+    const desktop = window.matchMedia('(min-width: 981px)');
+
+    if (!main || !sidebar) return;
+
+    let frame;
+
+    const reset = () => {
+        sidebar.hidden = false;
+        layout.classList.remove('is-sidebar-empty');
+        sidebar.querySelectorAll('[data-sidebar-module], [data-sidebar-item]').forEach((element) => {
+            element.hidden = false;
+        });
+    };
+
+    const fitToMainContent = () => {
+        window.cancelAnimationFrame(frame);
+        frame = window.requestAnimationFrame(() => {
+            reset();
+
+            if (!desktop.matches) return;
+
+            const maximumHeight = Math.floor(main.getBoundingClientRect().height);
+            const modules = [...sidebar.querySelectorAll('[data-sidebar-module]')];
+
+            while (sidebar.scrollHeight > maximumHeight + 4) {
+                const visibleModules = modules.filter((module) => !module.hidden);
+
+                if (visibleModules.length <= 1) break;
+
+                visibleModules.at(-1).hidden = true;
+            }
+
+            const primaryModule = modules.find((module) => !module.hidden);
+
+            if (!primaryModule) return;
+
+            const primaryItems = [...primaryModule.querySelectorAll('[data-sidebar-item]')];
+
+            while (sidebar.scrollHeight > maximumHeight + 4) {
+                const visibleItems = primaryItems.filter((item) => !item.hidden);
+
+                if (visibleItems.length <= 2) break;
+
+                visibleItems.at(-1).hidden = true;
+            }
+
+            if (sidebar.scrollHeight > maximumHeight + 4) {
+                sidebar.hidden = true;
+                layout.classList.add('is-sidebar-empty');
+            }
+        });
+    };
+
+    if ('ResizeObserver' in window) {
+        const observer = new ResizeObserver(fitToMainContent);
+        observer.observe(main);
+    } else {
+        window.addEventListener('resize', fitToMainContent);
+    }
+    desktop.addEventListener('change', fitToMainContent);
+    window.addEventListener('load', fitToMainContent, { once: true });
+    fitToMainContent();
+});
+
 const player = document.querySelector('[data-player]');
 
 if (player) {

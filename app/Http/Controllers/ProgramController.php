@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Program;
+use App\Support\SidebarData;
 use Illuminate\View\View;
 
 class ProgramController extends Controller
 {
+    public function __construct(private readonly SidebarData $sidebarData) {}
+
     public function index(): View
     {
         return view('programs.index', [
@@ -14,7 +17,7 @@ class ProgramController extends Controller
                 ->where('is_active', true)
                 ->orderBy('title')
                 ->paginate(12),
-        ]);
+        ] + $this->sidebarData->section());
     }
 
     public function show(Program $program): View

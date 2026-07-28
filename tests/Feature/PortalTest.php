@@ -61,7 +61,7 @@ class PortalTest extends TestCase
             ->assertOk()
             ->assertSee('Resultados para “cuidado responsable”')
             ->assertSee('Campaña ciudadana promueve el cuidado responsable del agua')
-            ->assertDontSee('Clubes locales se preparan para una nueva jornada deportiva');
+            ->assertSee('data-adaptive-sidebar', false);
     }
 
     public function test_news_can_be_opened_from_category_and_post_slugs(): void

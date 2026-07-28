@@ -39,7 +39,22 @@ class AppearanceSeeder extends Seeder
             ],
         );
 
-        foreach ([
+        PortalSetting::query()->updateOrCreate(
+            ['key' => 'section.sidebar'],
+            [
+                'group' => 'section',
+                'value' => [
+                    'modules' => ['most_read', 'latest', 'advertisements', 'categories', 'social'],
+                    'most_read_limit' => 5,
+                    'latest_limit' => 4,
+                    'sticky' => true,
+                    'adaptive' => true,
+                ],
+                'is_public' => true,
+            ],
+        );
+
+        $campaigns = [
             [
                 'name' => 'Campaña comercial principal',
                 'image' => '/images/demo/ad-business.svg',
@@ -52,15 +67,19 @@ class AppearanceSeeder extends Seeder
                 'alt_text' => 'Espacio publicitario para una campaña regional',
                 'sort_order' => 20,
             ],
-        ] as $advertisement) {
-            Advertisement::query()->updateOrCreate(
-                ['name' => $advertisement['name'], 'placement' => 'article_sidebar'],
-                $advertisement + [
-                    'destination_url' => null,
-                    'open_in_new_tab' => true,
-                    'is_active' => true,
-                ],
-            );
+        ];
+
+        foreach (['article_sidebar', 'section_sidebar'] as $placement) {
+            foreach ($campaigns as $advertisement) {
+                Advertisement::query()->updateOrCreate(
+                    ['name' => $advertisement['name'], 'placement' => $placement],
+                    $advertisement + [
+                        'destination_url' => null,
+                        'open_in_new_tab' => true,
+                        'is_active' => true,
+                    ],
+                );
+            }
         }
     }
 }

@@ -59,6 +59,13 @@ alternativo, URL de destino, orden, estado y fechas de vigencia. El dashboard
 visual deberá editar estos registros y no introducir contenido directamente en
 las plantillas.
 
+Las páginas de noticias, categorías, búsquedas, programas y programación usan
+la configuración independiente `section.sidebar` y anuncios con la ubicación
+`section_sidebar`. En escritorio, el modo `adaptive` compara la altura del
+contenido principal y retira módulos desde el final del orden configurado hasta
+evitar una columna desproporcionada. Si solo queda el primer módulo, reduce sus
+últimos elementos; en móvil restaura todo el contenido debajo de la sección.
+
 ## Criterio de fuentes
 
 Los textos del lote inicial son resúmenes editoriales propios. Cada registro

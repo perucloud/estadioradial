@@ -150,4 +150,33 @@ class EditorialConfigurationTest extends TestCase
             ->assertDontSee('/images/demo/ad-business.svg', false)
             ->assertSee('/images/demo/ad-community.svg', false);
     }
+
+    public function test_section_sidebar_is_available_on_news_programs_and_schedule(): void
+    {
+        foreach ([route('posts.index'), route('programs.index'), route('schedule')] as $url) {
+            $this->get($url)
+                ->assertOk()
+                ->assertSee('section-sidebar-layout', false)
+                ->assertSee('data-sidebar-main', false)
+                ->assertSee('data-adaptive-sidebar', false)
+                ->assertSee('Las más leídas')
+                ->assertSee('Últimas noticias')
+                ->assertSee('/images/demo/ad-business.svg', false);
+        }
+    }
+
+    public function test_section_sidebar_has_independent_dashboard_configuration(): void
+    {
+        $setting = PortalSetting::query()->where('key', 'section.sidebar')->firstOrFail();
+
+        $this->assertSame(
+            ['most_read', 'latest', 'advertisements', 'categories', 'social'],
+            $setting->value['modules'],
+        );
+        $this->assertTrue($setting->value['adaptive']);
+        $this->assertDatabaseHas('advertisements', [
+            'placement' => 'section_sidebar',
+            'is_active' => true,
+        ]);
+    }
 }

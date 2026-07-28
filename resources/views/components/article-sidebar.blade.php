@@ -16,19 +16,20 @@
 <aside
     class="article-sidebar {{ ($settings['sticky'] ?? true) ? 'article-sidebar--sticky' : '' }}"
     aria-label="Información complementaria"
+    @if ($settings['adaptive'] ?? false) data-adaptive-sidebar @endif
 >
     @foreach ($modules as $module)
         @switch($module)
             @case('most_read')
                 @if ($mostRead->isNotEmpty())
-                    <section class="sidebar-panel" aria-labelledby="sidebar-most-read">
+                    <section class="sidebar-panel" aria-labelledby="sidebar-most-read" data-sidebar-module>
                         <div class="sidebar-panel__heading">
                             <span>Tendencias</span>
                             <h2 id="sidebar-most-read">Las más leídas</h2>
                         </div>
                         <ol class="sidebar-news sidebar-news--ranked">
                             @foreach ($mostRead as $item)
-                                <li>
+                                <li data-sidebar-item>
                                     <a class="sidebar-news__image" href="{{ route('posts.show', [$item->category, $item]) }}">
                                         <img src="{{ $item->image }}" alt="" loading="lazy">
                                         <span>{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
@@ -55,14 +56,14 @@
 
             @case('latest')
                 @if ($latest->isNotEmpty())
-                    <section class="sidebar-panel" aria-labelledby="sidebar-latest">
+                    <section class="sidebar-panel" aria-labelledby="sidebar-latest" data-sidebar-module>
                         <div class="sidebar-panel__heading">
                             <span>Al momento</span>
                             <h2 id="sidebar-latest">Últimas noticias</h2>
                         </div>
                         <div class="sidebar-latest">
                             @foreach ($latest as $item)
-                                <article>
+                                <article data-sidebar-item>
                                     <a href="{{ route('posts.show', [$item->category, $item]) }}">
                                         <span style="--category-color: {{ $item->category->color }}">{{ $item->category->name }}</span>
                                         <h3>{{ $item->title }}</h3>
@@ -79,11 +80,12 @@
 
             @case('advertisements')
                 @if ($advertisements->isNotEmpty())
-                    <section class="sidebar-ads" aria-label="Publicidad">
+                    <section class="sidebar-ads" aria-label="Publicidad" data-sidebar-module>
                         @foreach ($advertisements as $advertisement)
                             @if ($advertisement->destination_url)
                                 <a
                                     class="sidebar-ad"
+                                    data-sidebar-item
                                     href="{{ $advertisement->destination_url }}"
                                     @if ($advertisement->open_in_new_tab) target="_blank" rel="noopener sponsored" @endif
                                 >
@@ -91,7 +93,7 @@
                                     <img src="{{ $advertisement->image }}" alt="{{ $advertisement->alt_text }}" loading="lazy">
                                 </a>
                             @else
-                                <div class="sidebar-ad">
+                                <div class="sidebar-ad" data-sidebar-item>
                                     <span>Publicidad</span>
                                     <img src="{{ $advertisement->image }}" alt="{{ $advertisement->alt_text }}" loading="lazy">
                                 </div>
@@ -102,7 +104,7 @@
                 @break
 
             @case('social')
-                <section class="sidebar-panel sidebar-social" aria-labelledby="sidebar-social-title">
+                <section class="sidebar-panel sidebar-social" aria-labelledby="sidebar-social-title" data-sidebar-module>
                     <div class="sidebar-panel__heading">
                         <span>Comunidad</span>
                         <h2 id="sidebar-social-title">Síguenos</h2>
@@ -128,7 +130,7 @@
 
             @case('categories')
                 @if ($categories->isNotEmpty())
-                    <section class="sidebar-panel" aria-labelledby="sidebar-categories">
+                    <section class="sidebar-panel" aria-labelledby="sidebar-categories" data-sidebar-module>
                         <div class="sidebar-panel__heading">
                             <span>Explorar</span>
                             <h2 id="sidebar-categories">Categorías</h2>

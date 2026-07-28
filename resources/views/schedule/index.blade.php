@@ -12,24 +12,34 @@
     </x-page-hero>
 
     <section class="section">
-        <div class="container schedule-days">
-            @foreach ($days as $dayNumber => $dayName)
-                <section class="schedule-day">
-                    <h2>{{ $dayName }}</h2>
-                    <div class="schedule-list">
-                        @forelse ($schedules->get($dayNumber, collect()) as $schedule)
-                            <a href="{{ route('programs.show', $schedule->program) }}">
-                                <span>{{ substr($schedule->starts_at, 0, 5) }}</span>
-                                <strong>{{ $schedule->program->title }}</strong>
-                                <small>{{ $schedule->program->hosts }}</small>
-                            </a>
-                        @empty
-                            <div><span>Programación por confirmar</span></div>
-                        @endforelse
-                    </div>
-                </section>
-            @endforeach
+        <div class="container section-sidebar-layout" data-sidebar-layout>
+            <div class="schedule-days section-sidebar-main" data-sidebar-main>
+                @foreach ($days as $dayNumber => $dayName)
+                    <section class="schedule-day">
+                        <h2>{{ $dayName }}</h2>
+                        <div class="schedule-list">
+                            @forelse ($schedules->get($dayNumber, collect()) as $schedule)
+                                <a href="{{ route('programs.show', $schedule->program) }}">
+                                    <span>{{ substr($schedule->starts_at, 0, 5) }}</span>
+                                    <strong>{{ $schedule->program->title }}</strong>
+                                    <small>{{ $schedule->program->hosts }}</small>
+                                </a>
+                            @empty
+                                <div><span>Programación por confirmar</span></div>
+                            @endforelse
+                        </div>
+                    </section>
+                @endforeach
+            </div>
+
+            <x-article-sidebar
+                :settings="$sidebarSettings"
+                :most-read="$sidebarMostRead"
+                :latest="$sidebarLatest"
+                :advertisements="$sidebarAdvertisements"
+                :categories="$sidebarCategories"
+                :social-links="$sidebarSocialLinks"
+            />
         </div>
     </section>
 @endsection
-
