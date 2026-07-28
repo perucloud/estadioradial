@@ -8,16 +8,16 @@ HTTrack se conserva únicamente como referencia visual en `oldweb/`.
 
 ## Primera versión pública
 
-- [ ] Layout general: cabecera, navegación, reproductor y pie.
-- [ ] Portada dinámica.
-- [ ] Listado y detalle de noticias mediante slugs.
-- [ ] Listado de noticias por categoría.
-- [ ] Listado y detalle de programas mediante slugs.
-- [ ] Programación semanal.
-- [ ] Radio en vivo configurable.
-- [ ] Video en vivo opcional y configurable.
-- [ ] Diseño adaptable a escritorio, tableta y móvil.
-- [ ] SEO técnico básico.
+- [x] Layout general: cabecera, navegación, reproductor y pie.
+- [x] Portada dinámica.
+- [x] Listado y detalle de noticias mediante slugs.
+- [x] Listado de noticias por categoría.
+- [x] Listado y detalle de programas mediante slugs.
+- [x] Programación semanal.
+- [x] Base de radio en vivo configurable.
+- [x] Base de video en vivo opcional y configurable.
+- [x] Diseño adaptable a escritorio, tableta y móvil.
+- [x] SEO técnico básico.
 - [ ] Base para convertir todo el portal público en PWA.
 
 ## Administración
@@ -43,11 +43,11 @@ HTTrack se conserva únicamente como referencia visual en `oldweb/`.
 
 ### 1. Base pública
 
-- [ ] Definir identidad visual provisional.
-- [ ] Construir componentes compartidos.
-- [ ] Crear portada con contenido demostrativo.
-- [ ] Crear páginas internas prioritarias.
-- [ ] Implementar reproductor persistente.
+- [x] Definir identidad visual provisional.
+- [x] Construir componentes compartidos.
+- [x] Crear portada con contenido demostrativo.
+- [x] Crear páginas internas prioritarias.
+- [x] Implementar reproductor global.
 
 ### 2. Contenido administrable
 
