@@ -951,12 +951,18 @@ td small {
     resize: vertical;
 }
 
-.tiptap-wrapper {
+.ckeditor-wrapper {
     padding: 0;
-    overflow: hidden;
+    overflow: visible;
+    --ck-border-radius: 0;
+    --ck-color-base-border: var(--admin-line);
+    --ck-color-focus-border: var(--admin-red);
+    --ck-color-toolbar-background: #fafbfc;
+    --ck-color-button-on-background: #f8e9ea;
+    --ck-color-button-on-color: var(--admin-red);
 }
 
-.tiptap-editor-header {
+.ckeditor-editor-header {
     display: flex;
     min-height: 66px;
     padding: 13px 16px;
@@ -966,18 +972,18 @@ td small {
     border-bottom: 1px solid var(--admin-line);
 }
 
-.tiptap-editor-header > div {
+.ckeditor-editor-header > div {
     display: flex;
     align-items: center;
     gap: 12px;
 }
 
-.tiptap-editor-header > div:first-child {
+.ckeditor-editor-header > div:first-child {
     display: grid;
     gap: 2px;
 }
 
-.tiptap-editor-header > div:last-child > span {
+.ckeditor-editor-header > div:last-child > span {
     color: var(--admin-muted);
     font-size: .72rem;
 }
@@ -988,193 +994,28 @@ td small {
     font-size: .74rem;
 }
 
-.tiptap-toolbar {
-    position: relative;
-    display: flex;
+.ckeditor-wrapper .ck.ck-editor {
+    border: 0;
+}
+
+.ckeditor-wrapper .ck.ck-toolbar {
     padding: 8px 10px;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px;
-    border-bottom: 1px solid var(--admin-line);
-    background: #fafbfc;
+    border-width: 0 0 1px;
 }
 
-.tiptap-toolbar button,
-.tiptap-more > summary,
-.tiptap-color-control {
-    display: inline-grid;
-    min-width: 34px;
-    min-height: 34px;
-    padding: 5px 8px;
-    place-items: center;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #363b45;
-    background: transparent;
-    font-size: .76rem;
-    font-weight: 750;
-}
-
-.tiptap-toolbar button:hover,
-.tiptap-toolbar button.is-active,
-.tiptap-more > summary:hover,
-.tiptap-more[open] > summary,
-.tiptap-color-control:hover {
-    border-color: #d8dce3;
-    color: var(--admin-red);
-    background: var(--admin-white);
-}
-
-.tiptap-toolbar button:disabled {
-    cursor: not-allowed;
-    opacity: .35;
-}
-
-.tiptap-toolbar__group {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-}
-
-.tiptap-toolbar__group + .tiptap-toolbar__group {
-    padding-left: 5px;
-    border-left: 1px solid var(--admin-line);
-}
-
-.tiptap-block-select select {
-    min-height: 34px;
-    padding: 5px 30px 5px 10px;
-    color: #363b45;
-    background: var(--admin-white);
-    border: 1px solid #dfe2e7;
-    border-radius: 6px;
-    font-size: .76rem;
-}
-
-.tiptap-color-control {
-    position: relative;
-    font-weight: 850;
-}
-
-.tiptap-color-control::after {
-    position: absolute;
-    right: 7px;
-    bottom: 4px;
-    left: 7px;
-    height: 3px;
-    background: #202226;
-    border-radius: 2px;
-    content: '';
-}
-
-.tiptap-color-control--highlight::after {
-    background: #f6d84a;
-}
-
-.tiptap-color-control input {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-}
-
-[data-editor-align='left'] {
-    justify-items: start !important;
-}
-
-[data-editor-align='center'] {
-    text-align: center;
-}
-
-[data-editor-align='right'] {
-    justify-items: end !important;
-}
-
-.tiptap-more {
-    position: relative;
-    margin-left: auto;
-}
-
-.tiptap-more > summary {
-    color: #293343;
-    background: #dbeafe;
-    list-style: none;
-    font-size: .9rem;
-    font-weight: 900;
-}
-
-.tiptap-more > summary::-webkit-details-marker {
-    display: none;
-}
-
-.tiptap-more__panel {
-    position: absolute;
-    z-index: 15;
-    top: calc(100% + 8px);
-    right: 0;
-    width: min(700px, calc(100vw - 90px));
-    padding: 10px;
-    background: var(--admin-white);
-    border: 1px solid var(--admin-line);
-    border-radius: 10px;
-    box-shadow: 0 12px 34px rgb(20 24 32 / 18%);
-}
-
-.tiptap-more__group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-}
-
-.tiptap-more__group + .tiptap-more__group {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid var(--admin-line);
-}
-
-.tiptap-more__panel button {
-    display: inline-flex;
-    gap: 7px;
-}
-
-.tiptap-more__group--table button {
-    min-width: auto;
-}
-
-.tiptap-wrapper.is-fullscreen {
-    position: fixed;
-    z-index: 100;
-    inset: 12px;
-    display: flex;
-    overflow: visible;
-    flex-direction: column;
-    background: var(--admin-white);
-    box-shadow: 0 25px 80px rgb(0 0 0 / 28%);
-}
-
-.tiptap-wrapper.is-fullscreen .tiptap-surface {
-    min-height: 0;
-    overflow-y: auto;
-    flex: 1;
-}
-
-.has-editor-fullscreen {
-    overflow: hidden;
-}
-
-.tiptap-toolbar > span {
-    width: 1px;
-    margin: 4px;
-    background: var(--admin-line);
-}
-
-.tiptap-surface {
+.ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable {
     min-height: 500px;
     padding: clamp(20px, 4vw, 38px);
+    border-width: 0;
+    box-shadow: none;
 }
 
-.tiptap-document {
+.ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable.ck-focused {
+    border: 0;
+    box-shadow: inset 0 0 0 2px rgb(201 31 38 / 13%);
+}
+
+.ckeditor-wrapper .ck-content {
     min-height: 430px;
     outline: none;
     font-family: Georgia, "Times New Roman", serif;
@@ -1182,52 +1023,43 @@ td small {
     line-height: 1.75;
 }
 
-.tiptap-document > *:first-child {
+.ckeditor-wrapper .ck-content > *:first-child {
     margin-top: 0;
 }
 
-.tiptap-document h2,
-.tiptap-document h3 {
+.ckeditor-wrapper .ck-content h2,
+.ckeditor-wrapper .ck-content h3,
+.ckeditor-wrapper .ck-content h4 {
     line-height: 1.25;
 }
 
-.tiptap-document blockquote {
+.ckeditor-wrapper .ck-content blockquote {
     margin-inline: 0;
     padding-left: 18px;
     border-left: 3px solid var(--admin-red);
     color: #4d535e;
 }
 
-.tiptap-document img {
+.ckeditor-wrapper .ck-content img {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
 }
 
-.tiptap-document table {
+.ckeditor-wrapper .ck-content table {
     width: 100%;
     border-collapse: collapse;
     table-layout: fixed;
 }
 
-.tiptap-document th,
-.tiptap-document td {
+.ckeditor-wrapper .ck-content th,
+.ckeditor-wrapper .ck-content td {
     padding: 7px 9px;
     min-width: 80px;
     border: 1px solid #cfd4dc;
 }
 
-.tiptap-document pre {
-    overflow-x: auto;
-    padding: 16px;
-    color: #eef1f5;
-    background: #20242b;
-    border-radius: 8px;
-    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
-    font-size: .88rem;
-}
-
-.tiptap-document [data-youtube-video] {
+.ckeditor-wrapper .ck-content figure.media {
     overflow: hidden;
     width: 100%;
     margin-block: 22px;
@@ -1236,21 +1068,13 @@ td small {
     border-radius: 10px;
 }
 
-.tiptap-document [data-youtube-video] iframe {
+.ckeditor-wrapper .ck-content figure.media iframe {
     width: 100%;
     height: 100%;
     border: 0;
 }
 
-.tiptap-document p.is-editor-empty:first-child::before {
-    height: 0;
-    float: left;
-    color: #9ba1ab;
-    content: attr(data-placeholder);
-    pointer-events: none;
-}
-
-.tiptap-status {
+.ckeditor-status {
     display: flex;
     padding: 9px 14px;
     justify-content: space-between;
@@ -1258,6 +1082,12 @@ td small {
     color: var(--admin-muted);
     background: #fafbfc;
     font-size: .72rem;
+}
+
+.ckeditor-wrapper--error .ckeditor-surface {
+    min-height: 180px;
+    padding: 24px;
+    background: #fff5f5;
 }
 
 .publish-actions,
@@ -1612,28 +1442,14 @@ td small {
         flex-direction: column;
     }
 
-    .tiptap-editor-header,
-    .tiptap-editor-header > div:last-child {
+    .ckeditor-editor-header,
+    .ckeditor-editor-header > div:last-child {
         align-items: flex-start;
         flex-direction: column;
     }
 
-    .tiptap-editor-header > div:last-child {
+    .ckeditor-editor-header > div:last-child {
         gap: 7px;
-    }
-
-    .tiptap-more {
-        margin-left: 0;
-    }
-
-    .tiptap-more__panel {
-        position: fixed;
-        top: 90px;
-        right: 14px;
-        left: 14px;
-        width: auto;
-        max-height: calc(100vh - 120px);
-        overflow-y: auto;
     }
 
     .form-grid--three,
@@ -1652,7 +1468,7 @@ td small {
         padding: 18px;
     }
 
-    .tiptap-wrapper {
+    .ckeditor-wrapper {
         padding: 0;
     }
 

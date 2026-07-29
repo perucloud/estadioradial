@@ -27,8 +27,8 @@ class PostHtmlSanitizer
             ->allowElement('br')
             ->allowElement('hr')
             ->allowElement('a', ['href', 'title', 'target', 'rel'])
-            ->allowElement('img', ['src', 'alt', 'title'])
-            ->allowElement('figure')
+            ->allowElement('img', ['src', 'alt', 'title', 'width', 'height'])
+            ->allowElement('figure', ['class'])
             ->allowElement('figcaption')
             ->allowElement('span')
             ->allowElement('mark')
@@ -40,9 +40,9 @@ class PostHtmlSanitizer
             ->allowElement('tr')
             ->allowElement('th', ['colspan', 'rowspan', 'colwidth'])
             ->allowElement('td', ['colspan', 'rowspan', 'colwidth'])
-            ->allowElement('div', ['data-youtube-video'])
-            ->allowElement('iframe', ['src', 'width', 'height', 'allowfullscreen', 'loading', 'referrerpolicy', 'title'])
-            ->allowAttribute('style', ['p', 'h2', 'h3', 'h4', 'span', 'mark'])
+            ->allowElement('div', ['data-youtube-video', 'data-oembed-url'])
+            ->allowElement('iframe', ['src', 'width', 'height', 'allow', 'allowfullscreen', 'frameborder', 'loading', 'referrerpolicy', 'title'])
+            ->allowAttribute('style', ['p', 'h2', 'h3', 'h4', 'span', 'mark', 'figure'])
             ->allowLinkSchemes(['http', 'https', 'mailto', 'tel'])
             ->allowMediaSchemes(['https'])
             ->allowRelativeLinks()
@@ -73,11 +73,16 @@ class PostHtmlSanitizer
                 'youtube.com',
                 'www.youtube-nocookie.com',
                 'youtube-nocookie.com',
+                'player.vimeo.com',
+                'www.dailymotion.com',
+                'dailymotion.com',
+                'open.spotify.com',
             ], true);
 
             if (! $allowed) {
                 $container = $iframe->parentNode;
-                $target = $container instanceof \DOMElement && $container->hasAttribute('data-youtube-video')
+                $target = $container instanceof \DOMElement
+                    && ($container->hasAttribute('data-youtube-video') || $container->hasAttribute('data-oembed-url'))
                     ? $container
                     : $iframe;
                 $target->parentNode?->removeChild($target);
@@ -87,10 +92,35 @@ class PostHtmlSanitizer
 
             $iframe->setAttribute('width', (string) min(1200, max(320, (int) $iframe->getAttribute('width'))));
             $iframe->setAttribute('height', (string) min(675, max(180, (int) $iframe->getAttribute('height'))));
-            $iframe->setAttribute('title', 'Video de YouTube');
+            $iframe->setAttribute('title', 'Contenido multimedia');
         }
 
         foreach (iterator_to_array($document->getElementsByTagName('*')) as $element) {
+            if ($element->tagName === 'figure' && $element->hasAttribute('class')) {
+                $allowedClasses = [
+                    'image',
+                    'image_resized',
+                    'image-style-block-align-left',
+                    'image-style-block-align-right',
+                    'image-style-align-left',
+                    'image-style-align-center',
+                    'image-style-align-right',
+                    'image-style-side',
+                    'table',
+                    'media',
+                ];
+                $classes = array_values(array_intersect(
+                    preg_split('/\s+/', trim($element->getAttribute('class'))) ?: [],
+                    $allowedClasses,
+                ));
+
+                if ($classes === []) {
+                    $element->removeAttribute('class');
+                } else {
+                    $element->setAttribute('class', implode(' ', $classes));
+                }
+            }
+
             if (! $element->hasAttribute('style')) {
                 continue;
             }
@@ -98,15 +128,25 @@ class PostHtmlSanitizer
             $safeDeclarations = collect(explode(';', $element->getAttribute('style')))
                 ->map(fn (string $declaration) => array_map('trim', explode(':', $declaration, 2)))
                 ->filter(fn (array $parts) => count($parts) === 2)
-                ->filter(function (array $parts): bool {
+                ->filter(function (array $parts) use ($element): bool {
                     [$property, $value] = $parts;
+                    $property = mb_strtolower($property);
 
                     if ($property === 'text-align') {
                         return in_array($value, ['left', 'center', 'right', 'justify'], true);
                     }
 
-                    return in_array($property, ['color', 'background-color'], true)
-                        && (bool) preg_match('/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\))$/i', $value);
+                    if (in_array($property, ['color', 'background-color'], true)) {
+                        return (bool) preg_match('/^(#[0-9a-f]{3,8}|rgba?\([\d\s.,%]+\)|hsla?\([\d\s.,%deg]+\))$/i', $value);
+                    }
+
+                    if (in_array($property, ['margin-left', 'margin-right'], true)) {
+                        return (bool) preg_match('/^(?:0|(?:[1-9]\d?|1\d{2})(?:px|em|rem|%))$/i', $value);
+                    }
+
+                    return $element->tagName === 'figure'
+                        && $property === 'width'
+                        && (bool) preg_match('/^(?:[1-9]\d?|100)(?:\.\d+)?%$/', $value);
                 })
                 ->map(fn (array $parts) => implode(': ', $parts))
                 ->implode('; ');

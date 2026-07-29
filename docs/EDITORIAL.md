@@ -21,11 +21,11 @@ previa, edición y eliminación.
 Eliminar utiliza `SoftDeletes`: la noticia pasa al filtro **Papelera** y puede
 restaurarse sin perder contenido, relaciones ni metadatos.
 
-Tiptap ofrece formato editorial, color y resaltado controlados, alineación,
-listas, citas, enlaces, biblioteca Media, tablas, código, YouTube y pantalla
+CKEditor 5 ofrece formato editorial, colores controlados, alineación, listas,
+citas, enlaces, biblioteca Media, tablas, código fuente, multimedia y pantalla
 completa. El backend vuelve a sanitizar siempre el HTML. Solo conserva
-propiedades visuales permitidas y únicamente admite iframes de YouTube o
-YouTube Privacy Enhanced Mode.
+propiedades visuales permitidas y proveedores multimedia expresamente
+autorizados.
 
 ## Cambiar la prioridad
 

@@ -14,17 +14,6 @@
         "vite": "^8.0.0"
     },
     "dependencies": {
-        "@tiptap/core": "^3.29.2",
-        "@tiptap/extension-character-count": "^3.29.2",
-        "@tiptap/extension-highlight": "^3.29.2",
-        "@tiptap/extension-image": "^3.29.2",
-        "@tiptap/extension-placeholder": "^3.29.2",
-        "@tiptap/extension-table": "^3.29.2",
-        "@tiptap/extension-text-align": "^3.29.2",
-        "@tiptap/extension-text-style": "^3.29.2",
-        "@tiptap/extension-typography": "^3.29.2",
-        "@tiptap/extension-youtube": "^3.29.2",
-        "@tiptap/pm": "^3.29.2",
-        "@tiptap/starter-kit": "^3.29.2"
+        "ckeditor5": "^48.3.1"
     }
 }

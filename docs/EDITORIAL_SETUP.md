@@ -6,7 +6,7 @@ El Hito B añade:
 
 - `/admin/multimedia`: biblioteca de imágenes reutilizables;
 - `/admin/noticias`: listado y filtros editoriales;
-- `/admin/noticias/nueva`: editor completo con Tiptap;
+- `/admin/noticias/nueva`: editor completo con CKEditor 5;
 - vista previa privada antes de publicar;
 - estados de borrador, revisión, programación, publicación y archivo.
 
@@ -40,29 +40,28 @@ php artisan db:seed --class=LegacyMediaSeeder --force
 El importador solo acepta recursos confiables ubicados en
 `public/images/demo`; no habilita la carga pública de SVG.
 
-## Editor Tiptap
+## Editor CKEditor 5
 
-Tiptap 3 funciona como componente JavaScript aislado dentro del formulario
-Blade. Incluye:
+CKEditor 5 funciona como componente JavaScript aislado dentro del formulario
+Blade y se compila con Vite. Incluye:
 
 - encabezados H2–H4;
 - negrita, cursiva, subrayado y tachado;
-- listas, citas y separadores;
-- enlaces;
-- tablas;
+- colores, alineación, listas, sangría, citas y separadores;
+- enlaces, tablas y contenido multimedia;
 - imágenes seleccionadas desde la biblioteca;
 - deshacer y rehacer;
-- contador de palabras;
+- contador de palabras y vista de código fuente;
 - copia local automática y aviso de cambios sin guardar.
 
 El navegador entrega HTML semántico. El servidor vuelve a procesarlo con
 Symfony HTML Sanitizer y una lista explícita de elementos y atributos. Scripts,
 iframes, eventos, estilos y esquemas de URL no autorizados se descartan.
 
-Referencias técnicas:
-
-- <https://tiptap.dev/docs/editor/getting-started/install/vanilla-javascript>
-- <https://symfony.com/doc/current/html_sanitizer.html>
+La clave de licencia se configura como `VITE_CKEDITOR_LICENSE_KEY`. El valor
+`GPL` solo debe utilizarse cuando la licencia completa del proyecto sea
+compatible con GPL 2.0 o posterior; en otro caso debe utilizarse una clave
+comercial de CKEditor.
 
 ## Flujo editorial
 

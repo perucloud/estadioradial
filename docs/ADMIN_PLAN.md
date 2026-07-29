@@ -5,7 +5,7 @@
 | Hito | Estado |
 | --- | --- |
 | A — Acceso, seguridad, roles y dashboard base | Implementado |
-| B — Multimedia y noticias con Tiptap | Implementado |
+| B — Multimedia y noticias con CKEditor 5 | Implementado |
 | C — Categorías, hero y sliders | Implementado |
 | D — Programas, horarios y streaming | Pendiente |
 | E — Publicidad, sidebars y apariencia | Pendiente |
@@ -36,7 +36,7 @@ La primera versión permitirá:
 - configurar sliders, sidebars, redes sociales y datos institucionales;
 - administrar publicidad y sus periodos de vigencia;
 - editar SEO básico;
-- editar noticias con Tiptap Rich Text Editor;
+- editar noticias con CKEditor 5;
 - consultar un dashboard estadístico con indicadores y gráficos;
 - consultar actividad y contenido pendiente.
 
@@ -236,14 +236,14 @@ Crear `media` con:
   registros y paginación conservando la consulta.
 - Formulario de creación y edición.
 - Selector de categoría, etiquetas y multimedia.
-- **Tiptap Rich Text Editor** como editor oficial del cuerpo de noticias.
+- **CKEditor 5** como editor oficial del cuerpo de noticias.
 - Vista previa sin publicar.
 - Acciones de enviar a revisión, aprobar, programar, publicar y archivar.
 - Duplicar noticia.
 - Acciones visuales de vista previa, edición y eliminación recuperable.
 - Papelera filtrable y restauración desde el mismo listado.
 
-#### Configuración de Tiptap
+#### Configuración de CKEditor 5
 
 - Barra editorial profesional con párrafos, encabezados permitidos, negrita,
   cursiva, subrayado, tachado, color, resaltado, alineación, listas, citas,
@@ -538,7 +538,7 @@ gráficos se construirán después sobre métricas reales.
 
 - Blade y JavaScript ligero, coherentes con el portal actual.
 - Sin SPA obligatoria.
-- Tiptap se integrará como componente JavaScript aislado dentro del formulario
+- CKEditor 5 se integrará como componente JavaScript aislado dentro del formulario
   Laravel, sin convertir todo el panel en una SPA.
 - Formularios Laravel con Form Requests.
 - Roles, permisos granulares, middleware y Policies para autorización.
@@ -584,7 +584,7 @@ npm run build
 | Hito | Resultado demostrable |
 | --- | --- |
 | A | Login, CAPTCHA, recuperación, roles y estructura del dashboard |
-| B | Multimedia y noticias administrables con Tiptap |
+| B | Multimedia y noticias administrables con CKEditor 5 |
 | C | Categorías, hero y sliders configurables |
 | D | Programas, horarios y streaming configurables |
 | E | Publicidad, sidebars, redes y apariencia |

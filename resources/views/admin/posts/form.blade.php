@@ -39,95 +39,24 @@
                 </label>
             </section>
 
-            <section class="panel tiptap-wrapper" data-tiptap data-draft-key="{{ $post?->id ?? 'new' }}">
-                <div class="tiptap-editor-header">
+            <section class="panel ckeditor-wrapper" data-ckeditor data-draft-key="{{ $post?->id ?? 'new' }}" wire:ignore>
+                <div class="ckeditor-editor-header">
                     <div>
                         <span class="eyebrow">Contenido</span>
-                        <strong>Editor de noticia</strong>
+                        <strong>CKEditor 5</strong>
                     </div>
                     <div>
-                        <button class="button button--quiet button--compact" type="button" data-editor-image>
+                        <button class="button button--quiet button--compact" type="button" data-open-media-library>
                             <span aria-hidden="true">▧</span> Biblioteca Media
                         </button>
-                        <span data-tiptap-character-count>0 caracteres</span>
+                        <span data-ckeditor-character-count>0 caracteres</span>
                     </div>
                 </div>
-
-                <div class="tiptap-toolbar" role="toolbar" aria-label="Formato de la noticia">
-                    <div class="tiptap-toolbar__group">
-                        <button type="button" data-editor-command="undo" title="Deshacer" aria-label="Deshacer">↶</button>
-                        <button type="button" data-editor-command="redo" title="Rehacer" aria-label="Rehacer">↷</button>
-                    </div>
-
-                    <label class="tiptap-block-select">
-                        <span class="sr-only">Tipo de bloque</span>
-                        <select data-editor-block aria-label="Tipo de bloque">
-                            <option value="paragraph">Párrafo</option>
-                            <option value="heading2">Título H2</option>
-                            <option value="heading3">Título H3</option>
-                            <option value="heading4">Título H4</option>
-                            <option value="codeBlock">Bloque de código</option>
-                        </select>
-                    </label>
-
-                    <div class="tiptap-toolbar__group">
-                        <button type="button" data-editor-command="bold" title="Negrita" aria-label="Negrita"><strong>B</strong></button>
-                        <button type="button" data-editor-command="italic" title="Cursiva" aria-label="Cursiva"><em>I</em></button>
-                        <button type="button" data-editor-command="underline" title="Subrayado" aria-label="Subrayado"><u>U</u></button>
-                        <button type="button" data-editor-command="strike" title="Tachado" aria-label="Tachado"><s>S</s></button>
-                    </div>
-
-                    <div class="tiptap-toolbar__group">
-                        <label class="tiptap-color-control" title="Color del texto">
-                            <span aria-hidden="true">A</span>
-                            <input type="color" value="#202226" data-editor-color aria-label="Color del texto">
-                        </label>
-                        <label class="tiptap-color-control tiptap-color-control--highlight" title="Resaltar texto">
-                            <span aria-hidden="true">◆</span>
-                            <input type="color" value="#fff2a8" data-editor-highlight aria-label="Color de resaltado">
-                        </label>
-                    </div>
-
-                    <div class="tiptap-toolbar__group">
-                        <button type="button" data-editor-align="left" title="Alinear a la izquierda" aria-label="Alinear a la izquierda">≡</button>
-                        <button type="button" data-editor-align="center" title="Centrar" aria-label="Centrar">≡</button>
-                        <button type="button" data-editor-align="right" title="Alinear a la derecha" aria-label="Alinear a la derecha">≡</button>
-                        <button type="button" data-editor-align="justify" title="Justificar" aria-label="Justificar">≣</button>
-                    </div>
-
-                    <details class="tiptap-more">
-                        <summary title="Más herramientas" aria-label="Más herramientas">•••</summary>
-                        <div class="tiptap-more__panel">
-                            <div class="tiptap-more__group">
-                                <button type="button" data-editor-command="bulletList" title="Lista con viñetas">☷ <span>Viñetas</span></button>
-                                <button type="button" data-editor-command="orderedList" title="Lista numerada">1. <span>Numerada</span></button>
-                                <button type="button" data-editor-command="blockquote" title="Cita">❞ <span>Cita</span></button>
-                                <button type="button" data-editor-link title="Insertar enlace">🔗 <span>Enlace</span></button>
-                                <button type="button" data-editor-image title="Insertar imagen">▧ <span>Media</span></button>
-                                <button type="button" data-editor-video title="Insertar video de YouTube">▶ <span>Video</span></button>
-                                <button type="button" data-editor-command="table" title="Insertar tabla">▦ <span>Tabla</span></button>
-                                <button type="button" data-editor-command="codeBlock" title="Bloque de código">&lt;/&gt; <span>Código</span></button>
-                                <button type="button" data-editor-command="horizontalRule" title="Separador">― <span>Separador</span></button>
-                            </div>
-                            <div class="tiptap-more__group tiptap-more__group--table">
-                                <button type="button" data-editor-command="addRowAfter" data-table-command>＋ fila</button>
-                                <button type="button" data-editor-command="addColumnAfter" data-table-command>＋ columna</button>
-                                <button type="button" data-editor-command="deleteRow" data-table-command>− fila</button>
-                                <button type="button" data-editor-command="deleteColumn" data-table-command>− columna</button>
-                                <button type="button" data-editor-command="deleteTable" data-table-command>Eliminar tabla</button>
-                            </div>
-                            <div class="tiptap-more__group">
-                                <button type="button" data-editor-clear title="Limpiar formato">Tx <span>Limpiar formato</span></button>
-                                <button type="button" data-editor-fullscreen title="Pantalla completa">⛶ <span>Pantalla completa</span></button>
-                            </div>
-                        </div>
-                    </details>
-                </div>
-                <textarea name="body" data-tiptap-input hidden>{{ old('body', $post?->body) }}</textarea>
-                <div class="tiptap-surface" data-tiptap-surface></div>
-                <div class="tiptap-status">
+                <textarea name="body" data-ckeditor-input hidden>{{ old('body', $post?->body) }}</textarea>
+                <div class="ckeditor-surface" data-ckeditor-surface></div>
+                <div class="ckeditor-status">
                     <span data-autosave-status>Copia local activa</span>
-                    <span data-tiptap-count>0 palabras</span>
+                    <span data-ckeditor-word-count>0 palabras</span>
                 </div>
                 @error('body') <small class="field-error">{{ $message }}</small> @enderror
             </section>

@@ -44,7 +44,7 @@ class EditorialAdminTest extends TestCase
         Storage::disk('public')->assertExists($media->variants['article']);
     }
 
-    public function test_editor_can_open_media_library_and_tiptap_editor(): void
+    public function test_editor_can_open_media_library_and_ckeditor_editor(): void
     {
         $editor = $this->userWithRole('editor');
         $this->category();
@@ -59,12 +59,11 @@ class EditorialAdminTest extends TestCase
         $this->actingAs($editor)
             ->get(route('admin.posts.create'))
             ->assertOk()
-            ->assertSee('data-tiptap', false)
+            ->assertSee('data-ckeditor', false)
+            ->assertSee('CKEditor 5')
             ->assertSee('Copia local activa')
             ->assertSee('Biblioteca Media')
-            ->assertSee('data-editor-fullscreen', false)
-            ->assertSee('data-editor-video', false)
-            ->assertSee('data-editor-highlight', false)
+            ->assertSee('data-ckeditor-character-count', false)
             ->assertSee('Imagen principal');
     }
 
@@ -105,7 +104,7 @@ class EditorialAdminTest extends TestCase
         $this->assertDatabaseCount('media', 0);
     }
 
-    public function test_editor_can_create_a_sanitized_draft_with_tiptap_html(): void
+    public function test_editor_can_create_a_sanitized_draft_with_ckeditor_html(): void
     {
         $editor = $this->userWithRole('editor');
         $category = $this->category();
@@ -227,25 +226,30 @@ class EditorialAdminTest extends TestCase
         $sanitizer = app(PostHtmlSanitizer::class);
         $html = <<<'HTML'
             <h2 style="text-align: center; position: fixed">Titular</h2>
-            <p><span style="color: #c91f26; background-image: url(javascript:alert(1))">Texto</span></p>
+            <p style="margin-left: 40px"><span style="color: hsl(357, 73%, 45%); background-image: url(javascript:alert(1))">Texto</span></p>
             <mark style="background-color: #fff2a8">Dato</mark>
             <pre><code>echo "seguro";</code></pre>
-            <div data-youtube-video><iframe src="https://www.youtube-nocookie.com/embed/abc123" width="800" height="450"></iframe></div>
-            <div data-youtube-video><iframe src="https://example.com/embed/unsafe"></iframe></div>
+            <figure class="image image_resized clase-insegura" style="width: 75%; position: fixed"><img src="/storage/media/noticia.webp" alt="Noticia"><figcaption>Crédito</figcaption></figure>
+            <figure class="media"><div data-oembed-url="https://vimeo.com/123"><iframe src="https://player.vimeo.com/video/123" width="800" height="450"></iframe></div></figure>
+            <figure class="media"><div data-oembed-url="https://example.com/unsafe"><iframe src="https://example.com/embed/unsafe"></iframe></div></figure>
             HTML;
 
         $clean = $sanitizer->sanitize($html);
 
         $this->assertStringContainsString('text-align: center', $clean);
-        $this->assertStringContainsString('color: #c91f26', $clean);
+        $this->assertStringContainsString('color: hsl(357, 73%, 45%)', $clean);
         $this->assertStringContainsString('background-color: #fff2a8', $clean);
+        $this->assertStringContainsString('margin-left: 40px', $clean);
+        $this->assertStringContainsString('class="image image_resized"', $clean);
+        $this->assertStringContainsString('width: 75%', $clean);
         $this->assertStringContainsString(
             '<pre><code>echo "seguro";</code></pre>',
             html_entity_decode($clean, ENT_QUOTES | ENT_HTML5),
         );
-        $this->assertStringContainsString('youtube-nocookie.com/embed/abc123', $clean);
+        $this->assertStringContainsString('player.vimeo.com/video/123', $clean);
         $this->assertStringNotContainsString('position:', $clean);
         $this->assertStringNotContainsString('background-image', $clean);
+        $this->assertStringNotContainsString('clase-insegura', $clean);
         $this->assertStringNotContainsString('example.com', $clean);
     }
 
