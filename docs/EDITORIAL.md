@@ -259,3 +259,19 @@ La sincronización es idempotente, conserva los IDs que ya usan las noticias y
 reconcilia los registros por fuente, UBIGEO y jerarquía. El panel mantiene la
 opción de crear una ubicación personalizada cuando el catálogo no cubra un caso
 especial.
+
+## Programas, horarios y streaming
+
+El Hito D se administra desde tres módulos:
+
+- `/admin/programas`: contenido público, imagen de Media, orden, estado y
+  asociación con usuarios de rol Locutor;
+- `/admin/programacion-radial`: parrilla semanal, copia a varios días y
+  validación de cruces entre espacios activos;
+- `/admin/streaming`: señales de audio y video, formato, prioridad, portada,
+  estado y mensaje alternativo.
+
+Las señales solo admiten URL HTTPS. El hosting no retransmite el contenido: el
+reproductor público se conecta directamente al proveedor. Cada tipo puede tener
+una sola señal principal y, cuando no hay una señal activa, `/en-vivo` presenta
+el mensaje alternativo configurado sin romper la página.

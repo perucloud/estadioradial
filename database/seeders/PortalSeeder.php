@@ -224,10 +224,10 @@ class PortalSeeder extends Seeder
                 'hosts' => 'Lucía Reyes',
                 'image' => '/images/demo/program-music.svg',
             ],
-        ])->map(function (array $data) {
+        ])->map(function (array $data, int $index) {
             return Program::query()->updateOrCreate(
                 ['slug' => $data['slug']],
-                $data + ['is_active' => true],
+                $data + ['is_active' => true, 'display_order' => ($index + 1) * 10],
             );
         });
 
@@ -266,6 +266,7 @@ class PortalSeeder extends Seeder
                 'url' => null,
                 'cover' => '/images/demo/stream-cover.svg',
                 'is_active' => true,
+                'is_primary' => true,
                 'sort_order' => 1,
             ],
         );
@@ -276,6 +277,7 @@ class PortalSeeder extends Seeder
                 'format' => 'youtube',
                 'url' => null,
                 'is_active' => false,
+                'is_primary' => true,
                 'sort_order' => 2,
             ],
         );

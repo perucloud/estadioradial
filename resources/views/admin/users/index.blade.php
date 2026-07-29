@@ -2,11 +2,11 @@
 
 @section('title', 'Usuarios')
 @section('eyebrow', 'Seguridad y acceso')
-@section('heading', 'Usuarios')
+@section('heading', ($roleFilter ?? '') === 'locutor' ? 'Locutores' : 'Usuarios')
 
 @section('content')
     <div class="page-actions">
-        <p>Administra las cuentas sin exceder tu nivel de autorización.</p>
+        <p>{{ ($roleFilter ?? '') === 'locutor' ? 'Administra las cuentas que pueden asociarse a programas radiales.' : 'Administra las cuentas sin exceder tu nivel de autorización.' }}</p>
         @if (auth()->user()->hasPermission('users.create.editorial'))
             <a class="button button--primary" href="{{ route('admin.users.create') }}">Nuevo usuario</a>
         @endif

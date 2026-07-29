@@ -59,6 +59,16 @@ class Media extends Model
         return $this->belongsToMany(Post::class);
     }
 
+    public function programs(): HasMany
+    {
+        return $this->hasMany(Program::class);
+    }
+
+    public function streams(): HasMany
+    {
+        return $this->hasMany(Stream::class);
+    }
+
     public function url(string $variant = 'article'): string
     {
         $path = $this->variants[$variant] ?? $this->path;
@@ -68,6 +78,9 @@ class Media extends Model
 
     public function isInUse(): bool
     {
-        return $this->featuredPosts()->exists() || $this->inlinePosts()->exists();
+        return $this->featuredPosts()->exists()
+            || $this->inlinePosts()->exists()
+            || $this->programs()->exists()
+            || $this->streams()->exists();
     }
 }

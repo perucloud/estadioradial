@@ -105,12 +105,16 @@ class HomeController extends Controller
             ->get();
 
         $programs = Program::query()
+            ->with('media')
             ->where('is_active', true)
+            ->orderBy('display_order')
             ->take(4)
             ->get();
 
         $todaySchedules = Schedule::query()
             ->with('program')
+            ->where('is_active', true)
+            ->whereHas('program', fn ($query) => $query->where('is_active', true))
             ->where('day_of_week', now()->dayOfWeekIso)
             ->orderBy('starts_at')
             ->get();
@@ -151,6 +155,7 @@ class HomeController extends Controller
             'audioStream' => Stream::query()
                 ->where('type', 'audio')
                 ->where('is_active', true)
+                ->orderByDesc('is_primary')
                 ->orderBy('sort_order')
                 ->first(),
         ]);

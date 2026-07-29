@@ -7,7 +7,7 @@
 | A — Acceso, seguridad, roles y dashboard base | Implementado |
 | B — Multimedia y noticias con CKEditor 5 | Implementado |
 | C — Categorías, hero y sliders | Implementado |
-| D — Programas, horarios y streaming | Pendiente |
+| D — Programas, horarios y streaming | Implementado |
 | E — Publicidad, sidebars y apariencia | Pendiente |
 | F — Estadísticas, auditoría, SEO y mantenimiento | Pendiente |
 | G — PWA y despliegue | Pendiente |
@@ -626,13 +626,13 @@ pueda, sin modificar código:
 
 ## 12. Próximo bloque a ejecutar
 
-Los hitos A, B y C están implementados. El siguiente bloque es el **Hito D**:
+Los hitos A, B, C y D están implementados. El siguiente bloque es el **Hito E**:
 
-1. CRUD de programas y perfiles de locutores;
-2. programación semanal sin cruces de horario;
-3. configuración de señales de audio;
-4. configuración opcional de video;
-5. estado y señal alternativa cuando el proveedor no esté disponible;
-6. pruebas de reproductor, horarios y permisos de locutor.
+1. CRUD y programación de publicidad;
+2. administración visual de banners;
+3. configuración completa de sidebars;
+4. redes sociales y datos institucionales;
+5. colores y elementos globales de apariencia;
+6. pruebas de vigencia, posiciones y permisos.
 
 La PWA y las estadísticas avanzadas permanecen en sus hitos posteriores.

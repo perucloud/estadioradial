@@ -10,16 +10,19 @@ class LiveController extends Controller
     public function __invoke(): View
     {
         return view('live.index', [
-            'audioStream' => Stream::query()
-                ->where('type', 'audio')
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->first(),
-            'videoStream' => Stream::query()
-                ->where('type', 'video')
-                ->where('is_active', true)
-                ->orderBy('sort_order')
-                ->first(),
+            'audioStream' => $this->stream('audio'),
+            'videoStream' => $this->stream('video'),
         ]);
+    }
+
+    private function stream(string $type): ?Stream
+    {
+        return Stream::query()
+            ->with('media')
+            ->where('type', $type)
+            ->orderByDesc('is_active')
+            ->orderByDesc('is_primary')
+            ->orderBy('sort_order')
+            ->first();
     }
 }

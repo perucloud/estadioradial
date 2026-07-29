@@ -10,13 +10,16 @@
 @section('content')
     <section class="program-detail">
         <div class="container program-detail__grid">
-            <img src="{{ $program->image }}" alt="">
+            <img src="{{ $program->imageUrl() }}" alt="{{ $program->title }}">
             <div>
                 <span class="eyebrow">Programa</span>
                 <h1>{{ $program->title }}</h1>
                 <p class="program-detail__lead">{{ $program->summary }}</p>
                 @if ($program->hosts)
                     <p><strong>Conduce:</strong> {{ $program->hosts }}</p>
+                @endif
+                @if ($program->presenters->isNotEmpty())
+                    <p><strong>Locutores:</strong> {{ $program->presenters->pluck('name')->join(', ') }}</p>
                 @endif
                 <p>{{ $program->description }}</p>
                 <a class="button button--primary" href="{{ route('live') }}">Escuchar radio</a>
@@ -38,4 +41,3 @@
         </div>
     </section>
 @endsection
-

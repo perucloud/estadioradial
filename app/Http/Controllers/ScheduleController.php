@@ -15,6 +15,8 @@ class ScheduleController extends Controller
         return view('schedule.index', [
             'schedules' => Schedule::query()
                 ->with('program')
+                ->where('is_active', true)
+                ->whereHas('program', fn ($query) => $query->where('is_active', true))
                 ->orderBy('day_of_week')
                 ->orderBy('starts_at')
                 ->get()

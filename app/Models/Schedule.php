@@ -10,7 +10,12 @@ class Schedule extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['program_id', 'day_of_week', 'starts_at', 'ends_at'];
+    protected $fillable = ['program_id', 'day_of_week', 'starts_at', 'ends_at', 'is_active'];
+
+    protected function casts(): array
+    {
+        return ['is_active' => 'boolean'];
+    }
 
     public function program(): BelongsTo
     {

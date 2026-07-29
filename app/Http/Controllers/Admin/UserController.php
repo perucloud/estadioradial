@@ -16,10 +16,20 @@ use Illuminate\View\View;
 
 class UserController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
+        $role = in_array($request->query('role'), ['superadmin', 'admin', 'editor', 'locutor'], true)
+            ? (string) $request->query('role')
+            : '';
+
         return view('admin.users.index', [
-            'users' => User::query()->with('roles')->orderBy('name')->paginate(20),
+            'users' => User::query()
+                ->with('roles')
+                ->when($role !== '', fn ($query) => $query->whereHas('roles', fn ($query) => $query->where('slug', $role)))
+                ->orderBy('name')
+                ->paginate(20)
+                ->withQueryString(),
+            'roleFilter' => $role,
         ]);
     }
 

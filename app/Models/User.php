@@ -39,6 +39,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Permission::class);
     }
 
+    public function programs(): BelongsToMany
+    {
+        return $this->belongsToMany(Program::class);
+    }
+
     public function hasRole(string $role): bool
     {
         return $this->roles->contains('slug', $role);

@@ -63,23 +63,29 @@
                 </a>
             @endif
 
-            @if (auth()->user()->hasPermission('schedule.manage'))
-                <span class="admin-nav__disabled">
-                    <x-admin-nav-icon name="lista.png" /> Programación radial <small>Próximamente</small>
-                </span>
-            @endif
+              @if (auth()->user()->hasPermission('schedule.manage'))
+                  <a class="{{ request()->routeIs('admin.schedule.*') ? 'is-active' : '' }}" href="{{ route('admin.schedule.index') }}">
+                      <x-admin-nav-icon name="lista.png" /> Programación radial
+                  </a>
+              @endif
 
-            @if (auth()->user()->hasPermission('programs.manage'))
-                <span class="admin-nav__disabled">
-                    <x-admin-nav-icon name="lista2.png" /> Programas <small>Próximamente</small>
-                </span>
-            @endif
+              @if (auth()->user()->hasPermission('programs.manage'))
+                  <a class="{{ request()->routeIs('admin.programs.*') ? 'is-active' : '' }}" href="{{ route('admin.programs.index') }}">
+                      <x-admin-nav-icon name="lista2.png" /> Programas
+                  </a>
+              @endif
 
-            @if (auth()->user()->hasPermission('users.view'))
-                <span class="admin-nav__disabled">
-                    <x-admin-nav-icon name="group.png" /> Locutores <small>Próximamente</small>
-                </span>
-            @endif
+              @if (auth()->user()->hasPermission('users.view'))
+                  <a class="{{ request('role') === 'locutor' ? 'is-active' : '' }}" href="{{ route('admin.users.index', ['role' => 'locutor']) }}">
+                      <x-admin-nav-icon name="group.png" /> Locutores
+                  </a>
+              @endif
+
+              @if (auth()->user()->hasPermission('stream.manage'))
+                  <a class="{{ request()->routeIs('admin.streams.*') ? 'is-active' : '' }}" href="{{ route('admin.streams.index') }}">
+                      <x-admin-nav-icon name="audio.png" /> Streaming
+                  </a>
+              @endif
 
             @if (auth()->user()->hasPermission('advertising.manage'))
                 <span class="admin-nav__disabled">

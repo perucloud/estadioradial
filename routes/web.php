@@ -7,6 +7,9 @@ use App\Http\Controllers\Admin\LocationController as AdminLocationController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\PasswordController as AdminPasswordController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
+use App\Http\Controllers\Admin\ProgramController as AdminProgramController;
+use App\Http\Controllers\Admin\ScheduleController as AdminScheduleController;
+use App\Http\Controllers\Admin\StreamController as AdminStreamController;
 use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -117,6 +120,29 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
                 ->name('locations.restore');
             Route::delete('/ubicaciones/{location}/eliminar-definitivamente', [AdminLocationController::class, 'forceDestroy'])
                 ->name('locations.force-destroy');
+        });
+
+        Route::middleware('permission:programs.manage')->group(function () {
+            Route::get('/programas', [AdminProgramController::class, 'index'])->name('programs.index');
+            Route::get('/programas/nuevo', [AdminProgramController::class, 'create'])->name('programs.create');
+            Route::post('/programas', [AdminProgramController::class, 'store'])->name('programs.store');
+            Route::get('/programas/{program}/editar', [AdminProgramController::class, 'edit'])->name('programs.edit');
+            Route::put('/programas/{program}', [AdminProgramController::class, 'update'])->name('programs.update');
+            Route::delete('/programas/{program}', [AdminProgramController::class, 'destroy'])->name('programs.destroy');
+        });
+
+        Route::middleware('permission:schedule.manage')->group(function () {
+            Route::get('/programacion-radial', [AdminScheduleController::class, 'index'])->name('schedule.index');
+            Route::post('/programacion-radial', [AdminScheduleController::class, 'store'])->name('schedule.store');
+            Route::put('/programacion-radial/{schedule}', [AdminScheduleController::class, 'update'])->name('schedule.update');
+            Route::delete('/programacion-radial/{schedule}', [AdminScheduleController::class, 'destroy'])->name('schedule.destroy');
+        });
+
+        Route::middleware('permission:stream.manage')->group(function () {
+            Route::get('/streaming', [AdminStreamController::class, 'index'])->name('streams.index');
+            Route::post('/streaming', [AdminStreamController::class, 'store'])->name('streams.store');
+            Route::put('/streaming/{stream}', [AdminStreamController::class, 'update'])->name('streams.update');
+            Route::delete('/streaming/{stream}', [AdminStreamController::class, 'destroy'])->name('streams.destroy');
         });
 
         Route::middleware('permission:appearance.manage')->group(function () {

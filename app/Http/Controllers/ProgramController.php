@@ -14,7 +14,9 @@ class ProgramController extends Controller
     {
         return view('programs.index', [
             'programs' => Program::query()
+                ->with('media')
                 ->where('is_active', true)
+                ->orderBy('display_order')
                 ->orderBy('title')
                 ->paginate(12),
         ] + $this->sidebarData->section());
@@ -26,7 +28,9 @@ class ProgramController extends Controller
 
         return view('programs.show', [
             'program' => $program->load([
-                'schedules' => fn ($query) => $query->orderBy('day_of_week')->orderBy('starts_at'),
+                'media',
+                'presenters',
+                'schedules' => fn ($query) => $query->where('is_active', true)->orderBy('day_of_week')->orderBy('starts_at'),
             ]),
         ]);
     }

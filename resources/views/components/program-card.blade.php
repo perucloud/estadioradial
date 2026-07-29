@@ -2,7 +2,7 @@
 
 <article class="program-card">
     <a href="{{ route('programs.show', $program) }}">
-        <img src="{{ $program->image }}" alt="" loading="lazy">
+        <img src="{{ $program->imageUrl() }}" alt="{{ $program->title }}" loading="lazy">
         <div class="program-card__body">
             <h3>{{ $program->title }}</h3>
             <p>{{ $program->summary }}</p>
@@ -10,4 +10,3 @@
         </div>
     </a>
 </article>
-
