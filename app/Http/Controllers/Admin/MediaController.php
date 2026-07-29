@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Media;
 use App\Support\MediaProcessor;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -13,6 +14,40 @@ use Illuminate\View\View;
 
 class MediaController extends Controller
 {
+    public function library(Request $request): JsonResponse
+    {
+        $search = mb_substr(trim((string) $request->query('q')), 0, 100);
+        $perPage = min(60, max(12, $request->integer('per_page', 48)));
+        $mediaItems = Media::query()
+            ->when($search !== '', fn ($query) => $query
+                ->where(fn ($query) => $query
+                    ->where('original_name', 'like', "%{$search}%")
+                    ->orWhere('alt_text', 'like', "%{$search}%")
+                    ->orWhere('caption', 'like', "%{$search}%")
+                    ->orWhere('credit', 'like', "%{$search}%")))
+            ->latest()
+            ->paginate($perPage);
+
+        return response()->json([
+            'data' => $mediaItems->getCollection()
+                ->map(fn (Media $media): array => [
+                    'id' => $media->id,
+                    'name' => $media->original_name,
+                    'alt_text' => $media->alt_text,
+                    'caption' => $media->caption,
+                    'thumb_url' => $media->url('thumb'),
+                    'article_url' => $media->url('article'),
+                    'created_at' => $media->created_at?->toIso8601String(),
+                ])
+                ->values(),
+            'meta' => [
+                'current_page' => $mediaItems->currentPage(),
+                'last_page' => $mediaItems->lastPage(),
+                'total' => $mediaItems->total(),
+            ],
+        ]);
+    }
+
     public function index(Request $request): View
     {
         $search = mb_substr(trim((string) $request->query('q')), 0, 100);

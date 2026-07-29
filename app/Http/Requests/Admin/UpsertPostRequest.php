@@ -33,8 +33,43 @@ class UpsertPostRequest extends FormRequest
             'source_url' => ['nullable', 'url:http,https', 'max:2000'],
             'seo_title' => ['nullable', 'string', 'max:70'],
             'seo_description' => ['nullable', 'string', 'max:170'],
-            'scheduled_for' => ['nullable', 'date', 'after:now'],
+            'scheduled_for' => [
+                'exclude_unless:intent,schedule',
+                'required_if:intent,schedule',
+                'date',
+                'after:now',
+            ],
             'intent' => ['required', Rule::in(['preserve', 'draft', 'review', 'publish', 'schedule'])],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Escribe el título de la noticia.',
+            'excerpt.required' => 'Escribe un resumen para la noticia.',
+            'body.required' => 'Escribe el contenido completo de la noticia.',
+            'category_id.required' => 'Selecciona una categoría.',
+            'category_id.exists' => 'La categoría seleccionada ya no está disponible.',
+            'media_id.required' => 'Selecciona una imagen destacada.',
+            'media_id.exists' => 'La imagen destacada seleccionada ya no está disponible.',
+            'slug.regex' => 'El slug solo puede contener letras minúsculas, números y guiones.',
+            'scheduled_for.required_if' => 'Indica la fecha y hora en que se publicará la noticia.',
+            'scheduled_for.date' => 'La fecha de programación no tiene un formato válido.',
+            'scheduled_for.after' => 'La fecha de programación debe ser posterior a la hora actual.',
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'scheduled_for' => 'fecha de programación',
         ];
     }
 

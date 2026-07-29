@@ -45,6 +45,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
 
         Route::middleware('permission:media.manage')->group(function () {
             Route::get('/multimedia', [AdminMediaController::class, 'index'])->name('media.index');
+            Route::get('/multimedia/biblioteca', [AdminMediaController::class, 'library'])->name('media.library');
             Route::post('/multimedia', [AdminMediaController::class, 'store'])->name('media.store');
             Route::put('/multimedia/{media}', [AdminMediaController::class, 'update'])->name('media.update');
             Route::delete('/multimedia/{media}', [AdminMediaController::class, 'destroy'])->name('media.destroy');

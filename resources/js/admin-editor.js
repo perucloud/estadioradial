@@ -241,7 +241,6 @@ const initialiseEditor = async (wrapper) => {
 
         const events = new AbortController();
         const signal = events.signal;
-        const dialog = document.querySelector('[data-media-dialog]');
         const inlineMediaInput = form.querySelector('[name="inline_media_ids"]');
         const inlineIds = new Set((inlineMediaInput?.value || '').split(',').filter(Boolean));
 
@@ -266,26 +265,21 @@ const initialiseEditor = async (wrapper) => {
             input.dispatchEvent(new Event('change', { bubbles: true }));
         });
 
-        wrapper.querySelectorAll('[data-open-media-library]').forEach((button) => {
-            button.addEventListener('click', () => dialog?.showModal(), { signal });
-        });
+        form.addEventListener('media-picker:selected', (event) => {
+            if (event.detail.mode !== 'inline') return;
 
-        dialog?.querySelector('[data-dialog-close]')?.addEventListener('click', () => dialog.close(), { signal });
-        dialog?.querySelectorAll('[data-insert-media]').forEach((button) => {
-            button.addEventListener('click', () => {
-                editor.execute('insertImage', {
-                    source: [{
-                        src: button.dataset.mediaUrl,
-                        alt: button.dataset.mediaAlt,
-                    }],
-                });
-                editor.editing.view.focus();
+            const media = event.detail.media;
+            editor.execute('insertImage', {
+                source: [{
+                    src: media.article_url,
+                    alt: media.alt_text,
+                }],
+            });
+            editor.editing.view.focus();
 
-                inlineIds.add(button.dataset.mediaId);
-                if (inlineMediaInput) inlineMediaInput.value = [...inlineIds].join(',');
-                dialog.close();
-            }, { signal });
-        });
+            inlineIds.add(String(media.id));
+            if (inlineMediaInput) inlineMediaInput.value = [...inlineIds].join(',');
+        }, { signal });
 
         form.addEventListener('submit', () => {
             updateInput(input, wrapper, editor);

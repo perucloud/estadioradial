@@ -3,6 +3,7 @@
 @php
     $editing = $post !== null;
     $selectedMedia = old('media_id', $post?->media_id);
+    $selectedMediaItem = $mediaItems->firstWhere('id', (int) $selectedMedia);
     $selectedTags = old('tag_ids', $post?->tags->pluck('id')->all() ?? []);
     $inlineMediaIds = old('inline_media_ids', $post?->inlineMedia->pluck('id')->join(',') ?? '');
 @endphp
@@ -46,7 +47,12 @@
                         <strong>CKEditor 5</strong>
                     </div>
                     <div>
-                        <button class="button button--quiet button--compact" type="button" data-open-media-library>
+                        <button
+                            class="button button--quiet button--compact"
+                            type="button"
+                            data-open-media-picker
+                            data-media-picker-mode="inline"
+                        >
                             <span aria-hidden="true">▧</span> Biblioteca Media
                         </button>
                         <span data-ckeditor-character-count>0 caracteres</span>
@@ -109,22 +115,50 @@
                 </div>
             </section>
 
-            <section class="panel">
+            <section class="panel featured-media-panel">
                 <div class="panel__header">
-                    <div><span class="eyebrow">Portada</span><h2>Imagen principal</h2></div>
-                    <a class="table-link" href="{{ route('admin.media.index') }}" target="_blank">Biblioteca</a>
+                    <div>
+                        <span class="eyebrow">Portada</span>
+                        <h2>Imagen destacada</h2>
+                    </div>
                 </div>
-                <div class="featured-media-grid">
-                    @forelse ($mediaItems as $media)
-                        <label class="featured-media-option">
-                            <input type="radio" name="media_id" value="{{ $media->id }}" @checked((int) $selectedMedia === $media->id) required>
-                            <img src="{{ $media->url('thumb') }}" alt="{{ $media->alt_text }}" loading="lazy">
-                            <span>{{ Str::limit($media->alt_text, 50) }}</span>
-                        </label>
-                    @empty
-                        <p class="empty-state">Primero sube una imagen a Multimedia.</p>
-                    @endforelse
+                <input
+                    type="hidden"
+                    name="media_id"
+                    value="{{ $selectedMedia }}"
+                    data-featured-media-input
+                >
+                <div
+                    class="featured-media-preview {{ $selectedMediaItem ? 'has-image' : '' }}"
+                    data-featured-media-preview
+                >
+                    <div class="featured-media-preview__placeholder" data-featured-media-placeholder @if ($selectedMediaItem) hidden @endif>
+                        <span aria-hidden="true">▧</span>
+                        <strong>Selecciona la imagen de portada</strong>
+                        <small>Se utilizará en la noticia, las tarjetas y los módulos destacados.</small>
+                    </div>
+                    <img
+                        src="{{ $selectedMediaItem?->url('thumb') ?? '' }}"
+                        alt="{{ $selectedMediaItem?->alt_text ?? '' }}"
+                        data-featured-media-image
+                        @if (! $selectedMediaItem) hidden @endif
+                    >
+                    <div class="featured-media-preview__caption" data-featured-media-caption @if (! $selectedMediaItem) hidden @endif>
+                        <strong data-featured-media-name>{{ $selectedMediaItem?->original_name }}</strong>
+                        <small data-featured-media-alt>{{ $selectedMediaItem?->alt_text }}</small>
+                    </div>
                 </div>
+                <button
+                    class="button button--primary button--wide"
+                    type="button"
+                    data-open-media-picker
+                    data-media-picker-mode="featured"
+                >
+                    <span aria-hidden="true">▧</span>
+                    <span data-featured-media-action>
+                        {{ $selectedMediaItem ? 'Cambiar imagen destacada' : 'Seleccionar imagen destacada' }}
+                    </span>
+                </button>
                 @error('media_id') <small class="field-error">{{ $message }}</small> @enderror
             </section>
 
@@ -168,25 +202,55 @@
         @endif
     @endif
 
-    <dialog class="media-dialog" data-media-dialog>
+    <dialog
+        class="media-dialog"
+        data-media-picker
+        data-library-url="{{ route('admin.media.library') }}"
+    >
         <div class="media-dialog__header">
-            <div><span class="eyebrow">Biblioteca</span><h2>Insertar imagen</h2></div>
-            <button type="button" data-dialog-close aria-label="Cerrar">×</button>
+            <div>
+                <span class="eyebrow">Biblioteca Media</span>
+                <h2 data-media-picker-title>Seleccionar imagen</h2>
+            </div>
+            <button type="button" data-media-picker-close aria-label="Cerrar">×</button>
         </div>
-        <div class="media-dialog__grid">
-            @foreach ($mediaItems as $media)
-                <button
-                    type="button"
-                    data-insert-media
-                    data-media-id="{{ $media->id }}"
-                    data-media-url="{{ $media->url('article') }}"
-                    data-media-alt="{{ $media->alt_text }}"
-                    data-media-caption="{{ $media->caption }}"
-                >
-                    <img src="{{ $media->url('thumb') }}" alt="">
-                    <span>{{ Str::limit($media->alt_text, 55) }}</span>
+        <div class="media-dialog__toolbar">
+            <form data-media-picker-search>
+                <label>
+                    <span class="sr-only">Buscar imágenes</span>
+                    <input type="search" name="q" placeholder="Buscar por nombre, descripción o crédito">
+                </label>
+                <button class="button button--quiet" type="submit">Buscar</button>
+            </form>
+            <div>
+                <button class="button button--quiet" type="button" data-media-picker-refresh>
+                    ↻ Actualizar
                 </button>
-            @endforeach
+                <a class="button button--quiet" href="{{ route('admin.media.index') }}" target="_blank" rel="noopener">
+                    Abrir Media
+                </a>
+            </div>
+        </div>
+        <div class="media-dialog__status" data-media-picker-status aria-live="polite">
+            Cargando biblioteca…
+        </div>
+        <div class="media-dialog__grid" data-media-picker-grid></div>
+        <div class="media-dialog__load-more">
+            <button class="button button--quiet" type="button" data-media-picker-more hidden>
+                Cargar más imágenes
+            </button>
+        </div>
+        <div class="media-dialog__footer">
+            <div>
+                <span class="eyebrow">Selección</span>
+                <strong data-media-picker-selection>Ninguna imagen seleccionada</strong>
+            </div>
+            <div>
+                <button class="button button--quiet" type="button" data-media-picker-cancel>Cancelar</button>
+                <button class="button button--primary" type="button" data-media-picker-apply disabled>
+                    Usar imagen
+                </button>
+            </div>
         </div>
     </dialog>
 @endsection

@@ -64,7 +64,17 @@ class EditorialAdminTest extends TestCase
             ->assertSee('Copia local activa')
             ->assertSee('Biblioteca Media')
             ->assertSee('data-ckeditor-character-count', false)
-            ->assertSee('Imagen principal');
+            ->assertSee('Imagen destacada')
+            ->assertSee('Seleccionar imagen destacada')
+            ->assertSee('data-media-picker', false)
+            ->assertSee(route('admin.media.library'), false);
+
+        $this->actingAs($editor)
+            ->getJson(route('admin.media.library'))
+            ->assertOk()
+            ->assertJsonPath('meta.total', 1)
+            ->assertJsonPath('data.0.alt_text', 'Imagen referencial de la noticia')
+            ->assertJsonStructure(['data' => [['id', 'thumb_url', 'article_url', 'alt_text']]]);
     }
 
     public function test_superadmin_sidebar_has_flyout_navigation_and_planned_modules(): void
@@ -172,6 +182,45 @@ class EditorialAdminTest extends TestCase
             ->assertSessionHas('status');
         $this->assertSame('draft', $post->refresh()->status);
         $this->assertNull($post->published_at);
+    }
+
+    public function test_publish_now_ignores_a_programming_date_in_the_past(): void
+    {
+        $superadmin = $this->userWithRole('superadmin');
+
+        $this->actingAs($superadmin)->post(route('admin.posts.store'), [
+            'title' => 'Publicación inmediata sin conflicto de programación',
+            'excerpt' => 'La noticia debe publicarse ahora aunque el control de programación conserve una fecha anterior.',
+            'body' => '<p>Este contenido editorial verifica que la fecha solo se valide al utilizar la acción Programar.</p>',
+            'category_id' => $this->category()->id,
+            'media_id' => $this->media($superadmin)->id,
+            'scheduled_for' => now()->subHour()->format('Y-m-d\TH:i'),
+            'intent' => 'publish',
+        ])->assertSessionHasNoErrors();
+
+        $post = Post::query()->firstOrFail();
+
+        $this->assertSame('published', $post->status);
+        $this->assertNull($post->scheduled_for);
+    }
+
+    public function test_scheduling_uses_a_clear_spanish_message_for_a_past_date(): void
+    {
+        $superadmin = $this->userWithRole('superadmin');
+
+        $this->actingAs($superadmin)->post(route('admin.posts.store'), [
+            'title' => 'Noticia pendiente de programación',
+            'excerpt' => 'La validación debe explicar claramente cuándo la fecha de programación no es válida.',
+            'body' => '<p>Contenido editorial suficiente para comprobar el mensaje de validación de la fecha programada.</p>',
+            'category_id' => $this->category()->id,
+            'media_id' => $this->media($superadmin)->id,
+            'scheduled_for' => now()->subMinute()->format('Y-m-d\TH:i'),
+            'intent' => 'schedule',
+        ])->assertSessionHasErrors([
+            'scheduled_for' => 'La fecha de programación debe ser posterior a la hora actual.',
+        ]);
+
+        $this->assertDatabaseCount('posts', 0);
     }
 
     public function test_news_list_supports_page_sizes_and_soft_delete_actions(): void
