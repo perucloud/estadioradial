@@ -1,5 +1,7 @@
 import './admin-editor';
 import './admin-media-picker';
+import './admin-seo';
+import './admin-tags';
 
 const adminNavGroups = [...document.querySelectorAll('[data-admin-nav-group]')];
 const desktopFlyoutQuery = window.matchMedia('(min-width: 961px)');

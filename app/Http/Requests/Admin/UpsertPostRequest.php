@@ -27,8 +27,7 @@ class UpsertPostRequest extends FormRequest
             'body' => ['required', 'string', 'max:250000'],
             'category_id' => ['required', Rule::exists('categories', 'id')],
             'media_id' => ['required', Rule::exists('media', 'id')->whereNull('deleted_at')],
-            'tag_ids' => ['nullable', 'array'],
-            'tag_ids.*' => ['integer', Rule::exists('tags', 'id')],
+            'tag_names' => ['nullable', 'string', 'max:1500'],
             'inline_media_ids' => ['nullable', 'string', 'max:2000'],
             'source_name' => ['nullable', 'string', 'max:255'],
             'source_url' => ['nullable', 'url:http,https', 'max:2000'],
@@ -88,14 +87,21 @@ class UpsertPostRequest extends FormRequest
                 ENT_QUOTES | ENT_HTML5,
                 'UTF-8',
             ))->squish()->limit(280, '…')->toString();
+        $seoTitle = $this->filled('seo_title')
+            ? trim((string) $this->input('seo_title'))
+            : Str::limit(trim((string) $this->input('title')), 70, '…');
+        $seoDescription = $this->filled('seo_description')
+            ? trim((string) $this->input('seo_description'))
+            : Str::limit($excerpt, 170, '…');
 
         $this->merge([
             'slug' => $this->filled('slug') ? mb_strtolower(trim((string) $this->input('slug'))) : null,
             'excerpt' => $excerpt,
+            'tag_names' => $this->filled('tag_names') ? trim((string) $this->input('tag_names')) : null,
             'source_name' => $this->filled('source_name') ? trim((string) $this->input('source_name')) : null,
             'source_url' => $this->filled('source_url') ? trim((string) $this->input('source_url')) : null,
-            'seo_title' => $this->filled('seo_title') ? trim((string) $this->input('seo_title')) : null,
-            'seo_description' => $this->filled('seo_description') ? trim((string) $this->input('seo_description')) : null,
+            'seo_title' => $seoTitle,
+            'seo_description' => $seoDescription,
         ]);
     }
 }

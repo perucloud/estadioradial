@@ -192,6 +192,55 @@ class EditorialAdminTest extends TestCase
         );
     }
 
+    public function test_post_form_uses_free_tags_and_automatic_seo_controls(): void
+    {
+        $editor = $this->userWithRole('editor');
+
+        $this->actingAs($editor)
+            ->get(route('admin.posts.create'))
+            ->assertOk()
+            ->assertSee('name="tag_names"', false)
+            ->assertDontSee('name="tag_ids[]"', false)
+            ->assertSee('data-tag-suggestions', false)
+            ->assertSee('data-seo-title-input', false)
+            ->assertSee('data-seo-description-input', false);
+    }
+
+    public function test_tags_and_seo_are_generated_when_a_post_is_published(): void
+    {
+        $superadmin = $this->userWithRole('superadmin');
+        $category = $this->category();
+        $media = $this->media($superadmin);
+        $title = 'Ministerio del Interior presenta una estrategia nacional';
+        $excerpt = 'El nuevo plan articula medidas de seguridad ciudadana en distintas regiones del país.';
+
+        $this->actingAs($superadmin)->post(route('admin.posts.store'), [
+            'title' => $title,
+            'excerpt' => $excerpt,
+            'body' => '<p>El Ministerio del Interior presentó una estrategia integral con participación de autoridades regionales.</p>',
+            'category_id' => $category->id,
+            'media_id' => $media->id,
+            'tag_names' => 'Seguridad ciudadana, Ministerio del Interior, seguridad ciudadana',
+            'intent' => 'publish',
+        ])->assertSessionHasNoErrors();
+
+        $post = Post::query()->with('tags')->firstOrFail();
+
+        $this->assertSame($title, $post->seo_title);
+        $this->assertSame($excerpt, $post->seo_description);
+        $this->assertCount(2, $post->tags);
+        $this->assertEqualsCanonicalizing(
+            ['Seguridad ciudadana', 'Ministerio del Interior'],
+            $post->tags->pluck('name')->all(),
+        );
+
+        $this->get(route('posts.show', [$category, $post]))
+            ->assertOk()
+            ->assertSee('<meta property="og:title" content="'.$title.'">', false)
+            ->assertSee('<meta property="og:description" content="'.$excerpt.'">', false)
+            ->assertSee('<meta property="og:image" content="'.url($media->url('article')).'">', false);
+    }
+
     public function test_editor_without_publish_permission_cannot_publish(): void
     {
         $editor = $this->userWithRole('editor');

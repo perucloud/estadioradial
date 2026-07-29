@@ -4,7 +4,7 @@
     $editing = $post !== null;
     $selectedMedia = old('media_id', $post?->media_id);
     $selectedMediaItem = $mediaItems->firstWhere('id', (int) $selectedMedia);
-    $selectedTags = old('tag_ids', $post?->tags->pluck('id')->all() ?? []);
+    $selectedTagNames = old('tag_names', $post?->tags->pluck('name')->implode(', ') ?? '');
     $inlineMediaIds = old('inline_media_ids', $post?->inlineMedia->pluck('id')->join(',') ?? '');
     $publicationDate = old(
         'scheduled_for',
@@ -33,7 +33,7 @@
             <section class="panel form-stack">
                 <label>
                     Título
-                    <input type="text" name="title" value="{{ old('title', $post?->title) }}" maxlength="180" data-slug-source required autofocus>
+                    <input type="text" name="title" value="{{ old('title', $post?->title) }}" maxlength="180" data-slug-source data-seo-title-source required autofocus>
                     @error('title') <small class="field-error">{{ $message }}</small> @enderror
                 </label>
                 <label>
@@ -103,8 +103,29 @@
                     <label>Nombre de la fuente <input type="text" name="source_name" value="{{ old('source_name', $post?->source_name) }}"></label>
                     <label>URL de la fuente <input type="url" name="source_url" value="{{ old('source_url', $post?->source_url) }}"></label>
                 </div>
-                <label>Título SEO <input type="text" name="seo_title" value="{{ old('seo_title', $post?->seo_title) }}" maxlength="70"></label>
-                <label>Descripción SEO <textarea name="seo_description" rows="3" maxlength="170">{{ old('seo_description', $post?->seo_description) }}</textarea></label>
+                <label>
+                    Título SEO
+                    <input
+                        type="text"
+                        name="seo_title"
+                        value="{{ old('seo_title', $post?->seo_title) }}"
+                        maxlength="70"
+                        data-seo-title-input
+                        data-seo-generated="{{ old('seo_title', $post?->seo_title) ? 'false' : 'true' }}"
+                    >
+                    <small class="field-help">Se completa desde el título y puedes editarlo.</small>
+                </label>
+                <label>
+                    Descripción SEO
+                    <textarea
+                        name="seo_description"
+                        rows="3"
+                        maxlength="170"
+                        data-seo-description-input
+                        data-seo-generated="{{ old('seo_description', $post?->seo_description) ? 'false' : 'true' }}"
+                    >{{ old('seo_description', $post?->seo_description) }}</textarea>
+                    <small class="field-help">Se completa desde el resumen y puedes editarla.</small>
+                </label>
             </section>
         </div>
 
@@ -116,7 +137,7 @@
                 </div>
                 <label>
                     Categoría
-                    <select name="category_id" required>
+                    <select name="category_id" data-tag-category required>
                         <option value="">Seleccionar</option>
                         @foreach ($categories as $category)
                             <option value="{{ $category->id }}" @selected(old('category_id', $post?->category_id) == $category->id)>{{ $category->name }}</option>
@@ -195,20 +216,27 @@
                 @error('media_id') <small class="field-error">{{ $message }}</small> @enderror
             </section>
 
-            @if ($tags->isNotEmpty())
-                <section class="panel">
-                    <span class="eyebrow">Clasificación</span>
-                    <h2>Etiquetas</h2>
-                    <div class="tag-options">
-                        @foreach ($tags as $tag)
-                            <label class="check-row">
-                                <input type="checkbox" name="tag_ids[]" value="{{ $tag->id }}" @checked(in_array($tag->id, $selectedTags))>
-                                <span>{{ $tag->name }}</span>
-                            </label>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
+            <section class="panel tag-editor" data-tag-editor>
+                <span class="eyebrow">Clasificación</span>
+                <h2>Etiquetas</h2>
+                <label>
+                    <span class="sr-only">Etiquetas separadas por comas</span>
+                    <textarea
+                        name="tag_names"
+                        rows="3"
+                        maxlength="1500"
+                        data-tag-input
+                        placeholder="Ejemplo: seguridad ciudadana, Ministerio del Interior, Lima"
+                    >{{ $selectedTagNames }}</textarea>
+                </label>
+                <small class="field-help">Escribe libremente las etiquetas y sepáralas con comas.</small>
+                <div class="tag-suggestions">
+                    <strong>Sugerencias según el contenido</strong>
+                    <div class="tag-suggestion-list" data-tag-suggestions></div>
+                </div>
+                <script type="application/json" data-tag-source>@json($tags->pluck('name')->values())</script>
+                @error('tag_names') <small class="field-error">{{ $message }}</small> @enderror
+            </section>
 
             @if ($editing)
                 <section class="panel post-secondary-actions">

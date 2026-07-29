@@ -1,7 +1,10 @@
 @extends('layouts.app')
 
-@section('title', $post->title.' | Estación Radial')
-@section('description', $post->excerpt)
+@section('title', ($post->seo_title ?: $post->title).' | Estación Radial')
+@section('seo_title', $post->seo_title ?: $post->title)
+@section('description', $post->seo_description ?: $post->excerpt)
+@section('seo_image', $post->coverUrl() ? url($post->coverUrl()) : '')
+@section('seo_type', 'article')
 
 @section('content')
     <article class="article">

@@ -209,7 +209,11 @@ class PostController extends Controller
         return [
             'post' => $post,
             'categories' => Category::query()->where('is_active', true)->orderBy('display_order')->orderBy('name')->get(),
-            'tags' => Tag::query()->orderBy('name')->get(),
+            'tags' => Tag::query()
+                ->withCount('posts')
+                ->orderByDesc('posts_count')
+                ->orderBy('name')
+                ->get(),
             'mediaItems' => Media::query()->latest()->limit(120)->get(),
         ];
     }
@@ -221,7 +225,7 @@ class PostController extends Controller
     {
         $data = $request->safe()->except([
             'slug',
-            'tag_ids',
+            'tag_names',
             'inline_media_ids',
             'intent',
             'scheduled_for',
@@ -265,7 +269,25 @@ class PostController extends Controller
 
     private function syncRelations(Post $post, UpsertPostRequest $request): void
     {
-        $post->tags()->sync($request->input('tag_ids', []));
+        $tagIds = collect(preg_split('/[,;\r\n]+/u', (string) $request->input('tag_names')) ?: [])
+            ->map(fn (string $name) => mb_substr(trim(strip_tags($name)), 0, 100))
+            ->filter()
+            ->unique(fn (string $name) => mb_strtolower($name))
+            ->take(20)
+            ->map(function (string $name): ?int {
+                $slug = Str::slug($name);
+
+                if ($slug === '') {
+                    return null;
+                }
+
+                return Tag::query()->firstOrCreate(
+                    ['slug' => $slug],
+                    ['name' => $name],
+                )->id;
+            })
+            ->filter();
+        $post->tags()->sync($tagIds);
         $inlineIds = collect(explode(',', (string) $request->input('inline_media_ids')))
             ->map(fn (string $id) => (int) trim($id))
             ->filter()
