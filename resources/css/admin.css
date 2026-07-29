@@ -276,6 +276,11 @@ select {
     cursor: pointer;
     font-size: .84rem;
     font-weight: 800;
+    transition: color .18s ease, background-color .18s ease, border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.button:hover {
+    transform: translateY(-1px);
 }
 
 .button--primary {
@@ -312,6 +317,53 @@ select {
     border-color: var(--admin-line);
     color: #4a505b;
     background: var(--admin-white);
+}
+
+.button--draft {
+    border-color: #cbd5e1;
+    color: #334155;
+    background: #f8fafc;
+}
+
+.button--draft:hover {
+    border-color: #334155;
+    color: #fff;
+    background: #334155;
+    box-shadow: 0 8px 18px rgba(51, 65, 85, .2);
+}
+
+.button--homepage {
+    border-color: #fed7aa;
+    color: #9a4b0c;
+    background: #fff7ed;
+}
+
+.button--homepage:hover {
+    border-color: #c25b0a;
+    color: #fff;
+    background: #c25b0a;
+    box-shadow: 0 8px 18px rgba(194, 91, 10, .2);
+}
+
+.button--schedule,
+.button--schedule-confirm {
+    border-color: #c4b5fd;
+    color: #5b21b6;
+    background: #f5f3ff;
+}
+
+.button--schedule:hover,
+.button--schedule-confirm:hover {
+    border-color: #6d28d9;
+    color: #fff;
+    background: #6d28d9;
+    box-shadow: 0 8px 20px rgba(109, 40, 217, .24);
+}
+
+.button--schedule-confirm {
+    min-width: 210px;
+    color: #fff;
+    background: #7c3aed;
 }
 
 .button--wide {
@@ -1421,6 +1473,199 @@ td small {
     font-size: .68rem;
 }
 
+.schedule-dialog {
+    width: min(620px, calc(100vw - 32px));
+    max-width: 620px;
+    max-height: calc(100vh - 32px);
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    border-radius: 18px;
+    color: #20242b;
+    background: #fff;
+    box-shadow: 0 28px 80px rgba(15, 23, 42, .3);
+}
+
+.schedule-dialog[open] {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    animation: schedule-dialog-in .2s ease-out;
+}
+
+.schedule-dialog::backdrop {
+    background: rgba(15, 23, 42, .62);
+    backdrop-filter: blur(4px);
+}
+
+@keyframes schedule-dialog-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.schedule-dialog__header,
+.schedule-dialog__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 20px 24px;
+}
+
+.schedule-dialog__header {
+    border-bottom: 1px solid var(--admin-line);
+}
+
+.schedule-dialog__identity {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.schedule-dialog__identity h2 {
+    margin-top: 3px;
+    font-size: 1.4rem;
+}
+
+.schedule-dialog__icon {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border-radius: 13px;
+    color: #fff;
+    background: linear-gradient(145deg, #7c3aed, #4f46e5);
+    box-shadow: 0 8px 20px rgba(109, 40, 217, .25);
+    font-size: 1.5rem;
+}
+
+.schedule-dialog__header > button {
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    color: #596170;
+    background: #f1f3f6;
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: color .18s ease, background-color .18s ease, transform .18s ease;
+}
+
+.schedule-dialog__header > button:hover {
+    color: #fff;
+    background: var(--admin-red);
+    transform: rotate(5deg);
+}
+
+.schedule-dialog__body {
+    display: grid;
+    gap: 20px;
+    padding: 24px;
+    overflow-y: auto;
+}
+
+.schedule-dialog__body > p:first-child {
+    margin: 0;
+    color: var(--admin-muted);
+    line-height: 1.55;
+}
+
+.schedule-dialog__quick-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.schedule-dialog__quick-actions button {
+    padding: 8px 12px;
+    border: 1px solid #ddd6fe;
+    border-radius: 999px;
+    color: #5b21b6;
+    background: #faf5ff;
+    cursor: pointer;
+    font-size: .76rem;
+    font-weight: 800;
+    transition: all .18s ease;
+}
+
+.schedule-dialog__quick-actions button:hover {
+    border-color: #7c3aed;
+    color: #fff;
+    background: #7c3aed;
+    transform: translateY(-1px);
+}
+
+.schedule-dialog__fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(150px, .65fr);
+    gap: 14px;
+}
+
+.schedule-dialog__fields label {
+    display: grid;
+    gap: 8px;
+    font-weight: 800;
+}
+
+.schedule-dialog__fields input {
+    width: 100%;
+    min-height: 52px;
+    padding: 10px 13px;
+    border: 1px solid #cbd0d8;
+    border-radius: 10px;
+    color: #20242b;
+    background: #fff;
+    font: inherit;
+}
+
+.schedule-dialog__fields input:focus {
+    border-color: #7c3aed;
+    outline: 3px solid rgba(124, 58, 237, .12);
+}
+
+.schedule-dialog__summary {
+    display: grid;
+    gap: 5px;
+    padding: 16px 18px;
+    border: 1px solid #ddd6fe;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #faf5ff, #eef2ff);
+}
+
+.schedule-dialog__summary span,
+.schedule-dialog__summary small {
+    color: #6b7280;
+    font-size: .73rem;
+    font-weight: 700;
+}
+
+.schedule-dialog__summary strong {
+    color: #4c1d95;
+    font-size: 1.05rem;
+    text-transform: capitalize;
+}
+
+.schedule-dialog__error {
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 9px;
+    color: #991b1b;
+    background: #fef2f2;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.schedule-dialog__footer {
+    justify-content: flex-end;
+    border-top: 1px solid var(--admin-line);
+    background: #fbfcfd;
+}
+
 .media-dialog {
     position: fixed;
     inset: 50% auto auto 50%;
@@ -2251,6 +2496,31 @@ details.taxonomy-create {
 
     .media-dialog__selection,
     .media-dialog__url {
+        width: 100%;
+    }
+
+    .schedule-dialog {
+        width: calc(100% - 16px);
+        max-height: calc(100dvh - 16px);
+        border-radius: 12px;
+    }
+
+    .schedule-dialog__header,
+    .schedule-dialog__body,
+    .schedule-dialog__footer {
+        padding: 18px;
+    }
+
+    .schedule-dialog__fields {
+        grid-template-columns: 1fr;
+    }
+
+    .schedule-dialog__footer {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .schedule-dialog__footer .button {
         width: 100%;
     }
 

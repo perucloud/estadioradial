@@ -102,7 +102,13 @@ class PostController extends Controller
             $this->log($request, 'post.created', $post, ['status' => $status]);
 
             if ($request->string('intent')->toString() === 'publish') {
-                $publisher->publish($post, $request->user()->id);
+                $publisher->publish(
+                    post: $post,
+                    userId: $request->user()->id,
+                    publishedAt: $request->filled('published_at')
+                        ? $request->date('published_at')
+                        : null,
+                );
             }
 
             return $post;
@@ -153,7 +159,13 @@ class PostController extends Controller
 
             $this->syncRelations($post, $request);
             if ($intent === 'publish') {
-                $publisher->publish($post, $request->user()->id);
+                $publisher->publish(
+                    post: $post,
+                    userId: $request->user()->id,
+                    publishedAt: $request->filled('published_at')
+                        ? $request->date('published_at')
+                        : null,
+                );
                 $status = $post->status;
             }
 
@@ -329,6 +341,7 @@ class PostController extends Controller
             'tag_names',
             'inline_media_ids',
             'intent',
+            'published_at',
             'scheduled_for',
             'location_country_id',
             'location_region_id',

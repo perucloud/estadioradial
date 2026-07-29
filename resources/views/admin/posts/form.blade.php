@@ -11,13 +11,15 @@
     $selectedDistrict = old('location_district_id', $locationSelection['district'] ?? '');
     $inlineMediaIds = old('inline_media_ids', $post?->inlineMedia->pluck('id')->join(',') ?? '');
     $publicationDate = old(
-        'scheduled_for',
-        $post?->scheduled_for?->format('Y-m-d\TH:i')
-            ?? $post?->published_at?->format('Y-m-d\TH:i')
+        'published_at',
+        $post?->published_at?->format('Y-m-d\TH:i')
             ?? now()->format('Y-m-d\TH:i'),
     );
-    $autoPublicationDate = old('scheduled_for') === null
-        && (! $editing || in_array($post?->status, ['draft', 'in_review'], true));
+    $autoPublicationDate = old('published_at') === null && ! $post?->published_at;
+    $scheduledValue = old('scheduled_for', $post?->scheduled_for?->format('Y-m-d\TH:i') ?? now()->addHour()->startOfMinute()->format('Y-m-d\TH:i'));
+    $scheduledDateTime = strtotime((string) $scheduledValue) !== false
+        ? \Illuminate\Support\Carbon::parse($scheduledValue)
+        : now()->addHour()->startOfMinute();
     $statusLabels = [
         'draft' => 'Borrador',
         'in_review' => 'En revisión',
@@ -37,6 +39,7 @@
         method="post"
         action="{{ $editing ? route('admin.posts.update', $post) : route('admin.posts.store') }}"
         class="post-editor-form"
+        id="post-editor-form"
     >
         @csrf
         @if ($editing) @method('PUT') @endif
@@ -160,14 +163,15 @@
                     Fecha y hora de publicación
                     <input
                         type="datetime-local"
-                        name="scheduled_for"
+                        name="published_at"
                         value="{{ $publicationDate }}"
                         data-publication-datetime
                         data-auto-datetime="{{ $autoPublicationDate ? 'true' : 'false' }}"
                     >
                     <small class="field-help">
-                        “Publicar ahora” registra la hora real. Para programar, selecciona una fecha futura.
+                        Para “Publicar ahora” puedes conservar la hora actual o elegir una fecha anterior.
                     </small>
+                    @error('published_at') <small class="field-error">{{ $message }}</small> @enderror
                 </label>
                 <div class="publish-actions">
                     @if ($isPublished)
@@ -175,7 +179,7 @@
                             Actualizar noticia
                         </button>
                         @if (auth()->user()->hasPermission('news.publish'))
-                            <button class="button button--quiet" type="submit" name="intent" value="{{ $post->is_homepage_hidden ? 'show_home' : 'hide_home' }}">
+                            <button class="button button--homepage" type="submit" name="intent" value="{{ $post->is_homepage_hidden ? 'show_home' : 'hide_home' }}">
                                 {{ $post->is_homepage_hidden ? 'Mostrar en portada' : 'Ocultar de portada' }}
                             </button>
                             <button
@@ -187,13 +191,13 @@
                             >
                                 Despublicar
                             </button>
-                            <button class="button button--quiet" type="submit" name="intent" value="schedule">Programar</button>
+                            <button class="button button--schedule" type="button" data-open-schedule-modal>Programar</button>
                         @endif
                     @else
-                        <button class="button button--quiet" type="submit" name="intent" value="draft">Guardar borrador</button>
+                        <button class="button button--draft" type="submit" name="intent" value="draft">Guardar borrador</button>
                         @if (auth()->user()->hasPermission('news.publish'))
                             <button class="button button--primary" type="submit" name="intent" value="publish">Publicar ahora</button>
-                            <button class="button button--quiet" type="submit" name="intent" value="schedule">Programar</button>
+                            <button class="button button--schedule" type="button" data-open-schedule-modal>Programar</button>
                         @endif
                     @endif
                 </div>
@@ -339,6 +343,12 @@
         </aside>
 
         <input type="hidden" name="inline_media_ids" value="{{ $inlineMediaIds }}">
+        <input
+            type="hidden"
+            name="scheduled_for"
+            value="{{ old('scheduled_for', $post?->scheduled_for?->format('Y-m-d\TH:i')) }}"
+            data-scheduled-for
+        >
     </form>
 
     @if ($editing)
@@ -348,6 +358,80 @@
         @else
             <form id="archive-post-form" method="post" action="{{ route('admin.posts.archive', $post) }}">@csrf</form>
         @endif
+    @endif
+
+    @if (auth()->user()->hasPermission('news.publish'))
+        <dialog
+            class="schedule-dialog"
+            data-schedule-modal
+            data-open-on-error="{{ $errors->has('scheduled_for') ? 'true' : 'false' }}"
+            aria-labelledby="schedule-dialog-title"
+        >
+        <div class="schedule-dialog__header">
+            <div class="schedule-dialog__identity">
+                <span class="schedule-dialog__icon" aria-hidden="true">▦</span>
+                <div>
+                    <span class="eyebrow">Agenda editorial</span>
+                    <h2 id="schedule-dialog-title">Programar publicación</h2>
+                </div>
+            </div>
+            <button type="button" data-close-schedule-modal aria-label="Cerrar">×</button>
+        </div>
+
+        <div class="schedule-dialog__body">
+            <p>Selecciona una fecha y hora futuras. La noticia se publicará automáticamente como si usaras “Publicar ahora”.</p>
+
+            <div class="schedule-dialog__quick-actions" aria-label="Fechas rápidas">
+                <button type="button" data-schedule-preset="1">Mañana</button>
+                <button type="button" data-schedule-preset="3">En 3 días</button>
+                <button type="button" data-schedule-preset="7">En una semana</button>
+            </div>
+
+            <div class="schedule-dialog__fields">
+                <label>
+                    <span>Fecha</span>
+                    <input
+                        type="date"
+                        value="{{ $scheduledDateTime->format('Y-m-d') }}"
+                        data-schedule-date
+                    >
+                </label>
+                <label>
+                    <span>Hora</span>
+                    <input
+                        type="time"
+                        value="{{ $scheduledDateTime->format('H:i') }}"
+                        step="60"
+                        data-schedule-time
+                    >
+                </label>
+            </div>
+
+            <div class="schedule-dialog__summary" data-schedule-summary>
+                <span>Horario del portal</span>
+                <strong>Calculando fecha…</strong>
+                <small>{{ config('app.timezone') }}</small>
+            </div>
+
+            <p class="schedule-dialog__error" data-schedule-error @if (! $errors->has('scheduled_for')) hidden @endif>
+                @error('scheduled_for') {{ $message }} @enderror
+            </p>
+        </div>
+
+        <div class="schedule-dialog__footer">
+            <button class="button button--quiet" type="button" data-close-schedule-modal>Cancelar</button>
+            <button
+                class="button button--schedule-confirm"
+                type="submit"
+                form="post-editor-form"
+                name="intent"
+                value="schedule"
+                data-confirm-schedule
+            >
+                Confirmar programación
+            </button>
+        </div>
+        </dialog>
     @endif
 
     <dialog

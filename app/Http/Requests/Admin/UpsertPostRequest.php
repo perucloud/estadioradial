@@ -39,6 +39,12 @@ class UpsertPostRequest extends FormRequest
             'source_url' => ['nullable', 'url:http,https', 'max:2000'],
             'seo_title' => ['nullable', 'string', 'max:70'],
             'seo_description' => ['nullable', 'string', 'max:170'],
+            'published_at' => [
+                'exclude_unless:intent,publish',
+                'nullable',
+                'date',
+                'before_or_equal:now',
+            ],
             'scheduled_for' => [
                 'exclude_unless:intent,schedule',
                 'required_if:intent,schedule',
@@ -72,6 +78,8 @@ class UpsertPostRequest extends FormRequest
             'media_id.required' => 'Selecciona una imagen destacada.',
             'media_id.exists' => 'La imagen destacada seleccionada ya no está disponible.',
             'slug.regex' => 'El slug solo puede contener letras minúsculas, números y guiones.',
+            'published_at.date' => 'La fecha de publicación no tiene un formato válido.',
+            'published_at.before_or_equal' => 'La fecha de publicación debe ser la hora actual o una fecha anterior.',
             'scheduled_for.required_if' => 'Indica la fecha y hora en que se publicará la noticia.',
             'scheduled_for.date' => 'La fecha de programación no tiene un formato válido.',
             'scheduled_for.after' => 'La fecha de programación debe ser posterior a la hora actual.',
@@ -84,6 +92,7 @@ class UpsertPostRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'published_at' => 'fecha de publicación',
             'scheduled_for' => 'fecha de programación',
         ];
     }

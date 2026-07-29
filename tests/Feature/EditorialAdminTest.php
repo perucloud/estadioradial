@@ -447,6 +447,9 @@ class EditorialAdminTest extends TestCase
             ->assertSee('button--update', false)
             ->assertSee('Ocultar de portada')
             ->assertSee('Despublicar')
+            ->assertSee('data-open-schedule-modal', false)
+            ->assertSee('data-schedule-modal', false)
+            ->assertSee('Confirmar programación')
             ->assertDontSee('Enviar a revisión')
             ->assertDontSee('name="intent" value="publish"', false);
 
@@ -488,17 +491,18 @@ class EditorialAdminTest extends TestCase
         ]);
     }
 
-    public function test_publish_now_ignores_a_programming_date_in_the_past(): void
+    public function test_publish_now_accepts_a_present_or_past_editorial_date(): void
     {
         $superadmin = $this->userWithRole('superadmin');
+        $publicationDate = now()->subDay()->startOfMinute();
 
         $this->actingAs($superadmin)->post(route('admin.posts.store'), [
             'title' => 'Publicación inmediata sin conflicto de programación',
-            'excerpt' => 'La noticia debe publicarse ahora aunque el control de programación conserve una fecha anterior.',
-            'body' => '<p>Este contenido editorial verifica que la fecha solo se valide al utilizar la acción Programar.</p>',
+            'excerpt' => 'La noticia debe publicarse ahora utilizando la fecha editorial elegida por el administrador.',
+            'body' => '<p>Este contenido verifica que una publicación manual pueda registrar una fecha presente o anterior.</p>',
             'category_id' => $this->category()->id,
             'media_id' => $this->media($superadmin)->id,
-            'scheduled_for' => now()->subHour()->format('Y-m-d\TH:i'),
+            'published_at' => $publicationDate->format('Y-m-d\TH:i'),
             'intent' => 'publish',
         ])->assertSessionHasNoErrors();
 
@@ -506,6 +510,54 @@ class EditorialAdminTest extends TestCase
 
         $this->assertSame('published', $post->status);
         $this->assertNull($post->scheduled_for);
+        $this->assertSame(
+            $publicationDate->toDateTimeString(),
+            $post->published_at?->toDateTimeString(),
+        );
+    }
+
+    public function test_programming_uses_a_future_date_independent_from_the_editorial_date(): void
+    {
+        $superadmin = $this->userWithRole('superadmin');
+        $scheduledFor = now()->addDay()->startOfMinute();
+
+        $this->actingAs($superadmin)->post(route('admin.posts.store'), [
+            'title' => 'Noticia programada desde el calendario editorial',
+            'excerpt' => 'La noticia queda pendiente hasta la fecha futura confirmada desde el modal.',
+            'body' => '<p>Contenido suficiente para validar la programación futura independiente de la fecha editorial.</p>',
+            'category_id' => $this->category()->id,
+            'media_id' => $this->media($superadmin)->id,
+            'published_at' => now()->subDay()->format('Y-m-d\TH:i'),
+            'scheduled_for' => $scheduledFor->format('Y-m-d\TH:i'),
+            'intent' => 'schedule',
+        ])->assertSessionHasNoErrors();
+
+        $post = Post::query()->firstOrFail();
+        $this->assertSame('scheduled', $post->status);
+        $this->assertNull($post->published_at);
+        $this->assertSame(
+            $scheduledFor->toDateTimeString(),
+            $post->scheduled_for?->toDateTimeString(),
+        );
+    }
+
+    public function test_publish_now_rejects_a_future_editorial_date(): void
+    {
+        $superadmin = $this->userWithRole('superadmin');
+
+        $this->actingAs($superadmin)->post(route('admin.posts.store'), [
+            'title' => 'Noticia con fecha editorial futura inválida',
+            'excerpt' => 'La fecha futura debe seleccionarse exclusivamente mediante la acción Programar.',
+            'body' => '<p>Contenido editorial suficiente para comprobar la separación de los dos controles de fecha.</p>',
+            'category_id' => $this->category()->id,
+            'media_id' => $this->media($superadmin)->id,
+            'published_at' => now()->addHour()->format('Y-m-d\TH:i'),
+            'intent' => 'publish',
+        ])->assertSessionHasErrors([
+            'published_at' => 'La fecha de publicación debe ser la hora actual o una fecha anterior.',
+        ]);
+
+        $this->assertDatabaseCount('posts', 0);
     }
 
     public function test_scheduling_uses_a_clear_spanish_message_for_a_past_date(): void

@@ -113,8 +113,6 @@ document.querySelectorAll('[data-slug-source]').forEach((title) => {
 });
 
 document.querySelectorAll('[data-publication-datetime]').forEach((input) => {
-    if (input.dataset.autoDatetime !== 'true') return;
-
     const localDateTime = () => {
         const now = new Date();
         const pad = (value) => String(value).padStart(2, '0');
@@ -122,6 +120,7 @@ document.querySelectorAll('[data-publication-datetime]').forEach((input) => {
         return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
     };
     const syncCurrentTime = () => {
+        input.max = localDateTime();
         if (input.dataset.autoDatetime === 'true') input.value = localDateTime();
     };
     const timer = window.setInterval(syncCurrentTime, 30_000);
@@ -131,6 +130,93 @@ document.querySelectorAll('[data-publication-datetime]').forEach((input) => {
         input.dataset.autoDatetime = 'false';
         window.clearInterval(timer);
     }, { once: true });
+});
+
+document.querySelectorAll('[data-schedule-modal]').forEach((dialog) => {
+    const dateInput = dialog.querySelector('[data-schedule-date]');
+    const timeInput = dialog.querySelector('[data-schedule-time]');
+    const hiddenInput = document.querySelector('[data-scheduled-for]');
+    const summary = dialog.querySelector('[data-schedule-summary] strong');
+    const error = dialog.querySelector('[data-schedule-error]');
+    const confirmButton = dialog.querySelector('[data-confirm-schedule]');
+    const openButtons = document.querySelectorAll('[data-open-schedule-modal]');
+    const closeButtons = dialog.querySelectorAll('[data-close-schedule-modal]');
+
+    if (!dateInput || !timeInput || !hiddenInput || !summary || !error || !confirmButton) return;
+
+    const pad = (value) => String(value).padStart(2, '0');
+    const inputDate = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+    const inputTime = (date) => `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    const selectedDateTime = () => {
+        if (!dateInput.value || !timeInput.value) return null;
+
+        const selected = new Date(`${dateInput.value}T${timeInput.value}:00`);
+        return Number.isNaN(selected.getTime()) ? null : selected;
+    };
+    const showError = (message = '') => {
+        error.textContent = message;
+        error.hidden = message === '';
+        dateInput.setAttribute('aria-invalid', message === '' ? 'false' : 'true');
+        timeInput.setAttribute('aria-invalid', message === '' ? 'false' : 'true');
+    };
+    const updateSummary = () => {
+        const selected = selectedDateTime();
+        dateInput.min = inputDate(new Date());
+
+        if (!selected) {
+            summary.textContent = 'Selecciona una fecha y una hora';
+            return;
+        }
+
+        summary.textContent = new Intl.DateTimeFormat('es-PE', {
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        }).format(selected);
+        showError();
+    };
+    const openDialog = () => {
+        updateSummary();
+        dialog.showModal();
+        window.setTimeout(() => dateInput.focus(), 50);
+    };
+
+    openButtons.forEach((button) => button.addEventListener('click', openDialog));
+    closeButtons.forEach((button) => button.addEventListener('click', () => dialog.close()));
+    dateInput.addEventListener('input', updateSummary);
+    timeInput.addEventListener('input', updateSummary);
+
+    dialog.querySelectorAll('[data-schedule-preset]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const selected = new Date();
+            selected.setDate(selected.getDate() + Number(button.dataset.schedulePreset));
+            selected.setSeconds(0, 0);
+            dateInput.value = inputDate(selected);
+            if (!timeInput.value) timeInput.value = inputTime(selected);
+            updateSummary();
+        });
+    });
+
+    confirmButton.addEventListener('click', (event) => {
+        const selected = selectedDateTime();
+        if (!selected || selected.getTime() <= Date.now()) {
+            event.preventDefault();
+            showError('Selecciona una fecha y hora posteriores al momento actual.');
+            return;
+        }
+
+        hiddenInput.value = `${dateInput.value}T${timeInput.value}`;
+    });
+
+    dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) dialog.close();
+    });
+
+    if (dialog.dataset.openOnError === 'true') openDialog();
+    updateSummary();
 });
 
 document.querySelectorAll('[data-media-upload]').forEach((form) => {
