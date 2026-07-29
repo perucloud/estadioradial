@@ -18,6 +18,14 @@
     );
     $autoPublicationDate = old('scheduled_for') === null
         && (! $editing || in_array($post?->status, ['draft', 'in_review'], true));
+    $statusLabels = [
+        'draft' => 'Borrador',
+        'in_review' => 'En revisión',
+        'scheduled' => 'Programada',
+        'published' => 'Publicada',
+        'archived' => 'Archivada',
+    ];
+    $isPublished = $editing && $post->status === 'published';
 @endphp
 
 @section('title', $editing ? 'Editar noticia' : 'Nueva noticia')
@@ -137,7 +145,7 @@
             <section class="panel form-stack">
                 <div>
                     <span class="eyebrow">Publicación</span>
-                    <h2>{{ $editing ? ucfirst(str_replace('_', ' ', $post->status)) : 'Borrador nuevo' }}</h2>
+                    <h2>{{ $editing ? ($statusLabels[$post->status] ?? ucfirst(str_replace('_', ' ', $post->status))) : 'Borrador nuevo' }}</h2>
                 </div>
                 <label>
                     Categoría
@@ -162,13 +170,31 @@
                     </small>
                 </label>
                 <div class="publish-actions">
-                    <button class="button button--quiet" type="submit" name="intent" value="{{ $editing ? 'preserve' : 'draft' }}">
-                        {{ $editing ? 'Guardar cambios' : 'Guardar borrador' }}
-                    </button>
-                    <button class="button button--quiet" type="submit" name="intent" value="review">Enviar a revisión</button>
-                    @if (auth()->user()->hasPermission('news.publish'))
-                        <button class="button button--primary" type="submit" name="intent" value="publish">Publicar ahora</button>
-                        <button class="button button--quiet" type="submit" name="intent" value="schedule">Programar</button>
+                    @if ($isPublished)
+                        <button class="button button--update" type="submit" name="intent" value="preserve">
+                            Actualizar noticia
+                        </button>
+                        @if (auth()->user()->hasPermission('news.publish'))
+                            <button class="button button--quiet" type="submit" name="intent" value="{{ $post->is_homepage_hidden ? 'show_home' : 'hide_home' }}">
+                                {{ $post->is_homepage_hidden ? 'Mostrar en portada' : 'Ocultar de portada' }}
+                            </button>
+                            <button
+                                class="button button--danger"
+                                type="submit"
+                                name="intent"
+                                value="unpublish"
+                                onclick="return confirm('¿Deseas despublicar esta noticia? Dejará de ser visible en todo el portal y se guardará como borrador.')"
+                            >
+                                Despublicar
+                            </button>
+                            <button class="button button--quiet" type="submit" name="intent" value="schedule">Programar</button>
+                        @endif
+                    @else
+                        <button class="button button--quiet" type="submit" name="intent" value="draft">Guardar borrador</button>
+                        @if (auth()->user()->hasPermission('news.publish'))
+                            <button class="button button--primary" type="submit" name="intent" value="publish">Publicar ahora</button>
+                            <button class="button button--quiet" type="submit" name="intent" value="schedule">Programar</button>
+                        @endif
                     @endif
                 </div>
             </section>

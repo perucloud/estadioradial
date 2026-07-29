@@ -287,6 +287,27 @@ select {
     background: var(--admin-red-dark);
 }
 
+.button--update {
+    color: var(--admin-white);
+    background: #2563eb;
+}
+
+.button--update:hover {
+    background: #1d4ed8;
+}
+
+.button--danger {
+    border-color: #fecaca;
+    color: #b91c1c;
+    background: #fff5f5;
+}
+
+.button--danger:hover {
+    border-color: #dc2626;
+    color: var(--admin-white);
+    background: #dc2626;
+}
+
 .button--quiet {
     border-color: var(--admin-line);
     color: #4a505b;

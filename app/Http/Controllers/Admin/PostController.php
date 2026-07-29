@@ -114,10 +114,20 @@ class PostController extends Controller
         Post $post,
         PostHtmlSanitizer $sanitizer,
     ): RedirectResponse {
+        $intent = $request->string('intent')->toString();
+
         DB::transaction(function () use ($request, $post, $sanitizer): void {
             $data = $this->prepareData($request, $sanitizer);
             [$status, $publishedAt, $scheduledFor] = $this->resolveState($request, $post);
             $media = Media::query()->findOrFail($data['media_id']);
+            $intent = $request->string('intent')->toString();
+            $wasHomepageHidden = $post->is_homepage_hidden;
+            $wasStatus = $post->status;
+            $isHomepageHidden = match ($intent) {
+                'hide_home' => true,
+                'show_home' => false,
+                default => $wasHomepageHidden,
+            };
 
             $post->update($data + [
                 'slug' => $request->filled('slug') ? $request->string('slug')->toString() : $post->slug,
@@ -125,6 +135,7 @@ class PostController extends Controller
                 'status' => $status,
                 'published_at' => $publishedAt,
                 'scheduled_for' => $scheduledFor,
+                'is_homepage_hidden' => $isHomepageHidden,
                 'updated_by' => $request->user()->id,
                 'reviewed_by' => in_array($status, ['published', 'scheduled'], true)
                     ? $request->user()->id
@@ -132,10 +143,31 @@ class PostController extends Controller
             ]);
 
             $this->syncRelations($post, $request);
-            $this->log($request, 'post.updated', $post, ['status' => $status]);
+            $action = match ($intent) {
+                'hide_home' => 'post.hidden_from_home',
+                'show_home' => 'post.shown_on_home',
+                'unpublish' => 'post.unpublished',
+                default => 'post.updated',
+            };
+            $this->log($request, $action, $post, [
+                'previous_status' => $wasStatus,
+                'status' => $status,
+                'previous_homepage_hidden' => $wasHomepageHidden,
+                'homepage_hidden' => $isHomepageHidden,
+            ]);
         });
 
-        return back()->with('status', 'Noticia actualizada.');
+        $message = match ($intent) {
+            'draft' => 'Borrador guardado.',
+            'publish' => 'Noticia publicada.',
+            'schedule' => 'Publicación programada.',
+            'hide_home' => 'Noticia ocultada de la portada.',
+            'show_home' => 'Noticia mostrada en la portada.',
+            'unpublish' => 'Noticia despublicada y guardada como borrador.',
+            default => 'Noticia actualizada.',
+        };
+
+        return back()->with('status', $message);
     }
 
     public function preview(Post $post): View
@@ -307,14 +339,17 @@ class PostController extends Controller
     {
         $intent = $request->string('intent')->toString();
 
-        if (in_array($intent, ['publish', 'schedule'], true) && ! $request->user()->hasPermission('news.publish')) {
+        if (
+            in_array($intent, ['publish', 'schedule', 'hide_home', 'show_home', 'unpublish'], true)
+            && ! $request->user()->hasPermission('news.publish')
+        ) {
             abort(403);
         }
 
         return match ($intent) {
             'draft' => ['draft', null, null],
-            'review' => ['in_review', null, null],
             'publish' => ['published', now(), null],
+            'unpublish' => ['draft', null, null],
             'schedule' => $request->filled('scheduled_for')
                 ? ['scheduled', null, $request->date('scheduled_for')]
                 : throw ValidationException::withMessages(['scheduled_for' => 'Indica la fecha y hora de publicación.']),

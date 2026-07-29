@@ -414,6 +414,75 @@ class EditorialAdminTest extends TestCase
         $this->assertNull($post->published_at);
     }
 
+    public function test_published_news_has_clear_update_visibility_and_unpublish_actions(): void
+    {
+        $superadmin = $this->userWithRole('superadmin');
+        $category = $this->category();
+        $media = $this->media($superadmin);
+        $payload = [
+            'title' => 'Noticia para administrar su publicación',
+            'excerpt' => 'Resumen suficiente para comprobar el flujo editorial de una noticia publicada.',
+            'body' => '<p>Contenido editorial completo para comprobar actualización, portada y despublicación.</p>',
+            'category_id' => $category->id,
+            'media_id' => $media->id,
+        ];
+
+        $this->actingAs($superadmin)
+            ->post(route('admin.posts.store'), $payload + ['intent' => 'publish'])
+            ->assertSessionHasNoErrors();
+
+        $post = Post::query()->firstOrFail();
+        $originalPublishedAt = $post->published_at?->copy();
+
+        $this->actingAs($superadmin)
+            ->get(route('admin.posts.edit', $post))
+            ->assertOk()
+            ->assertSee('Publicada')
+            ->assertSee('Actualizar noticia')
+            ->assertSee('button--update', false)
+            ->assertSee('Ocultar de portada')
+            ->assertSee('Despublicar')
+            ->assertDontSee('Enviar a revisión')
+            ->assertDontSee('name="intent" value="publish"', false);
+
+        $this->actingAs($superadmin)
+            ->put(route('admin.posts.update', $post), $payload + ['intent' => 'preserve'])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status', 'Noticia actualizada.');
+
+        $this->assertSame(
+            $originalPublishedAt?->toDateTimeString(),
+            $post->refresh()->published_at?->toDateTimeString(),
+        );
+
+        $this->actingAs($superadmin)
+            ->put(route('admin.posts.update', $post), $payload + ['intent' => 'hide_home'])
+            ->assertSessionHas('status', 'Noticia ocultada de la portada.');
+        $this->assertTrue($post->refresh()->is_homepage_hidden);
+        $this->assertSame('published', $post->status);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'post.hidden_from_home',
+            'subject_id' => $post->id,
+        ]);
+
+        $this->actingAs($superadmin)
+            ->put(route('admin.posts.update', $post), $payload + ['intent' => 'show_home'])
+            ->assertSessionHas('status', 'Noticia mostrada en la portada.');
+        $this->assertFalse($post->refresh()->is_homepage_hidden);
+
+        $this->actingAs($superadmin)
+            ->put(route('admin.posts.update', $post), $payload + ['intent' => 'unpublish'])
+            ->assertSessionHas('status', 'Noticia despublicada y guardada como borrador.');
+
+        $this->assertSame('draft', $post->refresh()->status);
+        $this->assertNull($post->published_at);
+        $this->assertNull($post->scheduled_for);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'post.unpublished',
+            'subject_id' => $post->id,
+        ]);
+    }
+
     public function test_publish_now_ignores_a_programming_date_in_the_past(): void
     {
         $superadmin = $this->userWithRole('superadmin');

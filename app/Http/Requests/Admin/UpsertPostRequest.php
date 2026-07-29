@@ -45,7 +45,15 @@ class UpsertPostRequest extends FormRequest
                 'date',
                 'after:now',
             ],
-            'intent' => ['required', Rule::in(['preserve', 'draft', 'review', 'publish', 'schedule'])],
+            'intent' => ['required', Rule::in([
+                'preserve',
+                'draft',
+                'publish',
+                'schedule',
+                'hide_home',
+                'show_home',
+                'unpublish',
+            ])],
         ];
     }
 
