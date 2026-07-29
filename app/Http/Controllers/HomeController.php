@@ -73,7 +73,8 @@ class HomeController extends Controller
             ->published()
             ->visibleOnHome()
             ->whereNotIn('id', $featuredPosts->pluck('id'))
-            ->editorialOrder()
+            ->latest('published_at')
+            ->latest('id')
             ->take(5)
             ->get();
 
