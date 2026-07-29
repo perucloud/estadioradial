@@ -20,6 +20,7 @@ const normaliseUrl = (value) => {
 
 const adminNavGroups = [...document.querySelectorAll('[data-admin-nav-group]')];
 const desktopFlyoutQuery = window.matchMedia('(min-width: 961px)');
+const hoverFlyoutQuery = window.matchMedia('(min-width: 961px) and (hover: hover) and (pointer: fine)');
 
 const positionAdminFlyout = (group) => {
     group.classList.remove('opens-upward');
@@ -38,6 +39,28 @@ const positionAdminFlyout = (group) => {
 };
 
 adminNavGroups.forEach((group) => {
+    const openGroup = () => {
+        if (!hoverFlyoutQuery.matches) return;
+
+        window.clearTimeout(group.closeTimer);
+        group.open = true;
+    };
+
+    const scheduleClose = () => {
+        if (!hoverFlyoutQuery.matches) return;
+
+        window.clearTimeout(group.closeTimer);
+        group.closeTimer = window.setTimeout(() => {
+            if (group.matches(':hover') || group.contains(document.activeElement)) return;
+            group.removeAttribute('open');
+        }, 180);
+    };
+
+    group.addEventListener('pointerenter', openGroup);
+    group.addEventListener('pointerleave', scheduleClose);
+    group.addEventListener('focusin', openGroup);
+    group.addEventListener('focusout', scheduleClose);
+
     group.addEventListener('toggle', () => {
         if (!group.open) return;
 
