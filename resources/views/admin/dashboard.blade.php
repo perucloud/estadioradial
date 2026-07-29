@@ -52,7 +52,34 @@
                 <span>Publicidad activa</span>
                 <strong>{{ $advertisements }}</strong>
             </div>
-            <p class="panel-note">Los gráficos estadísticos se habilitarán cuando exista una base de métricas reales.</p>
+            <div class="service-stat service-stat--scheduler">
+                <span>
+                    <strong>Publicaciones programadas</strong>
+                    <small>
+                        @if ($scheduler['last_completed_at'])
+                            Última revisión:
+                            {{ \Illuminate\Support\Carbon::parse($scheduler['last_completed_at'])->timezone(config('app.timezone'))->format('d/m/Y H:i:s') }}
+                        @else
+                            Todavía no se registra ninguna ejecución.
+                        @endif
+                    </small>
+                </span>
+                <span class="scheduler-status {{ $scheduler['active'] ? 'is-active' : 'is-inactive' }}">
+                    {{ $scheduler['active'] ? 'Activo' : 'Detenido' }}
+                </span>
+            </div>
+            <div class="service-stat">
+                <span>Noticias vencidas pendientes</span>
+                <strong class="{{ $overdueScheduledPosts > 0 ? 'text-danger' : '' }}">{{ $overdueScheduledPosts }}</strong>
+            </div>
+            @if ($scheduler['last_error'])
+                <p class="panel-note panel-note--danger">{{ $scheduler['last_error'] }}</p>
+            @else
+                <p class="panel-note">
+                    El programador revisa cada minuto y publica usando el horario
+                    {{ config('app.timezone') }}.
+                </p>
+            @endif
         </aside>
     </div>
 @endsection

@@ -10,6 +10,7 @@ use App\Models\Location;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\Tag;
+use App\Services\PostPublisher;
 use App\Support\PostHtmlSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -75,9 +76,12 @@ class PostController extends Controller
         return view('admin.posts.form', $this->formData());
     }
 
-    public function store(UpsertPostRequest $request, PostHtmlSanitizer $sanitizer): RedirectResponse
-    {
-        $post = DB::transaction(function () use ($request, $sanitizer): Post {
+    public function store(
+        UpsertPostRequest $request,
+        PostHtmlSanitizer $sanitizer,
+        PostPublisher $publisher,
+    ): RedirectResponse {
+        $post = DB::transaction(function () use ($request, $sanitizer, $publisher): Post {
             $data = $this->prepareData($request, $sanitizer);
             [$status, $publishedAt, $scheduledFor] = $this->resolveState($request);
             $media = Media::query()->findOrFail($data['media_id']);
@@ -97,6 +101,10 @@ class PostController extends Controller
             $this->syncRelations($post, $request);
             $this->log($request, 'post.created', $post, ['status' => $status]);
 
+            if ($request->string('intent')->toString() === 'publish') {
+                $publisher->publish($post, $request->user()->id);
+            }
+
             return $post;
         });
 
@@ -113,10 +121,11 @@ class PostController extends Controller
         UpsertPostRequest $request,
         Post $post,
         PostHtmlSanitizer $sanitizer,
+        PostPublisher $publisher,
     ): RedirectResponse {
         $intent = $request->string('intent')->toString();
 
-        DB::transaction(function () use ($request, $post, $sanitizer): void {
+        DB::transaction(function () use ($request, $post, $sanitizer, $publisher): void {
             $data = $this->prepareData($request, $sanitizer);
             [$status, $publishedAt, $scheduledFor] = $this->resolveState($request, $post);
             $media = Media::query()->findOrFail($data['media_id']);
@@ -143,6 +152,11 @@ class PostController extends Controller
             ]);
 
             $this->syncRelations($post, $request);
+            if ($intent === 'publish') {
+                $publisher->publish($post, $request->user()->id);
+                $status = $post->status;
+            }
+
             $action = match ($intent) {
                 'hide_home' => 'post.hidden_from_home',
                 'show_home' => 'post.shown_on_home',
@@ -348,7 +362,11 @@ class PostController extends Controller
 
         return match ($intent) {
             'draft' => ['draft', null, null],
-            'publish' => ['published', now(), null],
+            'publish' => [
+                $post?->status ?? 'draft',
+                $post?->published_at,
+                null,
+            ],
             'unpublish' => ['draft', null, null],
             'schedule' => $request->filled('scheduled_for')
                 ? ['scheduled', null, $request->date('scheduled_for')]

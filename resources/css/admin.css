@@ -688,6 +688,39 @@ select {
     font-size: 1.4rem;
 }
 
+.service-stat--scheduler > span:first-child {
+    display: grid;
+    gap: 4px;
+}
+
+.service-stat--scheduler small {
+    color: var(--admin-muted);
+    font-size: .72rem;
+}
+
+.scheduler-status {
+    display: inline-flex;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 900;
+}
+
+.scheduler-status.is-active {
+    color: #17663f;
+    background: #e5f6ed;
+}
+
+.scheduler-status.is-inactive {
+    color: #9f1d25;
+    background: #fdebed;
+}
+
+.text-danger,
+.panel-note--danger {
+    color: #b91c1c !important;
+}
+
 .panel-note {
     margin: 22px 0 0;
     font-size: .8rem;

@@ -88,14 +88,26 @@ La publicación programada se procesa con:
 php artisan posts:publish-scheduled
 ```
 
-El scheduler ya ejecuta este comando cada minuto. En hosting debe configurarse
-un único cron:
+En desarrollo, el proceso que mantiene activo el programador es:
 
-```text
-* * * * * php /ruta/al/proyecto/artisan schedule:run
+```bash
+php artisan schedule:work
 ```
 
-La aplicación utiliza `America/Lima` como zona horaria predeterminada.
+`composer run dev` ya incluye ese proceso. Si se utiliza el dominio virtual de
+Laragon sin ejecutar Composer, debe iniciarse `schedule:work` en segundo plano.
+
+El scheduler ejecuta el comando cada minuto. En hosting debe configurarse un
+único cron, reemplazando la ruta por la ruta absoluta del proyecto:
+
+```text
+* * * * * cd /ruta/al/proyecto && php artisan schedule:run >> /dev/null 2>&1
+```
+
+La aplicación utiliza `America/Lima` como zona horaria predeterminada. Las
+fechas se almacenan en UTC y se presentan al usuario en la zona horaria del
+portal. El dashboard muestra el último latido del programador y alerta sobre
+noticias vencidas pendientes.
 
 ## Verificación
 

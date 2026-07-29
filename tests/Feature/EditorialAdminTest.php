@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\User;
 use App\Support\AdminAccess;
 use App\Support\PostHtmlSanitizer;
+use App\Support\SchedulerHealth;
 use Database\Seeders\LocationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -232,6 +233,10 @@ class EditorialAdminTest extends TestCase
         $this->assertSame($title, $post->seo_title);
         $this->assertSame($excerpt, $post->seo_description);
         $this->assertCount(2, $post->tags);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'post.published',
+            'subject_id' => $post->id,
+        ]);
         $this->assertEqualsCanonicalizing(
             ['Seguridad ciudadana', 'Ministerio del Interior'],
             $post->tags->pluck('name')->all(),
@@ -619,6 +624,22 @@ class EditorialAdminTest extends TestCase
         $this->assertSame('published', $post->status);
         $this->assertNotNull($post->published_at);
         $this->assertNull($post->scheduled_for);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'post.published_scheduled',
+            'subject_id' => $post->id,
+        ]);
+
+        $scheduler = app(SchedulerHealth::class)->snapshot();
+        $this->assertTrue($scheduler['active']);
+        $this->assertSame(1, $scheduler['published_count']);
+
+        $superadmin = $this->userWithRole('superadmin');
+        $this->actingAs($superadmin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Publicaciones programadas')
+            ->assertSee('Activo')
+            ->assertSee('Noticias vencidas pendientes');
     }
 
     public function test_media_in_use_cannot_be_deleted(): void

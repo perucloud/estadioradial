@@ -2,9 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Models\ActivityLog;
 use App\Models\Post;
+use App\Services\PostPublisher;
+use App\Support\SchedulerHealth;
 use Illuminate\Console\Command;
+use Throwable;
 
 class PublishScheduledPosts extends Command
 {
@@ -12,33 +14,33 @@ class PublishScheduledPosts extends Command
 
     protected $description = 'Publica las noticias programadas cuya fecha ya llegó';
 
-    public function handle(): int
+    public function handle(PostPublisher $publisher, SchedulerHealth $health): int
     {
         $count = 0;
+        $health->started();
 
-        Post::query()
-            ->where('status', 'scheduled')
-            ->whereNotNull('scheduled_for')
-            ->where('scheduled_for', '<=', now())
-            ->chunkById(100, function ($posts) use (&$count): void {
-                foreach ($posts as $post) {
-                    $post->update([
-                        'status' => 'published',
-                        'published_at' => now(),
-                        'scheduled_for' => null,
-                    ]);
+        try {
+            Post::query()
+                ->where('status', 'scheduled')
+                ->whereNotNull('scheduled_for')
+                ->where('scheduled_for', '<=', now())
+                ->chunkById(100, function ($posts) use (&$count, $publisher): void {
+                    foreach ($posts as $post) {
+                        $publisher->publish(
+                            post: $post,
+                            userId: $post->reviewed_by,
+                            automatic: true,
+                        );
+                        $count++;
+                    }
+                });
+        } catch (Throwable $exception) {
+            $health->failed($exception);
 
-                    ActivityLog::query()->create([
-                        'user_id' => $post->reviewed_by,
-                        'action' => 'post.published_scheduled',
-                        'subject_type' => $post->getMorphClass(),
-                        'subject_id' => $post->id,
-                        'properties' => ['automatic' => true],
-                    ]);
-                    $count++;
-                }
-            });
+            throw $exception;
+        }
 
+        $health->completed($count);
         $this->info("Noticias publicadas: {$count}");
 
         return self::SUCCESS;
