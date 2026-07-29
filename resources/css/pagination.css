@@ -1,0 +1,104 @@
+.portal-pagination {
+    --pagination-accent: var(--red, var(--admin-red, #c91f26));
+    --pagination-accent-dark: var(--red-dark, var(--admin-red-dark, #9f171d));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.portal-pagination__pages {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.portal-pagination__control,
+.portal-pagination__page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    color: #343941;
+    background: #fff;
+    border: 1px solid #dfe2e7;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgb(24 28 35 / 5%);
+    font-size: .78rem;
+    font-weight: 800;
+    text-decoration: none;
+    transition: color .2s ease, background-color .2s ease, border-color .2s ease,
+        box-shadow .2s ease, transform .2s ease;
+}
+
+.portal-pagination__control {
+    gap: 8px;
+    padding: 0 16px;
+}
+
+.portal-pagination__page {
+    width: 42px;
+    padding: 0;
+}
+
+.portal-pagination__control:hover,
+.portal-pagination__page:hover {
+    color: var(--pagination-accent);
+    border-color: color-mix(in srgb, var(--pagination-accent) 38%, #dfe2e7);
+    box-shadow: 0 8px 20px rgb(24 28 35 / 10%);
+    transform: translateY(-1px);
+}
+
+.portal-pagination__page.is-current {
+    color: #fff;
+    background: linear-gradient(135deg, var(--pagination-accent), var(--pagination-accent-dark));
+    border-color: transparent;
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--pagination-accent) 25%, transparent);
+}
+
+.portal-pagination__control.is-disabled {
+    color: #a1a6ae;
+    background: #f1f2f4;
+    border-color: #e6e8eb;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.portal-pagination__ellipsis {
+    display: grid;
+    min-width: 28px;
+    min-height: 42px;
+    color: #8a9099;
+    font-weight: 800;
+    place-items: center;
+}
+
+.portal-pagination a:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--pagination-accent) 25%, transparent);
+    outline-offset: 3px;
+}
+
+@media (max-width: 560px) {
+    .portal-pagination {
+        gap: 8px;
+    }
+
+    .portal-pagination__control {
+        flex: 1 1 calc(50% - 4px);
+        order: 2;
+    }
+
+    .portal-pagination__pages {
+        flex: 1 0 100%;
+        order: 1;
+    }
+
+    .portal-pagination__page {
+        width: 38px;
+        min-height: 38px;
+    }
+}

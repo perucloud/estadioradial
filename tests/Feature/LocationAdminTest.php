@@ -57,6 +57,19 @@ class LocationAdminTest extends TestCase
             ->assertSee('Título SEO');
     }
 
+    public function test_location_pagination_uses_real_spanish_controls(): void
+    {
+        $this->actingAs($this->superadmin)
+            ->get(route('admin.locations.index', ['type' => 'region', 'per_page' => 10]))
+            ->assertOk()
+            ->assertSee('portal-pagination', false)
+            ->assertSee('Anterior')
+            ->assertSee('Siguiente')
+            ->assertSee('aria-current="page"', false)
+            ->assertDontSee('pagination.previous')
+            ->assertDontSee('pagination.next');
+    }
+
     public function test_location_creation_enforces_geographic_levels_and_generates_seo(): void
     {
         $peru = Location::query()->where('slug', 'peru')->firstOrFail();

@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Category;
 use App\Models\PortalSetting;
 use App\Models\Stream;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -23,6 +24,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::defaultView('pagination.portal');
+        Paginator::defaultSimpleView('pagination.simple');
+
         View::composer('layouts.app', function ($view) {
             $socialLinks = PortalSetting::value('social.links', [
                 'facebook' => 'https://www.facebook.com/',
