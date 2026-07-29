@@ -52,6 +52,12 @@ class PostController extends Controller
             'locations' => Location::query()
                 ->with('parent.parent.parent')
                 ->where('is_active', true)
+                ->where(function (Builder $query) use ($locationId): void {
+                    $query->whereHas('posts');
+                    if ($locationId > 0) {
+                        $query->orWhereKey($locationId);
+                    }
+                })
                 ->orderBy('display_order')
                 ->orderBy('name')
                 ->get(),
@@ -221,6 +227,36 @@ class PostController extends Controller
         $locationSelection = $post?->location
             ? $post->location->lineage()->mapWithKeys(fn (Location $location) => [$location->type => $location->id])->all()
             : [];
+        $oldSelection = collect(['country', 'region', 'province', 'district'])
+            ->mapWithKeys(function (string $type): array {
+                $value = session()->getOldInput('location_'.$type.'_id');
+
+                return [$type => is_numeric($value) ? (int) $value : null];
+            })
+            ->filter()
+            ->all();
+        $selection = $oldSelection + $locationSelection;
+        $locationsByType = collect([
+            'country' => Location::query()
+                ->active()
+                ->where('type', 'country')
+                ->orderBy('display_order')
+                ->orderBy('name')
+                ->get(),
+        ]);
+
+        foreach (['region' => 'country', 'province' => 'region', 'district' => 'province'] as $type => $parentType) {
+            $parentId = $selection[$parentType] ?? null;
+            $locationsByType->put($type, $parentId
+                ? Location::query()
+                    ->active()
+                    ->where('type', $type)
+                    ->where('parent_id', $parentId)
+                    ->orderBy('display_order')
+                    ->orderBy('name')
+                    ->get()
+                : collect());
+        }
 
         return [
             'post' => $post,
@@ -230,13 +266,9 @@ class PostController extends Controller
                 ->orderByDesc('posts_count')
                 ->orderBy('name')
                 ->get(),
-            'locationsByType' => Location::query()
-                ->where('is_active', true)
-                ->orderBy('display_order')
-                ->orderBy('name')
-                ->get()
-                ->groupBy('type'),
-            'locationSelection' => $locationSelection,
+            'locationsByType' => $locationsByType,
+            'locationSelection' => $selection,
+            'locationOptionsUrl' => route('admin.locations.options'),
             'mediaItems' => Media::query()->latest()->limit(120)->get(),
         ];
     }

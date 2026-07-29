@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\LocationCatalogImporter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,8 @@ class Location extends Model
         'type',
         'country_code',
         'ubigeo',
+        'source',
+        'source_key',
         'latitude',
         'longitude',
         'description',
@@ -131,5 +134,14 @@ class Location extends Model
     public function typeLabel(): string
     {
         return self::TYPES[$this->type] ?? ucfirst($this->type);
+    }
+
+    public function sourceLabel(): string
+    {
+        return match ($this->source) {
+            LocationCatalogImporter::COUNTRIES_SOURCE => 'Catálogo de países',
+            LocationCatalogImporter::PERU_SOURCE => 'Catálogo UBIGEO',
+            default => 'Personalizada',
+        };
     }
 }

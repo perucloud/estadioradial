@@ -173,7 +173,7 @@
                 </div>
             </section>
 
-            <section class="panel post-location-panel" data-post-location>
+            <section class="panel post-location-panel" data-post-location data-location-options-url="{{ $locationOptionsUrl }}">
                 <div class="panel__header">
                     <div>
                         <span class="eyebrow">Ubicación opcional</span>

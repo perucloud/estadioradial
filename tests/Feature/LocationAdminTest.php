@@ -47,14 +47,13 @@ class LocationAdminTest extends TestCase
     public function test_location_dashboard_displays_tree_filters_and_moquegua_data(): void
     {
         $this->actingAs($this->superadmin)
-            ->get(route('admin.locations.index', ['type' => 'district', 'per_page' => 10]))
+            ->get(route('admin.locations.index', ['type' => 'district', 'q' => 'Carumas', 'per_page' => 10]))
             ->assertOk()
             ->assertSee('Cobertura geográfica')
             ->assertSee('Buscar nombre, slug o UBIGEO')
             ->assertSee('10 por página')
             ->assertSee('data-auto-filter', false)
             ->assertSee('Carumas')
-            ->assertSee('San Cristóbal de Calacoa')
             ->assertSee('Título SEO');
     }
 

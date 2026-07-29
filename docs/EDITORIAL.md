@@ -230,3 +230,32 @@ Los textos del lote inicial son resúmenes editoriales propios. Cada registro
 conserva la fuente consultada y su enlace. Las ilustraciones incluidas son
 recursos propios del prototipo; no se descargan fotografías de terceros sin una
 licencia comprobada.
+
+## Catálogos geográficos
+
+La clasificación temática y el alcance territorial son independientes. Una
+noticia puede ser `Política` y, al mismo tiempo, corresponder a Perú, Moquegua,
+Mariscal Nieto o Carumas.
+
+El sistema utiliza dos catálogos locales y versionados:
+
+- `millan2993/countries`, exclusivamente para los nombres de países;
+- `RitchieRD/ubigeos-peru-data`, para los 25 departamentos (mostrados como
+  regiones), 196 provincias y 1,892 distritos del Perú.
+
+Al seleccionar un país, el formulario consulta sus regiones bajo demanda. Las
+provincias y distritos se cargan del mismo modo, evitando insertar más de dos
+mil opciones en el HTML inicial. Fuera de Perú basta con detenerse en el país;
+el sistema no importa estados ni ciudades extranjeras.
+
+Los catálogos no dependen de Internet durante la edición. Para volver a
+sincronizarlos desde las copias incluidas en `database/data`:
+
+```bash
+php artisan locations:import-catalogs
+```
+
+La sincronización es idempotente, conserva los IDs que ya usan las noticias y
+reconcilia los registros por fuente, UBIGEO y jerarquía. El panel mantiene la
+opción de crear una ubicación personalizada cuando el catálogo no cubra un caso
+especial.

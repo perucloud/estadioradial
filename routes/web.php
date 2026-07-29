@@ -40,6 +40,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
     Route::put('/cambiar-clave', [AdminPasswordController::class, 'update'])->name('password.update');
 
     Route::middleware('password.changed')->group(function () {
+        Route::get('/ubicaciones/opciones', [AdminLocationController::class, 'options'])
+            ->name('locations.options');
+
         Route::get('/', AdminDashboardController::class)
             ->middleware('permission:dashboard.view')
             ->name('dashboard');

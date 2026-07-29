@@ -17,6 +17,8 @@ document.querySelectorAll('[data-location-form]').forEach((form) => {
     const parent = form.querySelector('[data-location-parent]');
     const countryCode = form.querySelector('[data-country-code]');
     const help = form.querySelector('[data-location-parent-help]');
+    const optionsUrl = form.dataset.locationOptionsUrl;
+    let loadedParentType;
     if (!type || !parent) return;
 
     const synchronize = () => {
@@ -46,12 +48,51 @@ document.querySelectorAll('[data-location-form]').forEach((form) => {
 
         if (countryCode) {
             const isCountry = type.value === 'country';
-            countryCode.required = isCountry;
             countryCode.disabled = !isCountry;
         }
     };
 
-    type.addEventListener('change', synchronize);
+    const loadParents = async () => {
+        const expected = parentTypes[type.value];
+        if (!expected || !optionsUrl || loadedParentType === expected) return;
+
+        const selectedValue = parent.value;
+        parent.disabled = true;
+        parent.setAttribute('aria-busy', 'true');
+
+        try {
+            const url = new URL(optionsUrl, window.location.origin);
+            url.searchParams.set('type', expected);
+            url.searchParams.set('all', '1');
+            const response = await fetch(url, { headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error('No se pudieron cargar las ubicaciones superiores.');
+            const payload = await response.json();
+            const root = parent.options[0];
+            parent.replaceChildren(root);
+
+            payload.data.forEach((location) => {
+                const option = new Option(`${location.name} · ${labels[location.type]}`, location.id);
+                option.dataset.locationOptionType = location.type;
+                parent.add(option);
+            });
+            parent.value = selectedValue;
+            loadedParentType = expected;
+        } catch {
+            if (help) help.textContent = 'No se pudieron cargar las ubicaciones superiores.';
+        } finally {
+            parent.disabled = false;
+            parent.removeAttribute('aria-busy');
+            synchronize();
+        }
+    };
+
+    type.addEventListener('change', () => {
+        loadedParentType = undefined;
+        parent.value = '';
+        synchronize();
+        loadParents();
+    });
+    parent.addEventListener('focus', loadParents, { once: false });
     synchronize();
 });
 
@@ -92,6 +133,8 @@ document.querySelectorAll('[data-post-location]').forEach((panel) => {
         .map((level) => panel.querySelector(`[data-post-location-level="${level}"]`))
         .filter(Boolean);
     const status = panel.querySelector('[data-post-location-status]');
+    const optionsUrl = panel.dataset.locationOptionsUrl;
+    let requestController;
     if (selects.length !== levelNames.length) return;
 
     const updateStatus = () => {
@@ -105,33 +148,55 @@ document.querySelectorAll('[data-post-location]').forEach((panel) => {
 
     const synchronize = () => {
         selects.slice(1).forEach((select, index) => {
-            const parentValue = selects[index].value;
-            const selected = select.selectedOptions[0];
-
-            [...select.options].forEach((option) => {
-                if (option.value === '') {
-                    option.hidden = false;
-                    option.disabled = false;
-                    return;
-                }
-
-                const compatible = parentValue !== '' && option.dataset.parentId === parentValue;
-                option.hidden = !compatible;
-                option.disabled = !compatible;
-            });
-
-            if (selected?.disabled) select.value = '';
-            select.disabled = parentValue === '';
+            select.disabled = selects[index].value === '';
         });
-
         updateStatus();
     };
 
     selects.forEach((select, index) => {
-        select.addEventListener('change', () => {
+        select.addEventListener('change', async () => {
             selects.slice(index + 1).forEach((child) => {
-                child.value = '';
+                child.replaceChildren(child.options[0]);
+                child.disabled = true;
             });
+
+            const child = selects[index + 1];
+            if (!child || select.value === '' || !optionsUrl) {
+                synchronize();
+                return;
+            }
+
+            requestController?.abort();
+            requestController = new AbortController();
+            child.disabled = true;
+            child.setAttribute('aria-busy', 'true');
+
+            try {
+                const url = new URL(optionsUrl, window.location.origin);
+                url.searchParams.set('type', levelNames[index + 1]);
+                url.searchParams.set('parent_id', select.value);
+                const response = await fetch(url, {
+                    headers: { Accept: 'application/json' },
+                    signal: requestController.signal,
+                });
+
+                if (!response.ok) throw new Error('No se pudieron cargar las ubicaciones.');
+                const payload = await response.json();
+
+                payload.data.forEach((location) => {
+                    const option = new Option(location.name, location.id);
+                    option.dataset.parentId = location.parent_id;
+                    child.add(option);
+                });
+                child.disabled = false;
+            } catch (error) {
+                if (error.name !== 'AbortError' && status) {
+                    status.textContent = 'No se pudieron cargar las ubicaciones';
+                }
+            } finally {
+                child.removeAttribute('aria-busy');
+            }
+
             synchronize();
         });
     });

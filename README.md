@@ -41,6 +41,10 @@ npm install
 npm run build
 ```
 
+La migración carga localmente el catálogo nominal de países y la jerarquía
+UBIGEO completa del Perú. Puede sincronizarse nuevamente, sin borrar relaciones
+existentes, con `php artisan locations:import-catalogs`.
+
 La configuración inicial utiliza SQLite para facilitar el desarrollo. En
 producción se utilizará MySQL o MariaDB. `APP_URL`, `ASSET_URL`,
 `SESSION_DOMAIN` y las opciones HTTPS del `.env` deben reemplazarse por los

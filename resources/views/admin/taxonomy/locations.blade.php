@@ -20,10 +20,10 @@
                 <span class="eyebrow">Nueva ubicación</span>
                 <strong>Crear división territorial</strong>
             </span>
-            <span class="button button--primary">+ Nueva ubicación</span>
+            <span class="button button--primary">+ Ubicación personalizada</span>
         </summary>
 
-        <form method="post" action="{{ route('admin.locations.store') }}" class="form-stack taxonomy-form" data-location-form>
+        <form method="post" action="{{ route('admin.locations.store') }}" class="form-stack taxonomy-form" data-location-form data-location-options-url="{{ $locationOptionsUrl }}">
             @csrf
             <div class="form-grid form-grid--three">
                 <label>
@@ -52,15 +52,15 @@
                     Ubicación superior
                     <select name="parent_id" data-location-parent>
                         <option value="">Nivel principal</option>
-                        @foreach ($parentOptions as $option)
+                        @if ($oldParent)
                             <option
-                                value="{{ $option->id }}"
-                                data-location-option-type="{{ $option->type }}"
-                                @selected(old('parent_id') == $option->id)
+                                value="{{ $oldParent->id }}"
+                                data-location-option-type="{{ $oldParent->type }}"
+                                selected
                             >
-                                {{ str_repeat('— ', $option->tree_depth) }}{{ $option->name }} · {{ $option->typeLabel() }}
+                                {{ $oldParent->name }} · {{ $oldParent->typeLabel() }}
                             </option>
-                        @endforeach
+                        @endif
                     </select>
                     <small class="field-help" data-location-parent-help>Los países se crean en el nivel principal.</small>
                     @error('parent_id') <small class="field-error">{{ $message }}</small> @enderror
@@ -68,7 +68,7 @@
                 <label>
                     Código de país
                     <input type="text" name="country_code" value="{{ old('country_code') }}" maxlength="2" placeholder="PE" data-country-code>
-                    <small class="field-help">ISO de dos letras; obligatorio para países.</small>
+                    <small class="field-help">ISO de dos letras; opcional en el catálogo nominal de países.</small>
                     @error('country_code') <small class="field-error">{{ $message }}</small> @enderror
                 </label>
                 <label>
@@ -125,7 +125,7 @@
                 <select name="parent">
                     <option value="">Cualquier ubicación superior</option>
                     <option value="root" @selected($parentFilter === 'root')>Solo países</option>
-                    @foreach ($parentOptions as $option)
+                    @foreach ($filterParentOptions as $option)
                         <option value="{{ $option->id }}" @selected($parentFilter === (string) $option->id)>Dentro de {{ $option->name }}</option>
                     @endforeach
                 </select>
@@ -201,7 +201,11 @@
                                 </div>
                             </td>
                             <td><span class="location-type-badge location-type-badge--{{ $location->type }}">{{ $location->typeLabel() }}</span><small>{{ $location->children_count }} elementos hijos</small></td>
-                            <td><strong>{{ $location->country_code ?? '—' }}</strong><small>UBIGEO: {{ $location->ubigeo ?? 'sin registrar' }}</small></td>
+                            <td>
+                                <strong>{{ $location->country_code ?? '—' }}</strong>
+                                <small>UBIGEO: {{ $location->ubigeo ?? 'sin registrar' }}</small>
+                                <small>{{ $location->sourceLabel() }}</small>
+                            </td>
                             <td><strong>{{ $location->posts_count }}</strong><small>publicaciones</small></td>
                             <td>
                                 @if ($status === 'trash')
@@ -225,7 +229,7 @@
                                     <details class="row-editor">
                                         <summary>Editar</summary>
                                         <div class="row-editor__panel row-editor__panel--category">
-                                            <form method="post" action="{{ route('admin.locations.update', $location) }}" class="form-stack form-stack--compact" data-location-form>
+                                            <form method="post" action="{{ route('admin.locations.update', $location) }}" class="form-stack form-stack--compact" data-location-form data-location-options-url="{{ $locationOptionsUrl }}">
                                                 @csrf
                                                 @method('PUT')
                                                 <div class="form-grid">
@@ -245,15 +249,13 @@
                                                         Ubicación superior
                                                         <select name="parent_id" data-location-parent>
                                                             <option value="">Nivel principal</option>
-                                                            @foreach ($parentOptions as $option)
-                                                                @if ($option->id !== $location->id)
-                                                                    <option
-                                                                        value="{{ $option->id }}"
-                                                                        data-location-option-type="{{ $option->type }}"
-                                                                        @selected($location->parent_id === $option->id)
-                                                                    >{{ str_repeat('— ', $option->tree_depth) }}{{ $option->name }} · {{ $option->typeLabel() }}</option>
-                                                                @endif
-                                                            @endforeach
+                                                            @if ($location->parent)
+                                                                <option
+                                                                    value="{{ $location->parent->id }}"
+                                                                    data-location-option-type="{{ $location->parent->type }}"
+                                                                    selected
+                                                                >{{ $location->parent->name }} · {{ $location->parent->typeLabel() }}</option>
+                                                            @endif
                                                         </select>
                                                         <small class="field-help" data-location-parent-help></small>
                                                     </label>

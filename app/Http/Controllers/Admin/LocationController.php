@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpsertLocationRequest;
 use App\Models\ActivityLog;
 use App\Models\Location;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -70,16 +71,21 @@ class LocationController extends Controller
             $page,
             ['path' => $request->url(), 'query' => $request->query()],
         );
-        $parentOptions = $this->asTree(Location::query()
+        $filterParentOptions = $this->asTree(Location::query()
             ->with('parent')
             ->withCount(['children', 'posts'])
+            ->whereIn('type', ['country', 'region', 'province'])
             ->orderBy('display_order')
             ->orderBy('name')
             ->get());
 
         return view('admin.taxonomy.locations', [
             'locations' => $locations,
-            'parentOptions' => $parentOptions,
+            'filterParentOptions' => $filterParentOptions,
+            'oldParent' => old('parent_id')
+                ? Location::query()->find((int) old('parent_id'))
+                : null,
+            'locationOptionsUrl' => route('admin.locations.options'),
             'types' => Location::TYPES,
             'status' => $status,
             'typeFilter' => $type,
@@ -94,6 +100,36 @@ class LocationController extends Controller
                 'districts' => Location::query()->where('type', 'district')->count(),
                 'trash' => Location::onlyTrashed()->count(),
             ],
+        ]);
+    }
+
+    public function options(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', 'string', 'in:country,region,province,district'],
+            'parent_id' => ['nullable', 'integer', 'exists:locations,id'],
+            'all' => ['nullable', 'boolean'],
+        ]);
+        $type = (string) $data['type'];
+        $parentId = isset($data['parent_id']) ? (int) $data['parent_id'] : null;
+        $query = Location::query()
+            ->active()
+            ->where('type', $type)
+            ->orderBy('display_order')
+            ->orderBy('name');
+
+        if ($request->boolean('all')) {
+            // La administración puede cambiar la ubicación superior manualmente.
+        } elseif ($type === 'country') {
+            $query->whereNull('parent_id');
+        } elseif ($parentId === null) {
+            return response()->json(['data' => []]);
+        } else {
+            $query->where('parent_id', $parentId);
+        }
+
+        return response()->json([
+            'data' => $query->get(['id', 'parent_id', 'name', 'type', 'ubigeo']),
         ]);
     }
 
@@ -218,12 +254,6 @@ class LocationController extends Controller
         if ($expectedParentType !== null && $parent?->type !== $expectedParentType) {
             throw ValidationException::withMessages([
                 'parent_id' => 'Una '.$this->typeLabel($type).' debe depender de una '.$this->typeLabel($expectedParentType).'.',
-            ]);
-        }
-
-        if ($type === 'country' && blank($data['country_code'] ?? null)) {
-            throw ValidationException::withMessages([
-                'country_code' => 'Indica el código ISO de dos letras para el país.',
             ]);
         }
 
