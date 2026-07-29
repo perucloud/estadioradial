@@ -22,7 +22,7 @@
 
             @if (auth()->user()->hasPermission('news.view'))
                 <details
-                    class="admin-nav-group {{ request()->routeIs('admin.posts.*', 'admin.categories.*', 'admin.tags.*') ? 'is-active' : '' }}"
+                    class="admin-nav-group {{ request()->routeIs('admin.posts.*', 'admin.categories.*', 'admin.locations.*', 'admin.tags.*') ? 'is-active' : '' }}"
                     data-admin-nav-group
                 >
                     <summary>
@@ -46,6 +46,11 @@
                             </a>
                             <a class="{{ request()->routeIs('admin.tags.*') ? 'is-active' : '' }}" href="{{ route('admin.tags.index') }}">
                                 <x-admin-nav-icon name="etiqueta.png" /> Etiquetas
+                            </a>
+                        @endif
+                        @if (auth()->user()->hasPermission('locations.manage'))
+                            <a class="{{ request()->routeIs('admin.locations.*') ? 'is-active' : '' }}" href="{{ route('admin.locations.index') }}">
+                                <x-admin-nav-icon name="home.png" /> Ubicaciones
                             </a>
                         @endif
                     </div>

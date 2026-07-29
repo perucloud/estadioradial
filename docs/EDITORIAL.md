@@ -72,6 +72,26 @@ Esta jerarquía se reserva para temas, por ejemplo `Deportes > Fútbol`. Países
 regiones, provincias y distritos pertenecerán al módulo independiente de
 ubicaciones.
 
+## Ubicaciones geográficas
+
+La ruta `/admin/ubicaciones` administra una taxonomía territorial separada:
+
+```text
+País
+└── Región
+    └── Provincia
+        └── Distrito
+```
+
+El sistema valida que cada nivel dependa del tipo correcto, admite código ISO
+de país, UBIGEO, coordenadas, descripción y metadatos SEO. También incluye
+búsqueda, filtros, orden, paginación, papelera y restauración.
+
+La carga inicial incorpora `Perú > Moquegua`, las provincias Mariscal Nieto,
+General Sánchez Cerro e Ilo, y los distritos registrados de Mariscal Nieto.
+Esta estructura todavía no clasifica publicaciones: su relación con noticias
+corresponde al Hito 3.
+
 ## Slider de noticias más vistas
 
 El slider se configura en:

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\HomepageController as AdminHomepageController;
+use App\Http\Controllers\Admin\LocationController as AdminLocationController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\PasswordController as AdminPasswordController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
@@ -101,6 +102,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
             Route::put('/etiquetas/{tag:id}', [AdminTagController::class, 'update'])->name('tags.update');
             Route::post('/etiquetas/{tag:id}/combinar', [AdminTagController::class, 'merge'])->name('tags.merge');
             Route::delete('/etiquetas/{tag:id}', [AdminTagController::class, 'destroy'])->name('tags.destroy');
+        });
+
+        Route::middleware('permission:locations.manage')->group(function () {
+            Route::get('/ubicaciones', [AdminLocationController::class, 'index'])->name('locations.index');
+            Route::post('/ubicaciones', [AdminLocationController::class, 'store'])->name('locations.store');
+            Route::post('/ubicaciones/orden', [AdminLocationController::class, 'reorder'])->name('locations.reorder');
+            Route::put('/ubicaciones/{location:id}', [AdminLocationController::class, 'update'])->name('locations.update');
+            Route::delete('/ubicaciones/{location:id}', [AdminLocationController::class, 'destroy'])->name('locations.destroy');
+            Route::post('/ubicaciones/{location}/restaurar', [AdminLocationController::class, 'restore'])
+                ->name('locations.restore');
+            Route::delete('/ubicaciones/{location}/eliminar-definitivamente', [AdminLocationController::class, 'forceDestroy'])
+                ->name('locations.force-destroy');
         });
 
         Route::middleware('permission:appearance.manage')->group(function () {

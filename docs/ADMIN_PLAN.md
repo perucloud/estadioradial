@@ -19,7 +19,7 @@ La evolución profesional de categorías y ubicaciones se divide en cuatro hitos
 | Hito territorial | Estado |
 | --- | --- |
 | 1 — Categorías editoriales jerárquicas | Implementado |
-| 2 — Ubicaciones: país, región, provincia y distrito | Pendiente |
+| 2 — Ubicaciones: país, región, provincia y distrito | Implementado |
 | 3 — Integración de ubicación en crear y editar noticias | Pendiente |
 | 4 — Portada regional, páginas territoriales y migración | Pendiente |
 
@@ -118,6 +118,7 @@ la auditoría.
 │   ├── Todas
 │   ├── Nueva noticia
 │   ├── Categorías
+│   ├── Ubicaciones
 │   └── Etiquetas
 ├── Multimedia
 ├── Radio y video

@@ -1628,6 +1628,10 @@ td small {
     box-shadow: 0 8px 24px rgb(28 32 40 / 4%);
 }
 
+.taxonomy-metrics--locations {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
 .taxonomy-metrics span {
     color: var(--admin-muted);
     font-size: .72rem;
@@ -1692,6 +1696,10 @@ details.taxonomy-create {
     gap: 10px;
 }
 
+.taxonomy-filters--locations {
+    grid-template-columns: minmax(210px, 1.4fr) repeat(4, minmax(130px, .65fr)) auto auto;
+}
+
 .taxonomy-filters input,
 .taxonomy-filters select {
     width: 100%;
@@ -1721,6 +1729,15 @@ details.taxonomy-create {
 
 [data-category-row] {
     transition: opacity .15s, background-color .15s;
+}
+
+[data-location-row] {
+    transition: opacity .15s, background-color .15s;
+}
+
+[data-location-row].is-dragging {
+    opacity: .45;
+    background: #f1f7ff;
 }
 
 [data-category-row].is-dragging {
@@ -1767,6 +1784,48 @@ details.taxonomy-create {
     place-items: center;
     border-radius: 8px;
     background: var(--admin-soft);
+}
+
+.location-type-icon {
+    display: grid;
+    width: 31px;
+    height: 31px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--admin-line);
+    border-radius: 9px;
+    background: var(--admin-soft);
+}
+
+.location-type-badge {
+    display: inline-flex;
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 999px;
+    color: #36579a;
+    background: #e7eefc;
+    font-size: .68rem;
+    font-weight: 800;
+}
+
+.location-type-badge--country {
+    color: #176442;
+    background: #e7f6ee;
+}
+
+.location-type-badge--region {
+    color: #8d2327;
+    background: #fbe8e9;
+}
+
+.location-type-badge--province {
+    color: #785313;
+    background: #fff2cf;
+}
+
+.location-type-badge--district {
+    color: #65428e;
+    background: #f0e7fa;
 }
 
 .row-editor {

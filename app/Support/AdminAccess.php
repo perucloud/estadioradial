@@ -29,6 +29,7 @@ class AdminAccess
         'news.publish' => ['Publicar noticias', 'news'],
         'media.manage' => ['Administrar multimedia', 'media'],
         'categories.manage' => ['Administrar categorías', 'categories'],
+        'locations.manage' => ['Administrar ubicaciones', 'locations'],
         'programs.manage' => ['Administrar programas', 'programs'],
         'schedule.manage' => ['Administrar programación', 'schedule'],
         'stream.manage' => ['Administrar streaming', 'stream'],
@@ -64,7 +65,7 @@ class AdminAccess
             ->only(['dashboard.view', 'users.view', 'users.create.editorial', 'users.update', 'analytics.view'])
             ->pluck('id'));
         $roles['editor']->permissions()->sync($permissions
-            ->only(['dashboard.view', 'news.view', 'news.create', 'news.update', 'media.manage', 'categories.manage', 'analytics.view'])
+            ->only(['dashboard.view', 'news.view', 'news.create', 'news.update', 'media.manage', 'categories.manage', 'locations.manage', 'analytics.view'])
             ->pluck('id'));
         $roles['locutor']->permissions()->sync($permissions
             ->only(['dashboard.view', 'programs.manage', 'schedule.manage', 'analytics.view'])
