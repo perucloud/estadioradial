@@ -1187,13 +1187,23 @@ td small {
 }
 
 .media-dialog {
+    position: fixed;
+    inset: 50% auto auto 50%;
     width: min(1040px, calc(100% - 30px));
-    max-height: min(88vh, 900px);
+    height: min(88dvh, 900px);
+    max-height: min(88dvh, 900px);
+    margin: 0;
     padding: 0;
     overflow: hidden;
     border: 0;
     border-radius: 15px;
     box-shadow: var(--admin-shadow);
+    transform: translate(-50%, -50%);
+}
+
+.media-dialog[open] {
+    display: flex;
+    flex-direction: column;
 }
 
 .media-dialog::backdrop {
@@ -1262,6 +1272,80 @@ td small {
     box-shadow: 0 0 0 3px rgb(201 31 38 / 12%);
 }
 
+.media-dialog__upload {
+    display: grid;
+    padding: 17px 20px;
+    gap: 14px;
+    border-bottom: 1px solid var(--admin-line);
+    background: #fff7f7;
+}
+
+.media-dialog__upload[hidden] {
+    display: none;
+}
+
+.media-dialog__upload-heading,
+.media-dialog__upload-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.media-dialog__upload-heading > div {
+    display: grid;
+    gap: 2px;
+}
+
+.media-dialog__upload-heading > button {
+    border: 0;
+    cursor: pointer;
+    color: var(--admin-muted);
+    background: transparent;
+    font-size: 1.45rem;
+}
+
+.media-dialog__upload-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 11px 14px;
+}
+
+.media-dialog__upload-grid label {
+    display: grid;
+    min-width: 0;
+    gap: 6px;
+    color: #343943;
+    font-size: .75rem;
+    font-weight: 750;
+}
+
+.media-dialog__upload-grid input {
+    width: 100%;
+    min-height: 42px;
+    padding: 8px 11px;
+    border: 1px solid #ccd1d9;
+    border-radius: 8px;
+    outline: none;
+    background: var(--admin-white);
+}
+
+.media-dialog__upload-grid input:focus {
+    border-color: var(--admin-red);
+    box-shadow: 0 0 0 3px rgb(201 31 38 / 12%);
+}
+
+.media-dialog__upload-grid small,
+.media-dialog__upload-actions > span {
+    color: var(--admin-muted);
+    font-size: .68rem;
+    font-weight: 500;
+}
+
+.media-dialog__upload-actions > span {
+    color: var(--admin-red);
+}
+
 .media-dialog__status {
     padding: 11px 20px 0;
     color: var(--admin-muted);
@@ -1270,7 +1354,9 @@ td small {
 
 .media-dialog__grid {
     display: grid;
-    max-height: min(52vh, 560px);
+    min-height: 150px;
+    max-height: none;
+    flex: 1;
     overflow-y: auto;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
@@ -1359,16 +1445,17 @@ td small {
     background: var(--admin-white);
 }
 
-.media-dialog__footer > div {
+.media-dialog__footer > div:not(.media-dialog__selection) {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-.media-dialog__footer > div:first-child {
+.media-dialog__selection {
     display: grid;
+    flex: 1;
     min-width: 0;
-    gap: 2px;
+    gap: 4px;
 }
 
 .media-dialog__footer strong {
@@ -1377,6 +1464,32 @@ td small {
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: .8rem;
+}
+
+.media-dialog__url {
+    display: flex;
+    width: min(620px, 100%);
+    align-items: center;
+    gap: 7px;
+}
+
+.media-dialog__url input {
+    width: 100%;
+    min-width: 0;
+    min-height: 38px;
+    padding: 7px 10px;
+    border: 1px solid var(--admin-line);
+    border-radius: 7px;
+    color: #4a505b;
+    background: #f8f9fb;
+    font-size: .7rem;
+}
+
+.media-dialog__url .button {
+    min-height: 38px;
+    flex: 0 0 auto;
+    padding: 7px 11px;
+    font-size: .7rem;
 }
 
 .media-dialog.is-loading .media-dialog__grid {
@@ -1613,6 +1726,13 @@ td small {
         flex-direction: column;
     }
 
+    .media-dialog {
+        width: calc(100% - 16px);
+        height: calc(100dvh - 16px);
+        max-height: calc(100dvh - 16px);
+        border-radius: 12px;
+    }
+
     .media-dialog__toolbar form,
     .media-dialog__toolbar > div,
     .media-dialog__footer > div:last-child {
@@ -1626,6 +1746,11 @@ td small {
 
     .media-dialog__footer strong {
         max-width: calc(100vw - 70px);
+    }
+
+    .media-dialog__selection,
+    .media-dialog__url {
+        width: 100%;
     }
 
     .admin-account {
@@ -1684,6 +1809,22 @@ td small {
     .admin-nav-flyout,
     .admin-nav-flyout--long {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 440px) {
+    .media-dialog__upload {
+        max-height: 48dvh;
+        overflow-y: auto;
+    }
+
+    .media-dialog__upload-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .media-dialog__url {
+        align-items: stretch;
+        flex-direction: column;
     }
 }
 

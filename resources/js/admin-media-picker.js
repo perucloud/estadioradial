@@ -8,8 +8,15 @@ if (mediaPicker) {
     const applyButton = mediaPicker.querySelector('[data-media-picker-apply]');
     const moreButton = mediaPicker.querySelector('[data-media-picker-more]');
     const selectionLabel = mediaPicker.querySelector('[data-media-picker-selection]');
+    const selectedUrl = mediaPicker.querySelector('[data-media-picker-url]');
+    const copyButton = mediaPicker.querySelector('[data-media-picker-copy]');
     const title = mediaPicker.querySelector('[data-media-picker-title]');
+    const uploadForm = mediaPicker.querySelector('[data-media-picker-upload]');
+    const uploadToggle = mediaPicker.querySelector('[data-media-picker-upload-toggle]');
+    const uploadStatus = mediaPicker.querySelector('[data-media-picker-upload-status]');
+    const uploadSubmit = mediaPicker.querySelector('[data-media-picker-upload-submit]');
     const libraryUrl = mediaPicker.dataset.libraryUrl;
+    const uploadUrl = mediaPicker.dataset.uploadUrl;
     const items = new Map();
     let activeMode = 'inline';
     let ownerForm;
@@ -28,6 +35,8 @@ if (mediaPicker) {
         const media = items.get(Number(selectedId));
 
         selectionLabel.textContent = media?.alt_text || (selectedId ? `Imagen #${selectedId}` : 'Ninguna imagen seleccionada');
+        selectedUrl.value = media?.article_url || '';
+        copyButton.disabled = !media?.article_url;
         applyButton.disabled = mediaPicker.classList.contains('is-loading') || !media;
         applyButton.textContent = activeMode === 'featured'
             ? 'Usar como imagen destacada'
@@ -135,6 +144,9 @@ if (mediaPicker) {
             ? 'Seleccionar imagen destacada'
             : 'Insertar imagen en la noticia';
         searchInput.value = '';
+        uploadForm.hidden = true;
+        uploadForm.reset();
+        uploadStatus.textContent = '';
         mediaPicker.showModal();
         loadMedia();
     };
@@ -170,6 +182,19 @@ if (mediaPicker) {
     mediaPicker.querySelector('[data-media-picker-close]').addEventListener('click', () => mediaPicker.close());
     mediaPicker.querySelector('[data-media-picker-cancel]').addEventListener('click', () => mediaPicker.close());
     mediaPicker.querySelector('[data-media-picker-refresh]').addEventListener('click', () => loadMedia());
+    mediaPicker.querySelector('[data-media-picker-upload-close]').addEventListener('click', () => {
+        uploadForm.hidden = true;
+        uploadStatus.textContent = '';
+    });
+
+    uploadToggle.addEventListener('click', () => {
+        uploadForm.hidden = !uploadForm.hidden;
+        uploadStatus.textContent = '';
+
+        if (!uploadForm.hidden) {
+            uploadForm.querySelector('input[type="file"]').focus();
+        }
+    });
 
     searchForm.addEventListener('submit', (event) => {
         event.preventDefault();
@@ -178,6 +203,65 @@ if (mediaPicker) {
 
     moreButton.addEventListener('click', () => {
         if (currentPage < lastPage) loadMedia({ page: currentPage + 1, append: true });
+    });
+
+    uploadForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        uploadSubmit.disabled = true;
+        uploadStatus.textContent = 'Subiendo y procesando la imagen…';
+
+        try {
+            const response = await fetch(uploadUrl, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: new FormData(uploadForm),
+            });
+            const payload = await response.json();
+
+            if (!response.ok) {
+                const validationMessage = Object.values(payload.errors || {}).flat()[0];
+                throw new Error(validationMessage || payload.message || 'No se pudo subir la imagen.');
+            }
+
+            const uploadedMedia = payload.data?.[0];
+            if (!uploadedMedia) throw new Error('La imagen se guardó, pero no pudo seleccionarse.');
+
+            selectedId = Number(uploadedMedia.id);
+            searchInput.value = '';
+            uploadForm.reset();
+            uploadForm.hidden = true;
+            await loadMedia();
+            status.textContent = 'Imagen añadida correctamente y lista para utilizar.';
+        } catch (error) {
+            uploadStatus.textContent = error.message || 'No se pudo subir la imagen.';
+        } finally {
+            uploadSubmit.disabled = false;
+        }
+    });
+
+    copyButton.addEventListener('click', async () => {
+        if (!selectedUrl.value) return;
+
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(selectedUrl.value);
+            } else {
+                selectedUrl.select();
+                document.execCommand('copy');
+                selectedUrl.setSelectionRange(0, 0);
+            }
+
+            copyButton.textContent = 'URL copiada';
+            window.setTimeout(() => {
+                copyButton.textContent = 'Copiar URL';
+            }, 1600);
+        } catch {
+            selectedUrl.focus();
+            selectedUrl.select();
+        }
     });
 
     applyButton.addEventListener('click', () => {

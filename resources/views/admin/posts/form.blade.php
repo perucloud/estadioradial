@@ -206,6 +206,7 @@
         class="media-dialog"
         data-media-picker
         data-library-url="{{ route('admin.media.library') }}"
+        data-upload-url="{{ route('admin.media.store') }}"
     >
         <div class="media-dialog__header">
             <div>
@@ -223,14 +224,56 @@
                 <button class="button button--quiet" type="submit">Buscar</button>
             </form>
             <div>
+                <button class="button button--primary" type="button" data-media-picker-upload-toggle>
+                    + Añadir nueva imagen
+                </button>
                 <button class="button button--quiet" type="button" data-media-picker-refresh>
                     ↻ Actualizar
                 </button>
-                <a class="button button--quiet" href="{{ route('admin.media.index') }}" target="_blank" rel="noopener">
-                    Abrir Media
-                </a>
             </div>
         </div>
+        <form
+            class="media-dialog__upload"
+            method="post"
+            action="{{ route('admin.media.store') }}"
+            enctype="multipart/form-data"
+            data-media-picker-upload
+            hidden
+        >
+            @csrf
+            <div class="media-dialog__upload-heading">
+                <div>
+                    <span class="eyebrow">Nueva imagen</span>
+                    <strong>Añadir sin salir de la noticia</strong>
+                </div>
+                <button type="button" data-media-picker-upload-close aria-label="Cerrar formulario de carga">×</button>
+            </div>
+            <div class="media-dialog__upload-grid">
+                <label class="media-dialog__file">
+                    <span>Archivo de imagen</span>
+                    <input type="file" name="files[]" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" required>
+                    <small>JPG, PNG, WebP o GIF. Máximo 8 MB.</small>
+                </label>
+                <label>
+                    <span>Texto alternativo</span>
+                    <input type="text" name="alt_texts[]" maxlength="255" placeholder="Describe claramente el contenido de la imagen" required>
+                </label>
+                <label>
+                    <span>Pie de foto</span>
+                    <input type="text" name="caption" maxlength="255" placeholder="Opcional">
+                </label>
+                <label>
+                    <span>Crédito o autor</span>
+                    <input type="text" name="credit" maxlength="255" placeholder="Opcional">
+                </label>
+            </div>
+            <div class="media-dialog__upload-actions">
+                <span data-media-picker-upload-status aria-live="polite"></span>
+                <button class="button button--primary" type="submit" data-media-picker-upload-submit>
+                    Subir y seleccionar
+                </button>
+            </div>
+        </form>
         <div class="media-dialog__status" data-media-picker-status aria-live="polite">
             Cargando biblioteca…
         </div>
@@ -241,9 +284,16 @@
             </button>
         </div>
         <div class="media-dialog__footer">
-            <div>
+            <div class="media-dialog__selection">
                 <span class="eyebrow">Selección</span>
                 <strong data-media-picker-selection>Ninguna imagen seleccionada</strong>
+                <div class="media-dialog__url">
+                    <label class="sr-only" for="selected-media-url">URL de la imagen seleccionada</label>
+                    <input id="selected-media-url" type="text" data-media-picker-url readonly placeholder="Selecciona una imagen para ver su URL">
+                    <button class="button button--quiet" type="button" data-media-picker-copy disabled>
+                        Copiar URL
+                    </button>
+                </div>
             </div>
             <div>
                 <button class="button button--quiet" type="button" data-media-picker-cancel>Cancelar</button>

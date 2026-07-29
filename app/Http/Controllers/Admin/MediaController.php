@@ -30,15 +30,7 @@ class MediaController extends Controller
 
         return response()->json([
             'data' => $mediaItems->getCollection()
-                ->map(fn (Media $media): array => [
-                    'id' => $media->id,
-                    'name' => $media->original_name,
-                    'alt_text' => $media->alt_text,
-                    'caption' => $media->caption,
-                    'thumb_url' => $media->url('thumb'),
-                    'article_url' => $media->url('article'),
-                    'created_at' => $media->created_at?->toIso8601String(),
-                ])
+                ->map(fn (Media $media): array => $this->mediaPayload($media))
                 ->values(),
             'meta' => [
                 'current_page' => $mediaItems->currentPage(),
@@ -67,30 +59,44 @@ class MediaController extends Controller
         ]);
     }
 
-    public function store(Request $request, MediaProcessor $processor): RedirectResponse
+    public function store(Request $request, MediaProcessor $processor): RedirectResponse|JsonResponse
     {
-        $data = $request->validate([
-            'files' => ['required', 'array', 'min:1', 'max:10'],
-            'files.*' => [
-                'required',
-                'file',
-                'image',
-                'mimes:jpg,jpeg,png,webp,gif',
-                'max:8192',
-                'dimensions:max_width=6000,max_height=6000',
+        $data = $request->validate(
+            [
+                'files' => ['required', 'array', 'min:1', 'max:10'],
+                'files.*' => [
+                    'required',
+                    'file',
+                    'image',
+                    'mimes:jpg,jpeg,png,webp,gif',
+                    'max:8192',
+                    'dimensions:max_width=6000,max_height=6000',
+                ],
+                'alt_texts' => ['required', 'array'],
+                'alt_texts.*' => ['required', 'string', 'max:255'],
+                'caption' => ['nullable', 'string', 'max:255'],
+                'credit' => ['nullable', 'string', 'max:255'],
+                'license' => ['nullable', 'string', 'max:255'],
             ],
-            'alt_texts' => ['required', 'array'],
-            'alt_texts.*' => ['required', 'string', 'max:255'],
-            'caption' => ['nullable', 'string', 'max:255'],
-            'credit' => ['nullable', 'string', 'max:255'],
-            'license' => ['nullable', 'string', 'max:255'],
-        ]);
+            [
+                'files.required' => 'Selecciona una imagen para subir.',
+                'files.*.required' => 'Selecciona una imagen para subir.',
+                'files.*.image' => 'El archivo seleccionado no es una imagen válida.',
+                'files.*.mimes' => 'La imagen debe ser JPG, PNG, WebP o GIF.',
+                'files.*.max' => 'La imagen no puede superar los 8 MB.',
+                'files.*.dimensions' => 'La imagen no puede superar los 6000 píxeles por lado.',
+                'alt_texts.required' => 'Escribe el texto alternativo de la imagen.',
+                'alt_texts.*.required' => 'Escribe el texto alternativo de la imagen.',
+            ],
+        );
 
         if (count($data['files']) !== count($data['alt_texts'])) {
             throw ValidationException::withMessages([
                 'alt_texts' => 'Cada imagen necesita su propio texto alternativo.',
             ]);
         }
+
+        $createdMedia = collect();
 
         foreach ($data['files'] as $index => $file) {
             $media = $processor->store($file, [
@@ -101,6 +107,16 @@ class MediaController extends Controller
             ], $request->user()->id);
 
             $this->log($request, 'media.created', $media);
+            $createdMedia->push($media);
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => count($data['files']).' archivo(s) añadidos a la biblioteca.',
+                'data' => $createdMedia
+                    ->map(fn (Media $media): array => $this->mediaPayload($media))
+                    ->values(),
+            ], 201);
         }
 
         return back()->with('status', count($data['files']).' archivo(s) añadidos a la biblioteca.');
@@ -144,5 +160,21 @@ class MediaController extends Controller
             'subject_id' => $media->id,
             'ip_hash' => hash('sha256', (string) $request->ip()),
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function mediaPayload(Media $media): array
+    {
+        return [
+            'id' => $media->id,
+            'name' => $media->original_name,
+            'alt_text' => $media->alt_text,
+            'caption' => $media->caption,
+            'thumb_url' => $media->url('thumb'),
+            'article_url' => $media->url('article'),
+            'created_at' => $media->created_at?->toIso8601String(),
+        ];
     }
 }

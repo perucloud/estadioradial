@@ -44,6 +44,27 @@ class EditorialAdminTest extends TestCase
         Storage::disk('public')->assertExists($media->variants['article']);
     }
 
+    public function test_editor_can_upload_and_receive_a_media_item_inside_the_picker(): void
+    {
+        Storage::fake('public');
+        $editor = $this->userWithRole('editor');
+
+        $this->actingAs($editor)
+            ->withHeader('Accept', 'application/json')
+            ->post(route('admin.media.store'), [
+                'files' => [UploadedFile::fake()->image('portada-ministerio.jpg', 1200, 800)],
+                'alt_texts' => ['Ceremonia de juramentación del nuevo ministro'],
+                'caption' => 'Ceremonia oficial',
+                'credit' => 'Estación Radial',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.0.name', 'portada-ministerio.jpg')
+            ->assertJsonPath('data.0.alt_text', 'Ceremonia de juramentación del nuevo ministro')
+            ->assertJsonStructure(['data' => [['id', 'thumb_url', 'article_url']]]);
+
+        $this->assertDatabaseCount('media', 1);
+    }
+
     public function test_editor_can_open_media_library_and_ckeditor_editor(): void
     {
         $editor = $this->userWithRole('editor');
@@ -67,6 +88,9 @@ class EditorialAdminTest extends TestCase
             ->assertSee('Imagen destacada')
             ->assertSee('Seleccionar imagen destacada')
             ->assertSee('data-media-picker', false)
+            ->assertSee('Añadir nueva imagen')
+            ->assertSee('data-media-picker-url', false)
+            ->assertSee('data-media-picker-upload', false)
             ->assertSee(route('admin.media.library'), false);
 
         $this->actingAs($editor)
