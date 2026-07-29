@@ -1525,22 +1525,33 @@ td small {
 .schedule-dialog[open] {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
-    animation: schedule-dialog-in .2s ease-out;
 }
 
 .schedule-dialog::backdrop {
     background: rgba(15, 23, 42, .62);
     backdrop-filter: blur(4px);
+    animation: schedule-backdrop-in .3s ease-out both;
 }
 
-@keyframes schedule-dialog-in {
+.schedule-dialog.is-closing::backdrop {
+    animation: schedule-backdrop-out .38s ease-in both;
+}
+
+@keyframes schedule-backdrop-in {
     from {
         opacity: 0;
-        transform: translate(-50%, calc(-50% + 12px)) scale(.98);
     }
     to {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes schedule-backdrop-out {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
     }
 }
 
@@ -2659,5 +2670,9 @@ details.taxonomy-create {
     *::after {
         scroll-behavior: auto !important;
         transition: none !important;
+    }
+
+    .schedule-dialog::backdrop {
+        animation: none !important;
     }
 }

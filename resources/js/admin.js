@@ -141,6 +141,10 @@ document.querySelectorAll('[data-schedule-modal]').forEach((dialog) => {
     const confirmButton = dialog.querySelector('[data-confirm-schedule]');
     const openButtons = document.querySelectorAll('[data-open-schedule-modal]');
     const closeButtons = dialog.querySelectorAll('[data-close-schedule-modal]');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let triggerButton;
+    let genieAnimation;
+    let isClosing = false;
 
     if (!dateInput || !timeInput || !hiddenInput || !summary || !error || !confirmButton) return;
 
@@ -178,14 +182,95 @@ document.querySelectorAll('[data-schedule-modal]').forEach((dialog) => {
         }).format(selected);
         showError();
     };
-    const openDialog = () => {
+    const genieFrames = (trigger) => {
+        const dialogRect = dialog.getBoundingClientRect();
+        const triggerRect = trigger?.getBoundingClientRect();
+        const originX = triggerRect
+            ? triggerRect.left + (triggerRect.width / 2) - (dialogRect.left + (dialogRect.width / 2))
+            : 0;
+        const originY = triggerRect
+            ? triggerRect.top + (triggerRect.height / 2) - (dialogRect.top + (dialogRect.height / 2))
+            : 18;
+        const scaleX = triggerRect
+            ? Math.max(.2, Math.min(.55, triggerRect.width / dialogRect.width))
+            : .9;
+        const scaleY = triggerRect
+            ? Math.max(.08, Math.min(.22, triggerRect.height / dialogRect.height))
+            : .9;
+
+        return [
+            {
+                opacity: .08,
+                clipPath: 'inset(34% 0 34% 0 round 18px)',
+                transform: `translate(-50%, -50%) translate(${originX}px, ${originY}px) scale(${scaleX}, ${scaleY})`,
+                offset: 0,
+            },
+            {
+                opacity: .72,
+                clipPath: 'inset(9% 0 9% 0 round 18px)',
+                transform: `translate(-50%, -50%) translate(${originX * .28}px, ${originY * .24}px) scale(.74, 1.08)`,
+                offset: .48,
+            },
+            {
+                opacity: 1,
+                clipPath: 'inset(0 0 0 0 round 18px)',
+                transform: 'translate(-50%, -50%) scale(1.035, .97)',
+                offset: .76,
+            },
+            {
+                opacity: 1,
+                clipPath: 'inset(0 0 0 0 round 18px)',
+                transform: 'translate(-50%, -50%) scale(1)',
+                offset: 1,
+            },
+        ];
+    };
+    const openDialog = (trigger = null) => {
+        triggerButton = trigger;
+        isClosing = false;
+        dialog.classList.remove('is-closing');
         updateSummary();
         dialog.showModal();
-        window.setTimeout(() => dateInput.focus(), 50);
+        genieAnimation?.cancel();
+
+        if (!reduceMotion.matches) {
+            genieAnimation = dialog.animate(genieFrames(trigger), {
+                duration: 560,
+                easing: 'cubic-bezier(.2, .82, .2, 1)',
+                fill: 'both',
+            });
+        }
+
+        window.setTimeout(() => dateInput.focus(), reduceMotion.matches ? 50 : 430);
+    };
+    const closeDialog = () => {
+        if (!dialog.open || isClosing) return;
+
+        if (reduceMotion.matches) {
+            dialog.close();
+            triggerButton?.focus();
+            return;
+        }
+
+        isClosing = true;
+        dialog.classList.add('is-closing');
+        genieAnimation?.cancel();
+        genieAnimation = dialog.animate(genieFrames(triggerButton), {
+            duration: 400,
+            easing: 'cubic-bezier(.55, .02, .78, .35)',
+            direction: 'reverse',
+            fill: 'both',
+        });
+        genieAnimation.addEventListener('finish', () => {
+            dialog.close();
+            dialog.classList.remove('is-closing');
+            isClosing = false;
+            triggerButton?.focus();
+        }, { once: true });
     };
 
-    openButtons.forEach((button) => button.addEventListener('click', openDialog));
-    closeButtons.forEach((button) => button.addEventListener('click', () => dialog.close()));
+    openButtons.forEach((button) => button.addEventListener('click', () => openDialog(button)));
+    closeButtons.forEach((button) => button.addEventListener('click', closeDialog));
     dateInput.addEventListener('input', updateSummary);
     timeInput.addEventListener('input', updateSummary);
 
@@ -212,10 +297,14 @@ document.querySelectorAll('[data-schedule-modal]').forEach((dialog) => {
     });
 
     dialog.addEventListener('click', (event) => {
-        if (event.target === dialog) dialog.close();
+        if (event.target === dialog) closeDialog();
+    });
+    dialog.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        closeDialog();
     });
 
-    if (dialog.dataset.openOnError === 'true') openDialog();
+    if (dialog.dataset.openOnError === 'true') openDialog(null);
     updateSummary();
 });
 
