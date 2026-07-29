@@ -5,6 +5,10 @@
     $selectedMedia = old('media_id', $post?->media_id);
     $selectedMediaItem = $mediaItems->firstWhere('id', (int) $selectedMedia);
     $selectedTagNames = old('tag_names', $post?->tags->pluck('name')->implode(', ') ?? '');
+    $selectedCountry = old('location_country_id', $locationSelection['country'] ?? '');
+    $selectedRegion = old('location_region_id', $locationSelection['region'] ?? '');
+    $selectedProvince = old('location_province_id', $locationSelection['province'] ?? '');
+    $selectedDistrict = old('location_district_id', $locationSelection['district'] ?? '');
     $inlineMediaIds = old('inline_media_ids', $post?->inlineMedia->pluck('id')->join(',') ?? '');
     $publicationDate = old(
         'scheduled_for',
@@ -167,6 +171,63 @@
                         <button class="button button--quiet" type="submit" name="intent" value="schedule">Programar</button>
                     @endif
                 </div>
+            </section>
+
+            <section class="panel post-location-panel" data-post-location>
+                <div class="panel__header">
+                    <div>
+                        <span class="eyebrow">Ubicación opcional</span>
+                        <h2>Alcance geográfico</h2>
+                    </div>
+                    <span class="location-selection-status" data-post-location-status>
+                        {{ $post?->location?->fullName() ?? 'Sin ubicación' }}
+                    </span>
+                </div>
+                <p class="field-help">Puedes detenerte en país, región, provincia o distrito según el alcance de la noticia.</p>
+
+                <div class="post-location-grid">
+                    <label>
+                        País
+                        <select name="location_country_id" data-post-location-level="country">
+                            <option value="">Sin ubicación</option>
+                            @foreach ($locationsByType->get('country', collect()) as $location)
+                                <option value="{{ $location->id }}" @selected((int) $selectedCountry === $location->id)>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('location_country_id') <small class="field-error">{{ $message }}</small> @enderror
+                    </label>
+                    <label>
+                        Región
+                        <select name="location_region_id" data-post-location-level="region">
+                            <option value="">Toda la nación</option>
+                            @foreach ($locationsByType->get('region', collect()) as $location)
+                                <option value="{{ $location->id }}" data-parent-id="{{ $location->parent_id }}" @selected((int) $selectedRegion === $location->id)>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('location_region_id') <small class="field-error">{{ $message }}</small> @enderror
+                    </label>
+                    <label>
+                        Provincia
+                        <select name="location_province_id" data-post-location-level="province">
+                            <option value="">Toda la región</option>
+                            @foreach ($locationsByType->get('province', collect()) as $location)
+                                <option value="{{ $location->id }}" data-parent-id="{{ $location->parent_id }}" @selected((int) $selectedProvince === $location->id)>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('location_province_id') <small class="field-error">{{ $message }}</small> @enderror
+                    </label>
+                    <label>
+                        Distrito
+                        <select name="location_district_id" data-post-location-level="district">
+                            <option value="">Toda la provincia</option>
+                            @foreach ($locationsByType->get('district', collect()) as $location)
+                                <option value="{{ $location->id }}" data-parent-id="{{ $location->parent_id }}" @selected((int) $selectedDistrict === $location->id)>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('location_district_id') <small class="field-error">{{ $message }}</small> @enderror
+                    </label>
+                </div>
+                @error('location_id') <small class="field-error">{{ $message }}</small> @enderror
             </section>
 
             <section class="panel featured-media-panel">

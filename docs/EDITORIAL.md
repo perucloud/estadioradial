@@ -90,7 +90,28 @@ búsqueda, filtros, orden, paginación, papelera y restauración.
 La carga inicial incorpora `Perú > Moquegua`, las provincias Mariscal Nieto,
 General Sánchez Cerro e Ilo, y los distritos registrados de Mariscal Nieto.
 Esta estructura todavía no clasifica publicaciones: su relación con noticias
-corresponde al Hito 3.
+se implementa mediante una ubicación primaria opcional.
+
+## Ubicación de las noticias
+
+Crear y editar noticias incluye selectores dependientes:
+
+```text
+País → Región → Provincia → Distrito
+```
+
+El editor puede detener la selección en cualquier nivel. Por ejemplo:
+
+- `Perú` representa alcance nacional;
+- `Perú → Moquegua` representa alcance regional;
+- `Perú → Moquegua → Mariscal Nieto` representa alcance provincial;
+- `Perú → Moquegua → Mariscal Nieto → Carumas` representa alcance distrital;
+- ningún valor representa una noticia sin localización específica.
+
+La noticia guarda la ubicación más precisa seleccionada. El servidor comprueba
+la relación completa aun cuando JavaScript esté desactivado. Las ubicaciones
+utilizadas por publicaciones no pueden eliminarse hasta reasignar esas
+noticias.
 
 ## Slider de noticias más vistas
 

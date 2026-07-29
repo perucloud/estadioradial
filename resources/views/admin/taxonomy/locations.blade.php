@@ -166,6 +166,7 @@
                         <th>Ubicación</th>
                         <th>Tipo</th>
                         <th>Códigos</th>
+                        <th>Noticias</th>
                         <th>Estado</th>
                         <th><span class="sr-only">Acciones</span></th>
                     </tr>
@@ -201,6 +202,7 @@
                             </td>
                             <td><span class="location-type-badge location-type-badge--{{ $location->type }}">{{ $location->typeLabel() }}</span><small>{{ $location->children_count }} elementos hijos</small></td>
                             <td><strong>{{ $location->country_code ?? '—' }}</strong><small>UBIGEO: {{ $location->ubigeo ?? 'sin registrar' }}</small></td>
+                            <td><strong>{{ $location->posts_count }}</strong><small>publicaciones</small></td>
                             <td>
                                 @if ($status === 'trash')
                                     <span class="badge badge--trash">Papelera</span>
@@ -275,8 +277,10 @@
                                             <form method="post" action="{{ route('admin.locations.destroy', $location) }}" onsubmit="return confirm('¿Enviar esta ubicación a la papelera?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="danger-link" type="submit" @disabled($location->children_count > 0)>
-                                                    {{ $location->children_count > 0 ? 'Contiene divisiones territoriales' : 'Enviar a la papelera' }}
+                                                <button class="danger-link" type="submit" @disabled($location->children_count > 0 || $location->posts_count > 0)>
+                                                    {{ $location->children_count > 0
+                                                        ? 'Contiene divisiones territoriales'
+                                                        : ($location->posts_count > 0 ? 'Ubicación usada por noticias' : 'Enviar a la papelera') }}
                                                 </button>
                                             </form>
                                         </div>
@@ -285,7 +289,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="{{ $status === 'trash' ? 5 : 6 }}">No se encontraron ubicaciones.</td></tr>
+                        <tr><td colspan="{{ $status === 'trash' ? 6 : 7 }}">No se encontraron ubicaciones.</td></tr>
                     @endforelse
                 </tbody>
             </table>

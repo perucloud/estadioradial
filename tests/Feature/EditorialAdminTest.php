@@ -3,12 +3,14 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Location;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\Role;
 use App\Models\User;
 use App\Support\AdminAccess;
 use App\Support\PostHtmlSanitizer;
+use Database\Seeders\LocationSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -239,6 +241,99 @@ class EditorialAdminTest extends TestCase
             ->assertSee('<meta property="og:title" content="'.$title.'">', false)
             ->assertSee('<meta property="og:description" content="'.$excerpt.'">', false)
             ->assertSee('<meta property="og:image" content="'.url($media->url('article')).'">', false);
+    }
+
+    public function test_news_can_store_an_optional_geographic_hierarchy(): void
+    {
+        $this->seed(LocationSeeder::class);
+        $editor = $this->userWithRole('editor');
+        $country = Location::query()->where('slug', 'peru')->firstOrFail();
+        $region = Location::query()->where('slug', 'moquegua')->where('type', 'region')->firstOrFail();
+        $province = Location::query()->where('slug', 'mariscal-nieto')->firstOrFail();
+        $district = Location::query()->where('slug', 'carumas')->firstOrFail();
+
+        $this->actingAs($editor)->post(route('admin.posts.store'), [
+            'title' => 'Carumas presenta una nueva agenda cultural',
+            'excerpt' => 'La programación reúne actividades dirigidas a las familias del distrito.',
+            'body' => '<p>Las autoridades y organizaciones locales presentaron una agenda cultural para las próximas semanas.</p>',
+            'category_id' => $this->category()->id,
+            'media_id' => $this->media($editor)->id,
+            'location_country_id' => $country->id,
+            'location_region_id' => $region->id,
+            'location_province_id' => $province->id,
+            'location_district_id' => $district->id,
+            'intent' => 'draft',
+        ])->assertSessionHasNoErrors();
+
+        $post = Post::query()->firstOrFail();
+        $this->assertSame($district->id, $post->location_id);
+        $this->assertSame('Perú → Moquegua → Mariscal Nieto → Carumas', $post->location->fullName());
+
+        $this->actingAs($editor)
+            ->get(route('admin.posts.edit', $post))
+            ->assertOk()
+            ->assertSee('Alcance geográfico')
+            ->assertSee('Perú → Moquegua → Mariscal Nieto → Carumas')
+            ->assertSee('name="location_district_id"', false);
+    }
+
+    public function test_news_can_stop_at_country_and_rejects_an_inconsistent_location_path(): void
+    {
+        $this->seed(LocationSeeder::class);
+        $editor = $this->userWithRole('editor');
+        $country = Location::query()->where('slug', 'peru')->firstOrFail();
+        $region = Location::query()->where('slug', 'moquegua')->where('type', 'region')->firstOrFail();
+        $wrongProvince = Location::query()->where('slug', 'ilo')->where('type', 'province')->firstOrFail();
+        $district = Location::query()->where('slug', 'carumas')->firstOrFail();
+
+        $base = [
+            'title' => 'Reporte territorial de servicios públicos',
+            'excerpt' => 'El reporte presenta información territorial para la ciudadanía.',
+            'body' => '<p>El documento reúne información suficiente sobre servicios y atención a la población.</p>',
+            'category_id' => $this->category()->id,
+            'media_id' => $this->media($editor)->id,
+            'location_country_id' => $country->id,
+            'intent' => 'draft',
+        ];
+
+        $this->actingAs($editor)
+            ->post(route('admin.posts.store'), $base)
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame($country->id, Post::query()->firstOrFail()->location_id);
+
+        $this->actingAs($editor)->post(route('admin.posts.store'), array_replace($base, [
+            'title' => 'Ruta territorial inválida',
+            'location_region_id' => $region->id,
+            'location_province_id' => $wrongProvince->id,
+            'location_district_id' => $district->id,
+        ]))->assertSessionHasErrors('location_district_id');
+    }
+
+    public function test_a_location_used_by_news_cannot_be_deleted(): void
+    {
+        $this->seed(LocationSeeder::class);
+        $superadmin = $this->userWithRole('superadmin');
+        $district = Location::query()->where('slug', 'carumas')->firstOrFail();
+
+        Post::query()->create([
+            'category_id' => $this->category()->id,
+            'location_id' => $district->id,
+            'title' => 'Noticia territorial protegida',
+            'slug' => 'noticia-territorial-protegida',
+            'excerpt' => 'Resumen de una noticia vinculada con Carumas.',
+            'body' => '<p>Contenido editorial suficiente para proteger la ubicación relacionada.</p>',
+            'status' => 'draft',
+        ]);
+
+        $this->actingAs($superadmin)
+            ->delete(route('admin.locations.destroy', $district))
+            ->assertSessionHasErrors('location');
+
+        $this->assertDatabaseHas('locations', [
+            'id' => $district->id,
+            'deleted_at' => null,
+        ]);
     }
 
     public function test_editor_without_publish_permission_cannot_publish(): void

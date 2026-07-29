@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpsertPostRequest;
 use App\Models\ActivityLog;
 use App\Models\Category;
+use App\Models\Location;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\Tag;
@@ -25,6 +26,7 @@ class PostController extends Controller
         $search = mb_substr(trim((string) $request->query('q')), 0, 100);
         $status = (string) $request->query('status');
         $categoryId = $request->integer('category');
+        $locationId = $request->integer('location');
         $perPage = in_array($request->integer('per_page'), [10, 20, 50, 100], true)
             ? $request->integer('per_page')
             : 20;
@@ -32,7 +34,7 @@ class PostController extends Controller
 
         return view('admin.posts.index', [
             'posts' => Post::query()
-                ->with(['category', 'media', 'creator'])
+                ->with(['category', 'location.parent.parent.parent', 'media', 'creator'])
                 ->when($status === 'trash', fn (Builder $query) => $query->onlyTrashed())
                 ->when($search !== '', fn (Builder $query) => $query
                     ->where(fn (Builder $query) => $query
@@ -40,14 +42,22 @@ class PostController extends Controller
                         ->orWhere('excerpt', 'like', "%{$search}%")))
                 ->when(in_array($status, $this->statuses(), true), fn (Builder $query) => $query->where('status', $status))
                 ->when($categoryId > 0, fn (Builder $query) => $query->where('category_id', $categoryId))
+                ->when($locationId > 0, fn (Builder $query) => $query->where('location_id', $locationId))
                 ->latest('updated_at')
                 ->paginate($perPage)
                 ->withQueryString(),
             'categories' => Category::query()->orderBy('name')->get(),
+            'locations' => Location::query()
+                ->with('parent.parent.parent')
+                ->where('is_active', true)
+                ->orderBy('display_order')
+                ->orderBy('name')
+                ->get(),
             'statuses' => $statuses,
             'search' => $search,
             'selectedStatus' => $status,
             'selectedCategory' => $categoryId,
+            'selectedLocation' => $locationId,
             'perPage' => $perPage,
         ]);
     }
@@ -88,7 +98,7 @@ class PostController extends Controller
 
     public function edit(Post $post): View
     {
-        return view('admin.posts.form', $this->formData($post->load(['tags', 'inlineMedia'])));
+        return view('admin.posts.form', $this->formData($post->load(['tags', 'inlineMedia', 'location.parent.parent.parent'])));
     }
 
     public function update(
@@ -122,7 +132,7 @@ class PostController extends Controller
 
     public function preview(Post $post): View
     {
-        return view('admin.posts.preview', ['post' => $post->load(['category', 'tags', 'media'])]);
+        return view('admin.posts.preview', ['post' => $post->load(['category', 'location', 'tags', 'media'])]);
     }
 
     public function archive(Request $request, Post $post): RedirectResponse
@@ -206,6 +216,10 @@ class PostController extends Controller
      */
     private function formData(?Post $post = null): array
     {
+        $locationSelection = $post?->location
+            ? $post->location->lineage()->mapWithKeys(fn (Location $location) => [$location->type => $location->id])->all()
+            : [];
+
         return [
             'post' => $post,
             'categories' => Category::query()->where('is_active', true)->orderBy('display_order')->orderBy('name')->get(),
@@ -214,6 +228,13 @@ class PostController extends Controller
                 ->orderByDesc('posts_count')
                 ->orderBy('name')
                 ->get(),
+            'locationsByType' => Location::query()
+                ->where('is_active', true)
+                ->orderBy('display_order')
+                ->orderBy('name')
+                ->get()
+                ->groupBy('type'),
+            'locationSelection' => $locationSelection,
             'mediaItems' => Media::query()->latest()->limit(120)->get(),
         ];
     }
@@ -229,6 +250,10 @@ class PostController extends Controller
             'inline_media_ids',
             'intent',
             'scheduled_for',
+            'location_country_id',
+            'location_region_id',
+            'location_province_id',
+            'location_district_id',
         ]);
         $data['body'] = $sanitizer->sanitize($data['body']);
 

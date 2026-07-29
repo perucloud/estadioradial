@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Location;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -26,6 +27,11 @@ class UpsertPostRequest extends FormRequest
             'excerpt' => ['required', 'string', 'max:500'],
             'body' => ['required', 'string', 'max:250000'],
             'category_id' => ['required', Rule::exists('categories', 'id')],
+            'location_id' => ['nullable', 'integer', Rule::exists('locations', 'id')->where('is_active', true)->whereNull('deleted_at')],
+            'location_country_id' => ['nullable', 'integer', Rule::exists('locations', 'id')->where('type', 'country')->where('is_active', true)->whereNull('deleted_at')],
+            'location_region_id' => ['nullable', 'integer', Rule::exists('locations', 'id')->where('type', 'region')->where('is_active', true)->whereNull('deleted_at')],
+            'location_province_id' => ['nullable', 'integer', Rule::exists('locations', 'id')->where('type', 'province')->where('is_active', true)->whereNull('deleted_at')],
+            'location_district_id' => ['nullable', 'integer', Rule::exists('locations', 'id')->where('type', 'district')->where('is_active', true)->whereNull('deleted_at')],
             'media_id' => ['required', Rule::exists('media', 'id')->whereNull('deleted_at')],
             'tag_names' => ['nullable', 'string', 'max:1500'],
             'inline_media_ids' => ['nullable', 'string', 'max:2000'],
@@ -54,6 +60,7 @@ class UpsertPostRequest extends FormRequest
             'body.required' => 'Escribe el contenido completo de la noticia.',
             'category_id.required' => 'Selecciona una categoría.',
             'category_id.exists' => 'La categoría seleccionada ya no está disponible.',
+            'location_id.exists' => 'La ubicación seleccionada ya no está disponible.',
             'media_id.required' => 'Selecciona una imagen destacada.',
             'media_id.exists' => 'La imagen destacada seleccionada ya no está disponible.',
             'slug.regex' => 'El slug solo puede contener letras minúsculas, números y guiones.',
@@ -71,6 +78,54 @@ class UpsertPostRequest extends FormRequest
         return [
             'scheduled_for' => 'fecha de programación',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator): void {
+            if ($validator->errors()->hasAny([
+                'location_country_id',
+                'location_region_id',
+                'location_province_id',
+                'location_district_id',
+            ])) {
+                return;
+            }
+
+            $ids = [
+                'country' => $this->integer('location_country_id') ?: null,
+                'region' => $this->integer('location_region_id') ?: null,
+                'province' => $this->integer('location_province_id') ?: null,
+                'district' => $this->integer('location_district_id') ?: null,
+            ];
+            $locations = Location::query()
+                ->whereIn('id', array_filter($ids))
+                ->get()
+                ->keyBy('id');
+            $levels = [
+                'region' => 'country',
+                'province' => 'region',
+                'district' => 'province',
+            ];
+
+            foreach ($levels as $childType => $parentType) {
+                $childId = $ids[$childType];
+
+                if ($childId === null) {
+                    continue;
+                }
+
+                $parentId = $ids[$parentType];
+                $child = $locations->get($childId);
+
+                if ($parentId === null || $child?->parent_id !== $parentId) {
+                    $validator->errors()->add(
+                        "location_{$childType}_id",
+                        'La ubicación seleccionada no pertenece a la jerarquía territorial indicada.',
+                    );
+                }
+            }
+        });
     }
 
     protected function prepareForValidation(): void
@@ -93,8 +148,16 @@ class UpsertPostRequest extends FormRequest
         $seoDescription = $this->filled('seo_description')
             ? trim((string) $this->input('seo_description'))
             : Str::limit($excerpt, 170, '…');
+        $locationIds = collect([
+            'location_country_id',
+            'location_region_id',
+            'location_province_id',
+            'location_district_id',
+        ])->mapWithKeys(fn (string $field) => [
+            $field => $this->filled($field) ? (int) $this->input($field) : null,
+        ]);
 
-        $this->merge([
+        $this->merge(array_merge([
             'slug' => $this->filled('slug') ? mb_strtolower(trim((string) $this->input('slug'))) : null,
             'excerpt' => $excerpt,
             'tag_names' => $this->filled('tag_names') ? trim((string) $this->input('tag_names')) : null,
@@ -102,6 +165,8 @@ class UpsertPostRequest extends FormRequest
             'source_url' => $this->filled('source_url') ? trim((string) $this->input('source_url')) : null,
             'seo_title' => $seoTitle,
             'seo_description' => $seoDescription,
-        ]);
+        ], $locationIds->all(), [
+            'location_id' => $locationIds->filter()->last(),
+        ]));
     }
 }

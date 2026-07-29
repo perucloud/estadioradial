@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 
 class Location extends Model
 {
@@ -55,6 +56,34 @@ class Location extends Model
         return $this->hasMany(self::class, 'parent_id')
             ->orderBy('display_order')
             ->orderBy('name');
+    }
+
+    public function posts(): HasMany
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * @return Collection<int, Location>
+     */
+    public function lineage(): Collection
+    {
+        $lineage = collect();
+        $current = $this;
+        $visited = [];
+
+        while ($current !== null && ! isset($visited[$current->id])) {
+            $visited[$current->id] = true;
+            $lineage->prepend($current);
+            $current = $current->parent;
+        }
+
+        return $lineage->values();
+    }
+
+    public function fullName(): string
+    {
+        return $this->lineage()->pluck('name')->implode(' → ');
     }
 
     public function typeLabel(): string

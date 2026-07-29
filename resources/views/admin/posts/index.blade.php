@@ -38,6 +38,14 @@
                     <option value="{{ $category->id }}" @selected($selectedCategory === $category->id)>{{ $category->name }}</option>
                 @endforeach
             </select>
+            <select name="location">
+                <option value="">Todas las ubicaciones</option>
+                @foreach ($locations as $location)
+                    <option value="{{ $location->id }}" @selected($selectedLocation === $location->id)>
+                        {{ $location->fullName() }}
+                    </option>
+                @endforeach
+            </select>
             <label class="per-page-field">
                 <span class="sr-only">Noticias por página</span>
                 <select name="per_page" aria-label="Noticias por página">
@@ -69,7 +77,10 @@
                                 <strong>{{ $post->title }}</strong>
                                 <small>{{ $post->creator?->name ?? $post->author }}</small>
                             </td>
-                            <td>{{ $post->category->name }}</td>
+                            <td>
+                                <strong>{{ $post->category->name }}</strong>
+                                <small>{{ $post->location?->fullName() ?? 'Sin ubicación' }}</small>
+                            </td>
                             <td>
                                 <span class="badge badge--{{ $post->trashed() ? 'trash' : $post->status }}">
                                     {{ $post->trashed() ? $statusLabels['trash'] : $statusLabels[$post->status] }}

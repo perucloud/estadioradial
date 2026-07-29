@@ -39,7 +39,7 @@ class LocationController extends Controller
 
         $query = Location::query()
             ->with('parent')
-            ->withCount('children')
+            ->withCount(['children', 'posts'])
             ->orderBy('display_order')
             ->orderBy('name');
 
@@ -72,7 +72,7 @@ class LocationController extends Controller
         );
         $parentOptions = $this->asTree(Location::query()
             ->with('parent')
-            ->withCount('children')
+            ->withCount(['children', 'posts'])
             ->orderBy('display_order')
             ->orderBy('name')
             ->get());
@@ -149,6 +149,12 @@ class LocationController extends Controller
 
     public function destroy(Request $request, Location $location): RedirectResponse
     {
+        if ($location->posts()->exists()) {
+            return back()->withErrors([
+                'location' => 'No se puede eliminar una ubicación utilizada por noticias. Reasigna primero esas publicaciones.',
+            ]);
+        }
+
         if ($location->children()->exists()) {
             return back()->withErrors([
                 'location' => 'No se puede eliminar una ubicación que contiene divisiones territoriales. Elimina o traslada primero sus elementos hijos.',
@@ -164,6 +170,12 @@ class LocationController extends Controller
     public function restore(Request $request, int $location): RedirectResponse
     {
         $locationModel = Location::onlyTrashed()->findOrFail($location);
+
+        if ($locationModel->posts()->exists()) {
+            return back()->withErrors([
+                'location' => 'No se puede eliminar definitivamente una ubicación utilizada por noticias.',
+            ]);
+        }
 
         if ($locationModel->parent_id !== null && ! Location::query()->whereKey($locationModel->parent_id)->exists()) {
             return back()->withErrors([

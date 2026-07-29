@@ -85,3 +85,56 @@ document.querySelectorAll('[data-sortable-locations]').forEach((body) => {
         });
     });
 });
+
+document.querySelectorAll('[data-post-location]').forEach((panel) => {
+    const levelNames = ['country', 'region', 'province', 'district'];
+    const selects = levelNames
+        .map((level) => panel.querySelector(`[data-post-location-level="${level}"]`))
+        .filter(Boolean);
+    const status = panel.querySelector('[data-post-location-status]');
+    if (selects.length !== levelNames.length) return;
+
+    const updateStatus = () => {
+        const path = selects
+            .map((select) => select.selectedOptions[0])
+            .filter((option) => option?.value)
+            .map((option) => option.textContent.trim());
+
+        if (status) status.textContent = path.length > 0 ? path.join(' → ') : 'Sin ubicación';
+    };
+
+    const synchronize = () => {
+        selects.slice(1).forEach((select, index) => {
+            const parentValue = selects[index].value;
+            const selected = select.selectedOptions[0];
+
+            [...select.options].forEach((option) => {
+                if (option.value === '') {
+                    option.hidden = false;
+                    option.disabled = false;
+                    return;
+                }
+
+                const compatible = parentValue !== '' && option.dataset.parentId === parentValue;
+                option.hidden = !compatible;
+                option.disabled = !compatible;
+            });
+
+            if (selected?.disabled) select.value = '';
+            select.disabled = parentValue === '';
+        });
+
+        updateStatus();
+    };
+
+    selects.forEach((select, index) => {
+        select.addEventListener('change', () => {
+            selects.slice(index + 1).forEach((child) => {
+                child.value = '';
+            });
+            synchronize();
+        });
+    });
+
+    synchronize();
+});
