@@ -12,6 +12,21 @@
 | F — Estadísticas, auditoría, SEO y mantenimiento | Pendiente |
 | G — PWA y despliegue | Pendiente |
 
+## Ampliación territorial y taxonomía
+
+La evolución profesional de categorías y ubicaciones se divide en cuatro hitos:
+
+| Hito territorial | Estado |
+| --- | --- |
+| 1 — Categorías editoriales jerárquicas | Implementado |
+| 2 — Ubicaciones: país, región, provincia y distrito | Pendiente |
+| 3 — Integración de ubicación en crear y editar noticias | Pendiente |
+| 4 — Portada regional, páginas territoriales y migración | Pendiente |
+
+Las categorías definen el tema de la noticia. Las ubicaciones se administrarán
+en una taxonomía separada para no mezclar conceptos como `Política` con
+`Moquegua`, `Mariscal Nieto` o `Carumas`.
+
 ## 1. Objetivo
 
 Convertir el portal público actual en una plataforma administrable desde

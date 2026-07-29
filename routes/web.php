@@ -91,6 +91,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
             Route::put('/categorias/{category:id}', [AdminCategoryController::class, 'update'])->name('categories.update');
             Route::delete('/categorias/{category:id}', [AdminCategoryController::class, 'destroy'])->name('categories.destroy');
             Route::post('/categorias/orden', [AdminCategoryController::class, 'reorder'])->name('categories.reorder');
+            Route::post('/categorias/{category}/restaurar', [AdminCategoryController::class, 'restore'])
+                ->name('categories.restore');
+            Route::delete('/categorias/{category}/eliminar-definitivamente', [AdminCategoryController::class, 'forceDestroy'])
+                ->name('categories.force-destroy');
 
             Route::get('/etiquetas', [AdminTagController::class, 'index'])->name('tags.index');
             Route::post('/etiquetas', [AdminTagController::class, 'store'])->name('tags.store');

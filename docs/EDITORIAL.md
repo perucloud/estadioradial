@@ -51,6 +51,27 @@ php artisan editorial:prioritize locales regionales deportes --hide-missing
 El primer slug recibe la mayor relevancia. El comando valida que todos los slugs
 existan antes de guardar cambios.
 
+## Categorías editoriales jerárquicas
+
+El administrador de `/admin/categorias` admite categorías principales y
+subcategorías. Cada registro conserva categoría superior opcional, icono,
+color, descripción, visibilidad, orden, relevancia y metadatos SEO.
+
+La pantalla ofrece:
+
+- árbol editorial con profundidad visual;
+- búsqueda y filtros por estado y categoría superior;
+- paginación de 10, 20, 50 o 100 registros;
+- conteo de noticias y subcategorías;
+- prevención de ciclos padre-hijo;
+- papelera y restauración;
+- reasignación obligatoria de noticias antes de retirar una categoría;
+- promoción segura de sus subcategorías al nivel superior.
+
+Esta jerarquía se reserva para temas, por ejemplo `Deportes > Fútbol`. Países,
+regiones, provincias y distritos pertenecerán al módulo independiente de
+ubicaciones.
+
 ## Slider de noticias más vistas
 
 El slider se configura en:

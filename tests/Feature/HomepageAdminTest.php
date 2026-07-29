@@ -84,6 +84,94 @@ class HomepageAdminTest extends TestCase
         $this->get(route('posts.category', $category))->assertNotFound();
     }
 
+    public function test_categories_support_hierarchy_seo_and_cycle_protection(): void
+    {
+        $parent = Category::query()->where('slug', 'deportes')->firstOrFail();
+
+        $this->actingAs($this->superadmin)->post(route('admin.categories.store'), [
+            'name' => 'Fútbol regional',
+            'parent_id' => $parent->id,
+            'color' => '#176442',
+            'description' => 'Noticias y resultados del fútbol de la región.',
+            'relevance_weight' => 70,
+            'homepage_limit' => 4,
+            'homepage_layout' => 'standard',
+            'is_active' => 1,
+            'show_in_menu' => 1,
+            'show_on_home' => 1,
+        ])->assertSessionHasNoErrors();
+
+        $child = Category::query()->where('slug', 'futbol-regional')->firstOrFail();
+
+        $this->assertSame($parent->id, $child->parent_id);
+        $this->assertSame('Fútbol regional', $child->seo_title);
+        $this->assertSame('Noticias y resultados del fútbol de la región.', $child->seo_description);
+
+        $this->actingAs($this->superadmin)->put(route('admin.categories.update', $parent), [
+            'name' => $parent->name,
+            'slug' => $parent->slug,
+            'parent_id' => $child->id,
+            'color' => $parent->color,
+            'description' => $parent->description,
+            'relevance_weight' => $parent->relevance_weight,
+            'homepage_limit' => $parent->homepage_limit,
+            'homepage_layout' => $parent->homepage_layout,
+            'is_active' => 1,
+            'show_in_menu' => 1,
+            'show_on_home' => 1,
+        ])->assertSessionHasErrors('parent_id');
+
+        $this->assertNull($parent->refresh()->parent_id);
+    }
+
+    public function test_deleting_a_category_reassigns_posts_and_supports_restore(): void
+    {
+        $source = Category::query()->where('slug', 'actualidad')->firstOrFail();
+        $replacement = Category::query()->where('slug', 'politica')->firstOrFail();
+        $postIds = $source->posts()->pluck('posts.id');
+
+        $this->actingAs($this->superadmin)
+            ->delete(route('admin.categories.destroy', $source), [
+                'replacement_category_id' => $replacement->id,
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status');
+
+        $this->assertSoftDeleted('categories', ['id' => $source->id]);
+        $this->assertDatabaseMissing('posts', ['category_id' => $source->id]);
+        foreach ($postIds as $postId) {
+            $this->assertDatabaseHas('posts', [
+                'id' => $postId,
+                'category_id' => $replacement->id,
+            ]);
+        }
+
+        $this->actingAs($this->superadmin)
+            ->post(route('admin.categories.restore', $source->id))
+            ->assertSessionHas('status');
+
+        $this->assertDatabaseHas('categories', [
+            'id' => $source->id,
+            'deleted_at' => null,
+        ]);
+    }
+
+    public function test_category_administration_has_filters_tree_and_pagination(): void
+    {
+        $this->actingAs($this->superadmin)
+            ->get(route('admin.categories.index', [
+                'q' => 'política',
+                'status' => 'active',
+                'per_page' => 10,
+            ]))
+            ->assertOk()
+            ->assertSee('Buscar por nombre, slug o descripción')
+            ->assertSee('Categoría superior')
+            ->assertSee('10 por página')
+            ->assertSee('Título SEO')
+            ->assertSee('Papelera');
+    }
+
     public function test_tags_can_be_merged_without_losing_post_relations(): void
     {
         $source = Tag::query()->whereHas('posts')->firstOrFail();

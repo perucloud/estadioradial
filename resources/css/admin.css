@@ -1611,6 +1611,99 @@ td small {
     margin-bottom: 24px;
 }
 
+.taxonomy-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.taxonomy-metrics article {
+    display: grid;
+    gap: 3px;
+    padding: 18px 20px;
+    border: 1px solid var(--admin-line);
+    border-radius: 12px;
+    background: var(--admin-white);
+    box-shadow: 0 8px 24px rgb(28 32 40 / 4%);
+}
+
+.taxonomy-metrics span {
+    color: var(--admin-muted);
+    font-size: .72rem;
+    font-weight: 700;
+}
+
+.taxonomy-metrics strong {
+    font-size: 1.65rem;
+}
+
+details.taxonomy-create {
+    padding: 0;
+}
+
+.taxonomy-create__summary {
+    display: flex;
+    padding: 20px 24px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    list-style: none;
+}
+
+.taxonomy-create__summary::-webkit-details-marker {
+    display: none;
+}
+
+.taxonomy-create__summary > span:first-child {
+    display: grid;
+    gap: 4px;
+}
+
+.taxonomy-create__summary > span:first-child strong {
+    font-size: 1.15rem;
+}
+
+.taxonomy-create[open] .taxonomy-create__summary {
+    border-bottom: 1px solid var(--admin-line);
+}
+
+.taxonomy-form {
+    padding: 24px;
+}
+
+.taxonomy-visibility {
+    display: grid;
+    align-content: center;
+    gap: 8px;
+    padding: 10px 0;
+}
+
+.taxonomy-toolbar {
+    margin-bottom: 20px;
+    padding: 16px;
+}
+
+.taxonomy-filters {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.5fr) repeat(3, minmax(145px, .65fr)) auto auto;
+    align-items: end;
+    gap: 10px;
+}
+
+.taxonomy-filters input,
+.taxonomy-filters select {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 11px;
+    border: 1px solid #c9ced7;
+    border-radius: 9px;
+    background: var(--admin-white);
+    font: inherit;
+    font-size: .8rem;
+}
+
 .drag-handle {
     margin-right: 8px;
     cursor: grab;
@@ -1644,6 +1737,38 @@ td small {
     background: var(--category-admin-color);
 }
 
+.taxonomy-name {
+    display: flex;
+    min-width: 210px;
+    padding-left: calc(var(--tree-depth) * 24px);
+    align-items: center;
+    gap: 8px;
+}
+
+.taxonomy-name > span:last-child,
+.taxonomy-table td:nth-last-child(2),
+.taxonomy-table td:nth-child(3),
+.taxonomy-table td:nth-child(4) {
+    display: grid;
+    gap: 4px;
+}
+
+.taxonomy-name small,
+.taxonomy-table td small {
+    color: var(--admin-muted);
+    font-size: .7rem;
+}
+
+.taxonomy-name__icon {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--admin-soft);
+}
+
 .row-editor {
     position: relative;
 }
@@ -1666,6 +1791,18 @@ td small {
     border-radius: 10px;
     background: var(--admin-white);
     box-shadow: var(--admin-shadow);
+}
+
+.row-editor__panel--category {
+    width: min(620px, 88vw);
+    max-height: min(760px, calc(100vh - 70px));
+    overflow-y: auto;
+}
+
+.taxonomy-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .row-editor__panel > form + form {
@@ -1796,6 +1933,14 @@ td small {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
+    .taxonomy-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .taxonomy-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .post-editor-form {
         grid-template-columns: 1fr;
     }
@@ -1815,6 +1960,25 @@ td small {
 
     .table-action span {
         display: none;
+    }
+}
+
+@media (max-width: 620px) {
+    .taxonomy-metrics,
+    .taxonomy-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .taxonomy-create__summary {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .row-editor__panel--category {
+        position: fixed;
+        inset: 16px;
+        width: auto;
+        max-height: calc(100vh - 32px);
     }
 }
 
