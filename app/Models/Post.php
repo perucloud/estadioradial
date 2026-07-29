@@ -109,6 +109,18 @@ class Post extends Model
                 ->where('show_on_home', true));
     }
 
+    public function scopeRegional(Builder $query): Builder
+    {
+        return $query->whereHas('location', fn (Builder $query) => $query
+            ->where('is_active', true)
+            ->whereIn('type', ['region', 'province', 'district']));
+    }
+
+    public function scopeWithinLocation(Builder $query, Location $location): Builder
+    {
+        return $query->whereIn('location_id', $location->subtreeIds());
+    }
+
     public function scopeEditorialOrder(Builder $query): Builder
     {
         return $query

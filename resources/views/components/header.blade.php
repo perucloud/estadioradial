@@ -81,7 +81,9 @@
             <nav aria-label="Categorías de noticias">
                 <span>Categorías</span>
                 @foreach ($categories as $category)
-                    <a href="{{ route('posts.category', $category) }}">{{ $category->name }}</a>
+                    <a href="{{ $category->slug === 'regionales'
+                        ? route('posts.locations.index')
+                        : route('posts.category', $category) }}">{{ $category->name }}</a>
                 @endforeach
             </nav>
         </div>

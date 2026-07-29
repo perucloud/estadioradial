@@ -89,6 +89,8 @@ búsqueda, filtros, orden, paginación, papelera y restauración.
 
 La carga inicial incorpora `Perú > Moquegua`, las provincias Mariscal Nieto,
 General Sánchez Cerro e Ilo, y los distritos registrados de Mariscal Nieto.
+También registra las 25 regiones del Perú como base para ampliar progresivamente
+sus provincias y distritos desde el dashboard.
 Esta estructura todavía no clasifica publicaciones: su relación con noticias
 se implementa mediante una ubicación primaria opcional.
 
@@ -112,6 +114,42 @@ La noticia guarda la ubicación más precisa seleccionada. El servidor comprueba
 la relación completa aun cuando JavaScript esté desactivado. Las ubicaciones
 utilizadas por publicaciones no pueden eliminarse hasta reasignar esas
 noticias.
+
+## Publicación territorial
+
+La portada obtiene “Noticias regionales” por la ubicación de la publicación,
+no por una categoría editorial. Por ello, una noticia puede ser al mismo tiempo:
+
+```text
+Categoría: Política
+Ubicación: Perú → Moquegua → Mariscal Nieto → Carumas
+```
+
+El portal dispone de:
+
+- `/noticias/territorios` para toda la cobertura regional;
+- páginas jerárquicas por país, región, provincia y distrito;
+- breadcrumbs territoriales en listados y artículos;
+- inclusión de noticias de niveles inferiores: la página de Moquegua también
+  muestra noticias de sus provincias y distritos.
+
+Para revisar noticias antiguas de las categorías `Regionales` y `Locales`:
+
+```bash
+php artisan editorial:migrate-locations
+```
+
+El comando trabaja primero como vista previa. Solo relaciona coincidencias
+inequívocas con ubicaciones existentes. Para guardar el resultado:
+
+```bash
+php artisan editorial:migrate-locations --apply
+```
+
+Las publicaciones que no coincidan con un territorio registrado permanecen sin
+ubicación para que un editor las revise; nunca se asignan a una región por
+suposición. El listado administrativo de noticias ofrece el filtro
+`Sin ubicación` para localizar y completar esos registros.
 
 ## Slider de noticias más vistas
 

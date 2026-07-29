@@ -21,7 +21,7 @@ La evolución profesional de categorías y ubicaciones se divide en cuatro hitos
 | 1 — Categorías editoriales jerárquicas | Implementado |
 | 2 — Ubicaciones: país, región, provincia y distrito | Implementado |
 | 3 — Integración de ubicación en crear y editar noticias | Implementado |
-| 4 — Portada regional, páginas territoriales y migración | Pendiente |
+| 4 — Portada regional, páginas territoriales y migración | Implementado |
 
 Las categorías definen el tema de la noticia. Las ubicaciones se administrarán
 en una taxonomía separada para no mezclar conceptos como `Política` con

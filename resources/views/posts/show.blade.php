@@ -19,6 +19,18 @@
                     </p>
                 @endif
                 <header class="article__header">
+                    @if ($post->location)
+                        <nav class="territory-breadcrumbs article__territory" aria-label="Ubicación de la noticia">
+                            <a href="{{ route('posts.locations.index') }}">Noticias regionales</a>
+                            @foreach ($post->location->lineage() as $trailLocation)
+                                <span aria-hidden="true">/</span>
+                                <a
+                                    href="{{ $trailLocation->publicUrl() }}"
+                                    @if ($loop->last) aria-current="location" @endif
+                                >{{ $trailLocation->name }}</a>
+                            @endforeach
+                        </nav>
+                    @endif
                     <div class="article__kicker">
                         <a
                             class="category-pill"

@@ -1052,6 +1052,103 @@ a {
     color: var(--red-dark);
 }
 
+.location-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    color: #6b7077;
+    font-size: .72rem;
+    font-weight: 750;
+    vertical-align: middle;
+}
+
+.location-link:hover {
+    color: var(--red);
+}
+
+.territory-breadcrumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    color: #777c84;
+    font-size: .78rem;
+    font-weight: 700;
+}
+
+.territory-breadcrumbs a {
+    color: #4d535b;
+}
+
+.territory-breadcrumbs a:hover,
+.territory-breadcrumbs [aria-current] {
+    color: var(--red);
+}
+
+.territory-browser {
+    display: grid;
+    grid-template-columns: minmax(190px, .7fr) minmax(0, 1.3fr);
+    gap: 28px;
+    align-items: start;
+    padding: 26px;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #fff 0%, #f7f7f8 100%);
+    border: 1px solid #e0e2e5;
+    border-radius: var(--radius);
+}
+
+.territory-browser h2 {
+    margin: 5px 0 0;
+    font-size: clamp(1.35rem, 2.6vw, 2rem);
+    line-height: 1.1;
+}
+
+.territory-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.territory-links a {
+    position: relative;
+    display: grid;
+    gap: 2px;
+    min-height: 76px;
+    padding: 14px 40px 14px 16px;
+    background: #fff;
+    border: 1px solid #e2e4e7;
+    border-radius: 10px;
+    transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.territory-links a:hover {
+    border-color: rgb(217 37 27 / 35%);
+    box-shadow: 0 10px 24px rgb(24 27 31 / 8%);
+    transform: translateY(-2px);
+}
+
+.territory-links span {
+    color: var(--red);
+    font-size: .65rem;
+    font-weight: 850;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.territory-links strong {
+    line-height: 1.2;
+}
+
+.territory-links b {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    color: var(--red);
+    transform: translateY(-50%);
+}
+
 .news-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1587,6 +1684,12 @@ a {
 
 .article__header {
     padding-block: 28px 0;
+}
+
+.article__territory {
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e5e6e8;
 }
 
 .article-layout {
@@ -2580,6 +2683,15 @@ a.sidebar-ad:hover img {
 
     .section {
         padding-block: 50px;
+    }
+
+    .territory-browser {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+
+    .territory-links {
+        grid-template-columns: 1fr;
     }
 
     .article__body figure.image-style-side {

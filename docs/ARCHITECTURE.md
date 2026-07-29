@@ -16,6 +16,8 @@
 | --- | --- |
 | `/` | Portada |
 | `/noticias` | Últimas noticias |
+| `/noticias/territorios` | Noticias regionales por ubicación |
+| `/noticias/territorios/{país}/{región?}/{provincia?}/{distrito?}` | Portada territorial jerárquica |
 | `/noticias/{categoria}` | Noticias de una categoría |
 | `/noticias/{categoria}/{noticia}` | Detalle de noticia |
 | `/programas` | Listado de programas |
@@ -61,4 +63,3 @@ La carpeta `oldweb/` contiene una captura de Drupal 7 generada por HTTrack. Sus
 HTML, formularios y scripts no forman parte de la nueva aplicación. Solo se
 consultarán para reproducir la distribución visual y localizar recursos
 temporales autorizados.
-

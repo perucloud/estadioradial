@@ -99,7 +99,7 @@
                 </div>
                 <a
                     class="text-link"
-                    href="{{ $regionalCategory ? route('posts.category', $regionalCategory) : route('posts.index') }}"
+                    href="{{ route('posts.locations.index') }}"
                 >Ver todas las noticias regionales →</a>
             </div>
 
@@ -118,6 +118,9 @@
                                 style="--category-color: {{ $regionalLead->category->color }}"
                                 href="{{ route('posts.category', $regionalLead->category) }}"
                             >{{ $regionalLead->category->name }}</a>
+                            <a class="location-link" href="{{ $regionalLead->location->publicUrl() }}">
+                                <span aria-hidden="true">⌖</span> {{ $regionalLead->location->name }}
+                            </a>
                             <h3>
                                 <a href="{{ route('posts.show', [$regionalLead->category, $regionalLead]) }}">
                                     {{ $regionalLead->title }}
@@ -145,6 +148,9 @@
                                         style="--category-color: {{ $post->category->color }}"
                                         href="{{ route('posts.category', $post->category) }}"
                                     >{{ $post->category->name }}</a>
+                                    <a class="location-link" href="{{ $post->location->publicUrl() }}">
+                                        <span aria-hidden="true">⌖</span> {{ $post->location->name }}
+                                    </a>
                                     <h3>
                                         <a href="{{ route('posts.show', [$post->category, $post]) }}">{{ $post->title }}</a>
                                     </h3>

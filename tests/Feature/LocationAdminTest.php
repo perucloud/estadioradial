@@ -37,6 +37,9 @@ class LocationAdminTest extends TestCase
         $this->assertSame($moquegua->id, $mariscalNieto->parent_id);
         $this->assertSame($mariscalNieto->id, $carumas->parent_id);
         $this->assertSame('district', $carumas->type);
+        $this->assertSame(25, Location::query()->where('type', 'region')->count());
+        $this->assertDatabaseHas('locations', ['name' => 'Piura', 'type' => 'region']);
+        $this->assertDatabaseHas('locations', ['name' => 'Junín', 'type' => 'region']);
         $this->assertDatabaseHas('locations', ['name' => 'General Sánchez Cerro', 'type' => 'province']);
         $this->assertDatabaseHas('locations', ['name' => 'San Cristóbal de Calacoa', 'type' => 'district']);
     }

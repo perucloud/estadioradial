@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Category;
+use App\Models\Location;
 use App\Models\Post;
 use App\Models\Program;
 use App\Models\Schedule;
@@ -13,6 +14,8 @@ class PortalSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(LocationSeeder::class);
+
         $categories = collect([
             ['name' => 'Regionales', 'slug' => 'regionales', 'color' => '#a61b1b', 'display_order' => 10, 'relevance_weight' => 100],
             ['name' => 'Locales', 'slug' => 'locales', 'color' => '#c4312f', 'display_order' => 20, 'relevance_weight' => 95],
@@ -39,6 +42,9 @@ class PortalSeeder extends Seeder
 
             return [$data['slug'] => $category];
         });
+        $locations = Location::query()->get()->keyBy(
+            fn (Location $location) => "{$location->type}:{$location->slug}"
+        );
 
         $posts = [
             [
@@ -55,6 +61,7 @@ class PortalSeeder extends Seeder
             ],
             [
                 'category' => 'regionales',
+                'location' => 'region:moquegua',
                 'title' => 'Autoridades regionales presentan agenda de trabajo para el segundo semestre',
                 'slug' => 'autoridades-regionales-presentan-agenda-de-trabajo',
                 'excerpt' => 'La propuesta prioriza servicios públicos, conectividad y proyectos de alcance regional.',
@@ -168,6 +175,9 @@ class PortalSeeder extends Seeder
                 ['slug' => $item['slug']],
                 [
                     'category_id' => $categories[$item['category']]->id,
+                    'location_id' => isset($item['location'])
+                        ? $locations->get($item['location'])?->id
+                        : null,
                     'title' => $item['title'],
                     'excerpt' => $item['excerpt'],
                     'body' => $item['body'],

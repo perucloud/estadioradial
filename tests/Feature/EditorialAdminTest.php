@@ -336,6 +336,38 @@ class EditorialAdminTest extends TestCase
         ]);
     }
 
+    public function test_news_list_can_filter_publications_without_location(): void
+    {
+        $editor = $this->userWithRole('editor');
+        $category = $this->category();
+        $region = Location::query()->where('slug', 'moquegua')->where('type', 'region')->firstOrFail();
+
+        Post::query()->create([
+            'category_id' => $category->id,
+            'title' => 'Noticia pendiente de ubicación',
+            'slug' => 'noticia-pendiente-ubicacion',
+            'excerpt' => 'Contenido que todavía requiere clasificación territorial.',
+            'body' => '<p>Contenido editorial.</p>',
+            'status' => 'draft',
+        ]);
+        Post::query()->create([
+            'category_id' => $category->id,
+            'location_id' => $region->id,
+            'title' => 'Noticia ubicada en Moquegua',
+            'slug' => 'noticia-ubicada-moquegua',
+            'excerpt' => 'Contenido con ubicación territorial confirmada.',
+            'body' => '<p>Contenido editorial.</p>',
+            'status' => 'draft',
+        ]);
+
+        $this->actingAs($editor)
+            ->get(route('admin.posts.index', ['location' => 'none']))
+            ->assertOk()
+            ->assertSee('Sin ubicación')
+            ->assertSee('Noticia pendiente de ubicación')
+            ->assertDontSee('Noticia ubicada en Moquegua');
+    }
+
     public function test_editor_without_publish_permission_cannot_publish(): void
     {
         $editor = $this->userWithRole('editor');

@@ -142,6 +142,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
 Route::get('/', HomeController::class)->name('home');
 
 Route::get('/noticias', [PostController::class, 'index'])->name('posts.index');
+Route::get('/noticias/territorios', [PostController::class, 'regional'])->name('posts.locations.index');
+Route::get('/noticias/territorios/{path}', [PostController::class, 'location'])
+    ->where('path', '[a-z0-9-]+(?:/[a-z0-9-]+)*')
+    ->name('posts.locations.show');
 Route::get('/noticias/{category:slug}', [PostController::class, 'category'])->name('posts.category');
 Route::get('/noticias/{category:slug}/{post:slug}', [PostController::class, 'show'])->name('posts.show');
 

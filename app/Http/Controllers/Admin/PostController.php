@@ -26,7 +26,8 @@ class PostController extends Controller
         $search = mb_substr(trim((string) $request->query('q')), 0, 100);
         $status = (string) $request->query('status');
         $categoryId = $request->integer('category');
-        $locationId = $request->integer('location');
+        $locationFilter = (string) $request->query('location');
+        $locationId = ctype_digit($locationFilter) ? (int) $locationFilter : 0;
         $perPage = in_array($request->integer('per_page'), [10, 20, 50, 100], true)
             ? $request->integer('per_page')
             : 20;
@@ -43,6 +44,7 @@ class PostController extends Controller
                 ->when(in_array($status, $this->statuses(), true), fn (Builder $query) => $query->where('status', $status))
                 ->when($categoryId > 0, fn (Builder $query) => $query->where('category_id', $categoryId))
                 ->when($locationId > 0, fn (Builder $query) => $query->where('location_id', $locationId))
+                ->when($locationFilter === 'none', fn (Builder $query) => $query->whereNull('location_id'))
                 ->latest('updated_at')
                 ->paginate($perPage)
                 ->withQueryString(),
@@ -57,7 +59,7 @@ class PostController extends Controller
             'search' => $search,
             'selectedStatus' => $status,
             'selectedCategory' => $categoryId,
-            'selectedLocation' => $locationId,
+            'selectedLocation' => $locationFilter,
             'perPage' => $perPage,
         ]);
     }

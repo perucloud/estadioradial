@@ -40,8 +40,9 @@
             </select>
             <select name="location">
                 <option value="">Todas las ubicaciones</option>
+                <option value="none" @selected($selectedLocation === 'none')>Sin ubicación</option>
                 @foreach ($locations as $location)
-                    <option value="{{ $location->id }}" @selected($selectedLocation === $location->id)>
+                    <option value="{{ $location->id }}" @selected((int) $selectedLocation === $location->id)>
                         {{ $location->fullName() }}
                     </option>
                 @endforeach

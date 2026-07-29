@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Location;
 use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Models\Program;
@@ -67,7 +68,7 @@ class PortalTest extends TestCase
 
         $this->assertNotEmpty($regionalPosts);
         $this->assertTrue($regionalPosts->every(
-            fn (Post $post) => $post->category->slug === 'regionales'
+            fn (Post $post) => in_array($post->location->type, ['region', 'province', 'district'], true)
         ));
         $this->assertSame(
             $regionalPosts->sortByDesc('published_at')->pluck('id')->values()->all(),
@@ -76,6 +77,83 @@ class PortalTest extends TestCase
         $response
             ->assertSee('Información de nuestra región')
             ->assertSee('Ver todas las noticias regionales');
+    }
+
+    public function test_regional_section_uses_location_instead_of_editorial_category(): void
+    {
+        $politics = Category::query()->where('slug', 'politica')->firstOrFail();
+        $carumas = Location::query()->where('slug', 'carumas')->firstOrFail();
+        $post = Post::query()->create([
+            'category_id' => $politics->id,
+            'location_id' => $carumas->id,
+            'title' => 'Carumas presenta su agenda política distrital',
+            'slug' => 'carumas-agenda-politica-distrital',
+            'excerpt' => 'Autoridades presentaron una agenda de trabajo para el distrito.',
+            'body' => '<p>La noticia tiene categoría Política y ubicación territorial en Carumas.</p>',
+            'image' => '/images/demo/news-government.svg',
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $response = $this->get(route('home'))->assertOk();
+
+        $this->assertTrue($response->viewData('regionalPosts')->contains('id', $post->id));
+        $response
+            ->assertSee($post->title)
+            ->assertSee('Carumas');
+    }
+
+    public function test_territorial_pages_include_descendant_news_and_breadcrumbs(): void
+    {
+        $politics = Category::query()->where('slug', 'politica')->firstOrFail();
+        $carumas = Location::query()->where('slug', 'carumas')->firstOrFail();
+        $moquegua = Location::query()
+            ->where('slug', 'moquegua')
+            ->where('type', 'region')
+            ->firstOrFail();
+        $post = Post::query()->create([
+            'category_id' => $politics->id,
+            'location_id' => $carumas->id,
+            'title' => 'Carumas informa avances de gestión',
+            'slug' => 'carumas-informa-avances-gestion',
+            'excerpt' => 'El reporte distrital presenta los principales avances de gestión.',
+            'body' => '<p>Contenido territorial verificable para la ciudadanía.</p>',
+            'image' => '/images/demo/news-government.svg',
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $this->get(route('posts.locations.index'))
+            ->assertOk()
+            ->assertSee('Noticias regionales')
+            ->assertSee('Moquegua');
+
+        $this->get($moquegua->publicUrl())
+            ->assertOk()
+            ->assertSee('Noticias de Moquegua')
+            ->assertSee($post->title)
+            ->assertSeeInOrder(['Perú', 'Moquegua']);
+
+        $this->get($carumas->publicUrl())
+            ->assertOk()
+            ->assertSee($post->title)
+            ->assertSeeInOrder(['Perú', 'Moquegua', 'Mariscal Nieto', 'Carumas']);
+
+        $this->get('/noticias/territorios/peru/moquegua/ruta-inexistente')
+            ->assertNotFound();
+    }
+
+    public function test_article_displays_its_geographic_trail(): void
+    {
+        $post = Post::query()
+            ->whereNotNull('location_id')
+            ->with(['category', 'location'])
+            ->firstOrFail();
+
+        $this->get(route('posts.show', [$post->category, $post]))
+            ->assertOk()
+            ->assertSee('Ubicación de la noticia')
+            ->assertSee($post->location->name);
     }
 
     public function test_menu_and_footer_show_contact_and_dashboard_accesses(): void

@@ -11,7 +11,41 @@ class LocationSeeder extends Seeder
     public function run(): void
     {
         $peru = $this->location(null, 'Perú', 'country', 10, ['country_code' => 'PE']);
-        $moquegua = $this->location($peru, 'Moquegua', 'region', 10);
+        $regions = collect([
+            'Amazonas',
+            'Áncash',
+            'Apurímac',
+            'Arequipa',
+            'Ayacucho',
+            'Cajamarca',
+            'Callao',
+            'Cusco',
+            'Huancavelica',
+            'Huánuco',
+            'Ica',
+            'Junín',
+            'La Libertad',
+            'Lambayeque',
+            'Lima',
+            'Loreto',
+            'Madre de Dios',
+            'Moquegua',
+            'Pasco',
+            'Piura',
+            'Puno',
+            'San Martín',
+            'Tacna',
+            'Tumbes',
+            'Ucayali',
+        ])->mapWithKeys(fn (string $name, int $index) => [
+            Str::slug($name) => $this->location(
+                $peru,
+                $name,
+                'region',
+                ($index + 1) * 10,
+            ),
+        ]);
+        $moquegua = $regions->get('moquegua');
 
         $mariscalNieto = $this->location($moquegua, 'Mariscal Nieto', 'province', 10);
         $this->location($moquegua, 'General Sánchez Cerro', 'province', 20);
