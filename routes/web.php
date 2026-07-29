@@ -1,11 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\AdvertisementController as AdminAdvertisementController;
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\HomepageController as AdminHomepageController;
 use App\Http\Controllers\Admin\LocationController as AdminLocationController;
 use App\Http\Controllers\Admin\MediaController as AdminMediaController;
 use App\Http\Controllers\Admin\PasswordController as AdminPasswordController;
+use App\Http\Controllers\Admin\PortalSettingsController as AdminPortalSettingsController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\ProgramController as AdminProgramController;
 use App\Http\Controllers\Admin\ScheduleController as AdminScheduleController;
@@ -143,6 +145,18 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
             Route::post('/streaming', [AdminStreamController::class, 'store'])->name('streams.store');
             Route::put('/streaming/{stream}', [AdminStreamController::class, 'update'])->name('streams.update');
             Route::delete('/streaming/{stream}', [AdminStreamController::class, 'destroy'])->name('streams.destroy');
+        });
+
+        Route::middleware('permission:advertising.manage')->group(function () {
+            Route::get('/publicidad', [AdminAdvertisementController::class, 'index'])->name('advertisements.index');
+            Route::post('/publicidad', [AdminAdvertisementController::class, 'store'])->name('advertisements.store');
+            Route::put('/publicidad/{advertisement}', [AdminAdvertisementController::class, 'update'])->name('advertisements.update');
+            Route::delete('/publicidad/{advertisement}', [AdminAdvertisementController::class, 'destroy'])->name('advertisements.destroy');
+        });
+
+        Route::middleware('permission:settings.manage')->group(function () {
+            Route::get('/configuracion/portal', [AdminPortalSettingsController::class, 'edit'])->name('settings.portal.edit');
+            Route::put('/configuracion/portal', [AdminPortalSettingsController::class, 'update'])->name('settings.portal.update');
         });
 
         Route::middleware('permission:appearance.manage')->group(function () {

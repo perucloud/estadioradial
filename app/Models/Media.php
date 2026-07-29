@@ -69,6 +69,11 @@ class Media extends Model
         return $this->hasMany(Stream::class);
     }
 
+    public function advertisements(): HasMany
+    {
+        return $this->hasMany(Advertisement::class);
+    }
+
     public function url(string $variant = 'article'): string
     {
         $path = $this->variants[$variant] ?? $this->path;
@@ -81,6 +86,7 @@ class Media extends Model
         return $this->featuredPosts()->exists()
             || $this->inlinePosts()->exists()
             || $this->programs()->exists()
-            || $this->streams()->exists();
+            || $this->streams()->exists()
+            || $this->advertisements()->exists();
     }
 }

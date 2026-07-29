@@ -87,14 +87,17 @@
                   </a>
               @endif
 
-            @if (auth()->user()->hasPermission('advertising.manage'))
-                <span class="admin-nav__disabled">
-                    <x-admin-nav-icon name="publicidad.gif" /> Publicidad <small>Próximamente</small>
-                </span>
-                <span class="admin-nav__disabled">
-                    <x-admin-nav-icon name="baner.png" /> Banners Pub <small>Próximamente</small>
-                </span>
-            @endif
+              @if (auth()->user()->hasPermission('settings.manage'))
+                  <a class="{{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}" href="{{ route('admin.settings.portal.edit') }}">
+                      <x-admin-nav-icon name="configurar.png" /> Configuración del portal
+                  </a>
+              @endif
+
+              @if (auth()->user()->hasPermission('advertising.manage'))
+                  <a class="{{ request()->routeIs('admin.advertisements.*') ? 'is-active' : '' }}" href="{{ route('admin.advertisements.index') }}">
+                      <x-admin-nav-icon name="publicidad.gif" /> Publicidad y banners
+                  </a>
+              @endif
 
             @if (auth()->user()->hasPermission('appearance.manage'))
                 <details

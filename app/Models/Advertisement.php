@@ -5,15 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Advertisement extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
         'placement',
         'image',
+        'media_id',
         'alt_text',
         'destination_url',
         'open_in_new_tab',
@@ -31,6 +34,16 @@ class Advertisement extends Model
             'starts_at' => 'datetime',
             'ends_at' => 'datetime',
         ];
+    }
+
+    public function media(): BelongsTo
+    {
+        return $this->belongsTo(Media::class);
+    }
+
+    public function imageUrl(): string
+    {
+        return $this->media?->url('article') ?? $this->image;
     }
 
     public function scopeCurrentlyActive(Builder $query): Builder

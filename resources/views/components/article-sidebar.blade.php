@@ -90,12 +90,12 @@
                                     @if ($advertisement->open_in_new_tab) target="_blank" rel="noopener sponsored" @endif
                                 >
                                     <span>Publicidad</span>
-                                    <img src="{{ $advertisement->image }}" alt="{{ $advertisement->alt_text }}" loading="lazy">
+                                    <img src="{{ $advertisement->imageUrl() }}" alt="{{ $advertisement->alt_text }}" loading="lazy">
                                 </a>
                             @else
                                 <div class="sidebar-ad" data-sidebar-item>
                                     <span>Publicidad</span>
-                                    <img src="{{ $advertisement->image }}" alt="{{ $advertisement->alt_text }}" loading="lazy">
+                                    <img src="{{ $advertisement->imageUrl() }}" alt="{{ $advertisement->alt_text }}" loading="lazy">
                                 </div>
                             @endif
                         @endforeach

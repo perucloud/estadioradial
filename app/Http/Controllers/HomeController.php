@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Advertisement;
 use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Models\Program;
@@ -129,13 +130,20 @@ class HomeController extends Controller
             fn (Schedule $schedule) => $schedule->starts_at > $currentTime
         );
 
+        $homeAdvertisements = Advertisement::query()
+            ->currentlyActive()
+            ->where('placement', 'home_news')
+            ->orderBy('sort_order')
+            ->take(2)
+            ->get();
+
         return view('home', [
             'featuredPosts' => $featuredPosts,
             'heroSettings' => $heroSettings,
             'regionalPosts' => $regionalPosts,
             'mostViewedPosts' => $mostViewedPosts,
             'sliderSettings' => $sliderSettings,
-            'advertisements' => [
+            'advertisements' => $homeAdvertisements->isNotEmpty() ? $homeAdvertisements : collect([
                 [
                     'eyebrow' => 'Espacio disponible',
                     'title' => 'Conecta tu marca con nuestra audiencia',
@@ -148,7 +156,7 @@ class HomeController extends Controller
                     'description' => 'Formato adaptable para escritorio y dispositivos móviles.',
                     'tone' => 'red',
                 ],
-            ],
+            ]),
             'programs' => $programs,
             'currentSchedule' => $currentSchedule ?? $todaySchedules->first(),
             'nextSchedule' => $nextSchedule ?? $todaySchedules->skip(1)->first(),
