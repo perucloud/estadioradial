@@ -54,7 +54,7 @@ class PortalSeeder extends Seeder
                 'views_count' => 1840,
             ],
             [
-                'category' => 'politica',
+                'category' => 'regionales',
                 'title' => 'Autoridades regionales presentan agenda de trabajo para el segundo semestre',
                 'slug' => 'autoridades-regionales-presentan-agenda-de-trabajo',
                 'excerpt' => 'La propuesta prioriza servicios públicos, conectividad y proyectos de alcance regional.',

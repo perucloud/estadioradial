@@ -24,7 +24,7 @@ class PortalTest extends TestCase
     {
         $this->get('/')
             ->assertOk()
-            ->assertSee('Últimas noticias')
+            ->assertSee('Noticias Regionales')
             ->assertSee('Programas')
             ->assertSee('Ahora en vivo')
             ->assertSee('Festival reúne música, memoria y tradiciones de distintas regiones')
@@ -58,6 +58,24 @@ class PortalTest extends TestCase
             $mostViewed->slug
         );
         $this->assertSame(5570, $mostViewed->views_count);
+    }
+
+    public function test_regional_news_section_only_contains_recent_regional_publications(): void
+    {
+        $response = $this->get(route('home'))->assertOk();
+        $regionalPosts = $response->viewData('regionalPosts');
+
+        $this->assertNotEmpty($regionalPosts);
+        $this->assertTrue($regionalPosts->every(
+            fn (Post $post) => $post->category->slug === 'regionales'
+        ));
+        $this->assertSame(
+            $regionalPosts->sortByDesc('published_at')->pluck('id')->values()->all(),
+            $regionalPosts->pluck('id')->all(),
+        );
+        $response
+            ->assertSee('Información de nuestra región')
+            ->assertSee('Ver todas las noticias regionales');
     }
 
     public function test_menu_and_footer_show_contact_and_dashboard_accesses(): void

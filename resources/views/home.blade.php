@@ -90,48 +90,51 @@
         </div>
     </section>
 
-    <section class="section latest-news" aria-labelledby="latest-title">
+    <section class="section latest-news" aria-labelledby="regional-news-title">
         <div class="container">
             <div class="section-heading">
                 <div>
-                    <span class="eyebrow">Información al momento</span>
-                    <h2 id="latest-title">Últimas noticias</h2>
+                    <span class="eyebrow">Información de nuestra región</span>
+                    <h2 id="regional-news-title">Noticias Regionales</h2>
                 </div>
-                <a class="text-link" href="{{ route('posts.index') }}">Ver todas las noticias →</a>
+                <a
+                    class="text-link"
+                    href="{{ $regionalCategory ? route('posts.category', $regionalCategory) : route('posts.index') }}"
+                >Ver todas las noticias regionales →</a>
             </div>
 
-            @if ($latestPosts->isNotEmpty())
-                @php($latestLead = $latestPosts->first())
+            @if ($regionalPosts->isNotEmpty())
+                @php($regionalLead = $regionalPosts->first())
 
                 <div class="latest-layout">
                     <article class="latest-lead">
-                        <a class="latest-lead__image" href="{{ route('posts.show', [$latestLead->category, $latestLead]) }}">
-                            <img src="{{ $latestLead->coverUrl('card') }}" alt="{{ $latestLead->media?->alt_text ?? '' }}" loading="lazy">
+                        <a class="latest-lead__image" href="{{ route('posts.show', [$regionalLead->category, $regionalLead]) }}">
+                            <img src="{{ $regionalLead->coverUrl('card') }}" alt="{{ $regionalLead->media?->alt_text ?? '' }}" loading="lazy">
                             <span class="latest-lead__status">Último minuto</span>
                         </a>
                         <div class="latest-lead__body">
                             <a
                                 class="category-pill"
-                                style="--category-color: {{ $latestLead->category->color }}"
-                                href="{{ route('posts.category', $latestLead->category) }}"
-                            >{{ $latestLead->category->name }}</a>
+                                style="--category-color: {{ $regionalLead->category->color }}"
+                                href="{{ route('posts.category', $regionalLead->category) }}"
+                            >{{ $regionalLead->category->name }}</a>
                             <h3>
-                                <a href="{{ route('posts.show', [$latestLead->category, $latestLead]) }}">
-                                    {{ $latestLead->title }}
+                                <a href="{{ route('posts.show', [$regionalLead->category, $regionalLead]) }}">
+                                    {{ $regionalLead->title }}
                                 </a>
                             </h3>
-                            <p>{{ $latestLead->excerpt }}</p>
+                            <p>{{ $regionalLead->excerpt }}</p>
                             <div class="editorial-meta">
-                                <time datetime="{{ $latestLead->published_at->toIso8601String() }}">
-                                    {{ $latestLead->published_at->diffForHumans() }}
+                                <time datetime="{{ $regionalLead->published_at->toIso8601String() }}">
+                                    {{ $regionalLead->published_at->diffForHumans() }}
                                 </time>
-                                <span>{{ number_format($latestLead->views_count) }} lecturas</span>
+                                <span>{{ number_format($regionalLead->views_count) }} lecturas</span>
                             </div>
                         </div>
                     </article>
 
                     <div class="latest-secondary" aria-label="Noticias secundarias">
-                        @foreach ($latestPosts->skip(1)->take(4) as $post)
+                        @foreach ($regionalPosts->skip(1)->take(4) as $post)
                             <article class="secondary-story">
                                 <a class="secondary-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
                                     <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}" loading="lazy">

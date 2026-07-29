@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Models\Program;
@@ -68,11 +69,19 @@ class HomeController extends Controller
             $featuredPosts = $featuredQuery->take($heroNewsLimit)->get();
         }
 
-        $latestPosts = Post::query()
+        // This list can later be expanded with province and district category
+        // slugs managed from the dashboard.
+        $regionalCategorySlugs = ['regionales'];
+        $regionalCategory = Category::query()
+            ->whereIn('slug', $regionalCategorySlugs)
+            ->where('is_active', true)
+            ->orderBy('display_order')
+            ->first();
+        $regionalPosts = Post::query()
             ->with(['category', 'tags', 'media'])
             ->published()
             ->visibleOnHome()
-            ->whereNotIn('id', $featuredPosts->pluck('id'))
+            ->whereHas('category', fn ($query) => $query->whereIn('slug', $regionalCategorySlugs))
             ->latest('published_at')
             ->latest('id')
             ->take(5)
@@ -128,7 +137,8 @@ class HomeController extends Controller
         return view('home', [
             'featuredPosts' => $featuredPosts,
             'heroSettings' => $heroSettings,
-            'latestPosts' => $latestPosts,
+            'regionalCategory' => $regionalCategory,
+            'regionalPosts' => $regionalPosts,
             'mostViewedPosts' => $mostViewedPosts,
             'sliderSettings' => $sliderSettings,
             'advertisements' => [
