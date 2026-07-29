@@ -15,8 +15,9 @@ El Hito B añade:
 Las cargas admiten JPG, PNG, WebP y GIF, con un máximo de 8 MB y 6000 píxeles
 por lado. Los SVG subidos por usuarios se rechazan.
 
-Cada archivo exige texto alternativo y admite pie, crédito y licencia. Cuando
-GD y WebP están disponibles se generan variantes:
+El texto alternativo, el pie, el crédito y la licencia son opcionales. Cuando
+no se proporciona texto alternativo, se genera una descripción básica a partir
+del nombre del archivo. Cuando GD y WebP están disponibles se generan variantes:
 
 - `thumb`: selección y biblioteca;
 - `card`: tarjetas editoriales;

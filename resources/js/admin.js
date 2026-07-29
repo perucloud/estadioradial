@@ -114,8 +114,7 @@ document.querySelectorAll('[data-media-upload]').forEach((form) => {
             alt.type = 'text';
             alt.name = 'alt_texts[]';
             alt.maxLength = 255;
-            alt.required = true;
-            alt.placeholder = `Descripción accesible de la imagen ${index + 1}`;
+            alt.placeholder = `Descripción opcional de la imagen ${index + 1}`;
             row.append(alt);
             list.append(row);
         });

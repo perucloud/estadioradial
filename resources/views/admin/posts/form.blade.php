@@ -255,8 +255,8 @@
                     <small>JPG, PNG, WebP o GIF. Máximo 8 MB.</small>
                 </label>
                 <label>
-                    <span>Texto alternativo</span>
-                    <input type="text" name="alt_texts[]" maxlength="255" placeholder="Describe claramente el contenido de la imagen" required>
+                    <span>Texto alternativo <small>(opcional)</small></span>
+                    <input type="text" name="alt_texts[]" maxlength="255" placeholder="Si se omite, se generará desde el nombre del archivo">
                 </label>
                 <label>
                     <span>Pie de foto</span>
@@ -268,10 +268,9 @@
                 </label>
             </div>
             <div class="media-dialog__upload-actions">
-                <span data-media-picker-upload-status aria-live="polite"></span>
-                <button class="button button--primary" type="submit" data-media-picker-upload-submit>
-                    Subir y seleccionar
-                </button>
+                <span data-media-picker-upload-status aria-live="polite">
+                    La carga comenzará automáticamente al seleccionar el archivo.
+                </span>
             </div>
         </form>
         <div class="media-dialog__status" data-media-picker-status aria-live="polite">

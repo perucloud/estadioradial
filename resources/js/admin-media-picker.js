@@ -14,7 +14,7 @@ if (mediaPicker) {
     const uploadForm = mediaPicker.querySelector('[data-media-picker-upload]');
     const uploadToggle = mediaPicker.querySelector('[data-media-picker-upload-toggle]');
     const uploadStatus = mediaPicker.querySelector('[data-media-picker-upload-status]');
-    const uploadSubmit = mediaPicker.querySelector('[data-media-picker-upload-submit]');
+    const uploadFileInput = uploadForm.querySelector('input[type="file"]');
     const libraryUrl = mediaPicker.dataset.libraryUrl;
     const uploadUrl = mediaPicker.dataset.uploadUrl;
     const items = new Map();
@@ -24,6 +24,8 @@ if (mediaPicker) {
     let currentPage = 1;
     let lastPage = 1;
     let loadingController;
+    let uploadInProgress = false;
+    const automaticUploadMessage = 'La carga comenzará automáticamente al seleccionar el archivo.';
 
     const setLoading = (loading) => {
         mediaPicker.classList.toggle('is-loading', loading);
@@ -146,7 +148,7 @@ if (mediaPicker) {
         searchInput.value = '';
         uploadForm.hidden = true;
         uploadForm.reset();
-        uploadStatus.textContent = '';
+        uploadStatus.textContent = automaticUploadMessage;
         mediaPicker.showModal();
         loadMedia();
     };
@@ -184,15 +186,15 @@ if (mediaPicker) {
     mediaPicker.querySelector('[data-media-picker-refresh]').addEventListener('click', () => loadMedia());
     mediaPicker.querySelector('[data-media-picker-upload-close]').addEventListener('click', () => {
         uploadForm.hidden = true;
-        uploadStatus.textContent = '';
+        uploadStatus.textContent = automaticUploadMessage;
     });
 
     uploadToggle.addEventListener('click', () => {
         uploadForm.hidden = !uploadForm.hidden;
-        uploadStatus.textContent = '';
+        uploadStatus.textContent = automaticUploadMessage;
 
         if (!uploadForm.hidden) {
-            uploadForm.querySelector('input[type="file"]').focus();
+            uploadFileInput.focus();
         }
     });
 
@@ -205,9 +207,13 @@ if (mediaPicker) {
         if (currentPage < lastPage) loadMedia({ page: currentPage + 1, append: true });
     });
 
-    uploadForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        uploadSubmit.disabled = true;
+    const uploadSelectedMedia = async () => {
+        if (uploadInProgress || !uploadFileInput.files.length) return;
+
+        uploadInProgress = true;
+        const formData = new FormData(uploadForm);
+        uploadForm.classList.add('is-uploading');
+        uploadFileInput.disabled = true;
         uploadStatus.textContent = 'Subiendo y procesando la imagen…';
 
         try {
@@ -217,7 +223,7 @@ if (mediaPicker) {
                     Accept: 'application/json',
                     'X-Requested-With': 'XMLHttpRequest',
                 },
-                body: new FormData(uploadForm),
+                body: formData,
             });
             const payload = await response.json();
 
@@ -237,9 +243,21 @@ if (mediaPicker) {
             status.textContent = 'Imagen añadida correctamente y lista para utilizar.';
         } catch (error) {
             uploadStatus.textContent = error.message || 'No se pudo subir la imagen.';
+            uploadFileInput.value = '';
         } finally {
-            uploadSubmit.disabled = false;
+            uploadInProgress = false;
+            uploadFileInput.disabled = false;
+            uploadForm.classList.remove('is-uploading');
         }
+    };
+
+    uploadForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        uploadSelectedMedia();
+    });
+
+    uploadFileInput.addEventListener('change', () => {
+        uploadSelectedMedia();
     });
 
     copyButton.addEventListener('click', async () => {

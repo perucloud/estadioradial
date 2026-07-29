@@ -9,7 +9,8 @@ use App\Support\MediaProcessor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class MediaController extends Controller
@@ -72,8 +73,8 @@ class MediaController extends Controller
                     'max:8192',
                     'dimensions:max_width=6000,max_height=6000',
                 ],
-                'alt_texts' => ['required', 'array'],
-                'alt_texts.*' => ['required', 'string', 'max:255'],
+                'alt_texts' => ['nullable', 'array'],
+                'alt_texts.*' => ['nullable', 'string', 'max:255'],
                 'caption' => ['nullable', 'string', 'max:255'],
                 'credit' => ['nullable', 'string', 'max:255'],
                 'license' => ['nullable', 'string', 'max:255'],
@@ -85,22 +86,14 @@ class MediaController extends Controller
                 'files.*.mimes' => 'La imagen debe ser JPG, PNG, WebP o GIF.',
                 'files.*.max' => 'La imagen no puede superar los 8 MB.',
                 'files.*.dimensions' => 'La imagen no puede superar los 6000 píxeles por lado.',
-                'alt_texts.required' => 'Escribe el texto alternativo de la imagen.',
-                'alt_texts.*.required' => 'Escribe el texto alternativo de la imagen.',
             ],
         );
-
-        if (count($data['files']) !== count($data['alt_texts'])) {
-            throw ValidationException::withMessages([
-                'alt_texts' => 'Cada imagen necesita su propio texto alternativo.',
-            ]);
-        }
 
         $createdMedia = collect();
 
         foreach ($data['files'] as $index => $file) {
             $media = $processor->store($file, [
-                'alt_text' => $data['alt_texts'][$index],
+                'alt_text' => $this->resolveAltText($file, $data['alt_texts'][$index] ?? null),
                 'caption' => $data['caption'] ?? null,
                 'credit' => $data['credit'] ?? null,
                 'license' => $data['license'] ?? null,
@@ -125,11 +118,14 @@ class MediaController extends Controller
     public function update(Request $request, Media $media): RedirectResponse
     {
         $data = $request->validate([
-            'alt_text' => ['required', 'string', 'max:255'],
+            'alt_text' => ['nullable', 'string', 'max:255'],
             'caption' => ['nullable', 'string', 'max:255'],
             'credit' => ['nullable', 'string', 'max:255'],
             'license' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $data['alt_text'] = trim((string) ($data['alt_text'] ?? ''))
+            ?: $this->fallbackFromFilename($media->original_name);
 
         $media->update($data);
         $this->log($request, 'media.updated', $media);
@@ -176,5 +172,27 @@ class MediaController extends Controller
             'article_url' => $media->url('article'),
             'created_at' => $media->created_at?->toIso8601String(),
         ];
+    }
+
+    private function resolveAltText(UploadedFile $file, ?string $altText): string
+    {
+        $altText = trim((string) $altText);
+
+        if ($altText !== '') {
+            return $altText;
+        }
+
+        return $this->fallbackFromFilename($file->getClientOriginalName());
+    }
+
+    private function fallbackFromFilename(string $filename): string
+    {
+        $generated = Str::of(pathinfo($filename, PATHINFO_FILENAME))
+            ->replace(['-', '_'], ' ')
+            ->squish()
+            ->ucfirst()
+            ->toString();
+
+        return mb_strlen($generated) >= 3 ? $generated : 'Imagen de la noticia';
     }
 }

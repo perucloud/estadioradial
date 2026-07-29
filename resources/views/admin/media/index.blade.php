@@ -21,8 +21,8 @@
             </label>
             <div class="upload-list" data-upload-list>
                 <label class="upload-alt-row">
-                    Texto alternativo
-                    <input type="text" name="alt_texts[]" maxlength="255" placeholder="Describe la imagen para lectores de pantalla" required>
+                    Texto alternativo (opcional)
+                    <input type="text" name="alt_texts[]" maxlength="255" placeholder="Si se omite, se generará desde el nombre del archivo">
                 </label>
             </div>
             <div class="form-grid form-grid--three">
@@ -54,7 +54,7 @@
                         <form method="post" action="{{ route('admin.media.update', $media) }}" class="form-stack form-stack--compact">
                             @csrf
                             @method('PUT')
-                            <label>Texto alternativo <input type="text" name="alt_text" value="{{ $media->alt_text }}" required></label>
+                            <label>Texto alternativo (opcional) <input type="text" name="alt_text" value="{{ $media->alt_text }}"></label>
                             <label>Pie <input type="text" name="caption" value="{{ $media->caption }}"></label>
                             <label>Crédito <input type="text" name="credit" value="{{ $media->credit }}"></label>
                             <label>Licencia <input type="text" name="license" value="{{ $media->license }}"></label>

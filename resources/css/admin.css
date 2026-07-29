@@ -1335,6 +1335,49 @@ td small {
     box-shadow: 0 0 0 3px rgb(201 31 38 / 12%);
 }
 
+.media-dialog__file input[type="file"] {
+    min-height: 54px;
+    padding: 6px;
+    cursor: pointer;
+    border: 2px dashed #dc7378;
+    background: #fff;
+    transition: border-color .2s, background-color .2s, box-shadow .2s;
+}
+
+.media-dialog__file input[type="file"]:hover {
+    border-color: var(--admin-red);
+    background: #fff5f5;
+    box-shadow: 0 0 0 4px rgb(201 31 38 / 9%);
+}
+
+.media-dialog__file input[type="file"]::file-selector-button {
+    min-height: 38px;
+    margin-right: 12px;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--admin-white);
+    background: var(--admin-red);
+    font-weight: 850;
+    transition: background-color .2s, transform .2s, box-shadow .2s;
+}
+
+.media-dialog__file input[type="file"]::file-selector-button:hover {
+    background: var(--admin-red-dark);
+    box-shadow: 0 6px 16px rgb(159 23 29 / 24%);
+    transform: translateY(-1px);
+}
+
+.media-dialog__upload.is-uploading {
+    cursor: wait;
+}
+
+.media-dialog__upload.is-uploading .media-dialog__upload-grid {
+    opacity: .6;
+    pointer-events: none;
+}
+
 .media-dialog__upload-grid small,
 .media-dialog__upload-actions > span {
     color: var(--admin-muted);

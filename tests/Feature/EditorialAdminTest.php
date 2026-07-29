@@ -53,13 +53,11 @@ class EditorialAdminTest extends TestCase
             ->withHeader('Accept', 'application/json')
             ->post(route('admin.media.store'), [
                 'files' => [UploadedFile::fake()->image('portada-ministerio.jpg', 1200, 800)],
-                'alt_texts' => ['Ceremonia de juramentación del nuevo ministro'],
                 'caption' => 'Ceremonia oficial',
-                'credit' => 'Estación Radial',
             ])
             ->assertCreated()
             ->assertJsonPath('data.0.name', 'portada-ministerio.jpg')
-            ->assertJsonPath('data.0.alt_text', 'Ceremonia de juramentación del nuevo ministro')
+            ->assertJsonPath('data.0.alt_text', 'Portada ministerio')
             ->assertJsonStructure(['data' => [['id', 'thumb_url', 'article_url']]]);
 
         $this->assertDatabaseCount('media', 1);
@@ -91,6 +89,8 @@ class EditorialAdminTest extends TestCase
             ->assertSee('Añadir nueva imagen')
             ->assertSee('data-media-picker-url', false)
             ->assertSee('data-media-picker-upload', false)
+            ->assertSee('La carga comenzará automáticamente')
+            ->assertDontSee('Subir y seleccionar')
             ->assertSee(route('admin.media.library'), false);
 
         $this->actingAs($editor)
@@ -125,17 +125,20 @@ class EditorialAdminTest extends TestCase
             ->assertSee('admin-nav-flyout--columns', false);
     }
 
-    public function test_upload_rejects_an_image_without_alt_text(): void
+    public function test_upload_generates_alt_text_from_filename_when_it_is_omitted(): void
     {
         Storage::fake('public');
         $editor = $this->userWithRole('editor');
 
         $this->actingAs($editor)->post(route('admin.media.store'), [
             'files' => [UploadedFile::fake()->image('sin-descripcion.jpg')],
-            'alt_texts' => [''],
-        ])->assertSessionHasErrors('alt_texts.0');
+        ])->assertSessionHasNoErrors();
 
-        $this->assertDatabaseCount('media', 0);
+        $this->assertDatabaseHas('media', [
+            'original_name' => 'sin-descripcion.jpg',
+            'alt_text' => 'Sin descripcion',
+            'credit' => null,
+        ]);
     }
 
     public function test_editor_can_create_a_sanitized_draft_with_ckeditor_html(): void
