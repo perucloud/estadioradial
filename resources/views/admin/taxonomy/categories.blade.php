@@ -88,7 +88,7 @@
     </details>
 
     <section class="panel taxonomy-toolbar">
-        <form method="get" action="{{ route('admin.categories.index') }}" class="taxonomy-filters">
+        <form method="get" action="{{ route('admin.categories.index') }}" class="taxonomy-filters" data-auto-filter>
             <label>
                 <span class="sr-only">Buscar categorías</span>
                 <input type="search" name="q" value="{{ $search }}" placeholder="Buscar por nombre, slug o descripción">

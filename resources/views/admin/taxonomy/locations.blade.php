@@ -100,7 +100,7 @@
     </details>
 
     <section class="panel taxonomy-toolbar">
-        <form method="get" action="{{ route('admin.locations.index') }}" class="taxonomy-filters taxonomy-filters--locations">
+        <form method="get" action="{{ route('admin.locations.index') }}" class="taxonomy-filters taxonomy-filters--locations" data-auto-filter>
             <label><span class="sr-only">Buscar</span><input type="search" name="q" value="{{ $search }}" placeholder="Buscar nombre, slug o UBIGEO"></label>
             <label>
                 <span class="sr-only">Tipo</span>

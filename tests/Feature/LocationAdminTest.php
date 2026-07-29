@@ -52,6 +52,7 @@ class LocationAdminTest extends TestCase
             ->assertSee('Cobertura geográfica')
             ->assertSee('Buscar nombre, slug o UBIGEO')
             ->assertSee('10 por página')
+            ->assertSee('data-auto-filter', false)
             ->assertSee('Carumas')
             ->assertSee('San Cristóbal de Calacoa')
             ->assertSee('Título SEO');

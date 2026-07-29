@@ -24,7 +24,7 @@
     </div>
 
     <section class="panel filter-panel">
-        <form method="get" class="admin-filters">
+        <form method="get" class="admin-filters" data-auto-filter>
             <input type="search" name="q" value="{{ $search }}" placeholder="Buscar título o resumen">
             <select name="status">
                 <option value="">Todos los estados</option>

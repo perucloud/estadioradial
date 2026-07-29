@@ -4,6 +4,18 @@ import './admin-seo';
 import './admin-tags';
 import './admin-locations';
 
+document.querySelectorAll('[data-auto-filter]').forEach((form) => {
+    form.querySelectorAll('select').forEach((select) => {
+        select.addEventListener('change', () => {
+            if (form.dataset.submitting === 'true') return;
+
+            form.dataset.submitting = 'true';
+            form.setAttribute('aria-busy', 'true');
+            form.requestSubmit();
+        });
+    });
+});
+
 const adminNavGroups = [...document.querySelectorAll('[data-admin-nav-group]')];
 const desktopFlyoutQuery = window.matchMedia('(min-width: 961px)');
 const hoverFlyoutQuery = window.matchMedia('(min-width: 961px) and (hover: hover) and (pointer: fine)');
