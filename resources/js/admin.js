@@ -97,6 +97,27 @@ document.querySelectorAll('[data-slug-source]').forEach((title) => {
     });
 });
 
+document.querySelectorAll('[data-publication-datetime]').forEach((input) => {
+    if (input.dataset.autoDatetime !== 'true') return;
+
+    const localDateTime = () => {
+        const now = new Date();
+        const pad = (value) => String(value).padStart(2, '0');
+
+        return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    };
+    const syncCurrentTime = () => {
+        if (input.dataset.autoDatetime === 'true') input.value = localDateTime();
+    };
+    const timer = window.setInterval(syncCurrentTime, 30_000);
+
+    syncCurrentTime();
+    input.addEventListener('input', () => {
+        input.dataset.autoDatetime = 'false';
+        window.clearInterval(timer);
+    }, { once: true });
+});
+
 document.querySelectorAll('[data-media-upload]').forEach((form) => {
     const input = form.querySelector('input[type="file"]');
     const list = form.querySelector('[data-upload-list]');

@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UpsertPostRequest extends FormRequest
@@ -75,8 +76,22 @@ class UpsertPostRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
+        $bodyWithSpacing = preg_replace(
+            '/(?:<br\s*\/?>|<\/(?:p|h[1-6]|li|blockquote|div)>)/i',
+            ' ',
+            (string) $this->input('body'),
+        ) ?? '';
+        $excerpt = $this->filled('excerpt')
+            ? trim((string) $this->input('excerpt'))
+            : Str::of(html_entity_decode(
+                strip_tags($bodyWithSpacing),
+                ENT_QUOTES | ENT_HTML5,
+                'UTF-8',
+            ))->squish()->limit(280, '…')->toString();
+
         $this->merge([
             'slug' => $this->filled('slug') ? mb_strtolower(trim((string) $this->input('slug'))) : null,
+            'excerpt' => $excerpt,
             'source_name' => $this->filled('source_name') ? trim((string) $this->input('source_name')) : null,
             'source_url' => $this->filled('source_url') ? trim((string) $this->input('source_url')) : null,
             'seo_title' => $this->filled('seo_title') ? trim((string) $this->input('seo_title')) : null,

@@ -41,6 +41,25 @@ import 'ckeditor5/ckeditor5.css';
 
 const editorInstances = new Map();
 const licenseKey = import.meta.env.VITE_CKEDITOR_LICENSE_KEY?.trim() || 'GPL';
+const generatedExcerptLimit = 280;
+
+const excerptFromHtml = (html, limit = generatedExcerptLimit) => {
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    document.querySelectorAll('figure, table, pre, script, style').forEach((element) => element.remove());
+
+    const text = (document.body.textContent || '').replace(/\s+/g, ' ').trim();
+    if (text.length <= limit) return text;
+
+    const preview = text.slice(0, limit + 1);
+    const sentenceEnds = [...preview.matchAll(/[.!?](?=\s|$)/g)]
+        .map((match) => match.index + 1)
+        .filter((position) => position >= 150 && position <= limit);
+
+    if (sentenceEnds.length) return text.slice(0, sentenceEnds.at(-1)).trim();
+
+    const wordBoundary = preview.lastIndexOf(' ', limit);
+    return `${text.slice(0, wordBoundary > 120 ? wordBoundary : limit).trim()}…`;
+};
 
 const wrappersWithin = (root) => {
     if (!(root instanceof Element || root instanceof Document)) return [];
@@ -84,6 +103,9 @@ const initialiseEditor = async (wrapper) => {
     const wordCounter = wrapper.querySelector('[data-ckeditor-word-count]');
     const characterCounter = wrapper.querySelector('[data-ckeditor-character-count]');
     const autosaveStatus = wrapper.querySelector('[data-autosave-status]');
+    const excerptInput = form?.querySelector('[data-excerpt-input]');
+    const excerptCounter = form?.querySelector('[data-excerpt-counter]');
+    const excerptHelp = form?.querySelector('[data-excerpt-help]');
 
     if (!input || !surface || !form) return;
 
@@ -92,6 +114,25 @@ const initialiseEditor = async (wrapper) => {
     const draftKey = `estacionradial:post-draft:${wrapper.dataset.draftKey || 'new'}`;
     const savedDraft = window.localStorage.getItem(draftKey);
     let initialData = input.value || '<p></p>';
+    let syncingExcerpt = false;
+    let excerptIsManual = excerptInput?.dataset.excerptGenerated !== 'true' && excerptInput?.value.trim() !== '';
+
+    const updateExcerptCounter = () => {
+        if (excerptCounter && excerptInput) {
+            excerptCounter.textContent = `${excerptInput.value.length.toLocaleString('es-PE')} / 500`;
+        }
+    };
+
+    const updateExcerptHelp = () => {
+        if (!excerptHelp) return;
+
+        excerptHelp.textContent = excerptIsManual
+            ? 'Edición manual activa. El contenido no sobrescribirá este resumen.'
+            : 'Se genera automáticamente desde el contenido. Puedes modificarlo manualmente.';
+    };
+
+    updateExcerptCounter();
+    updateExcerptHelp();
 
     if (savedDraft) {
         try {
@@ -243,12 +284,38 @@ const initialiseEditor = async (wrapper) => {
         const signal = events.signal;
         const inlineMediaInput = form.querySelector('[name="inline_media_ids"]');
         const inlineIds = new Set((inlineMediaInput?.value || '').split(',').filter(Boolean));
+        const syncExcerpt = (force = false) => {
+            if (!excerptInput || (excerptIsManual && !force)) return;
+
+            const excerpt = excerptFromHtml(editor.getData());
+            if (!excerpt && !force) return;
+
+            syncingExcerpt = true;
+            excerptInput.value = excerpt;
+            excerptInput.dataset.excerptGenerated = 'true';
+            excerptInput.dispatchEvent(new Event('input', { bubbles: true }));
+            syncingExcerpt = false;
+            updateExcerptCounter();
+        };
 
         editorInstances.set(wrapper, { editor, events });
         updateInput(input, wrapper, editor);
+        syncExcerpt();
+
+        excerptInput?.addEventListener('input', () => {
+            if (syncingExcerpt) return;
+
+            excerptIsManual = excerptInput.value.trim() !== '';
+            excerptInput.dataset.excerptGenerated = excerptIsManual ? 'false' : 'true';
+            updateExcerptCounter();
+            updateExcerptHelp();
+
+            if (!excerptIsManual) syncExcerpt(true);
+        }, { signal });
 
         editor.model.document.on('change:data', () => {
             updateInput(input, wrapper, editor);
+            syncExcerpt();
             wrapper.dataset.dirty = 'true';
 
             window.clearTimeout(wrapper.autosaveTimer);
@@ -283,6 +350,7 @@ const initialiseEditor = async (wrapper) => {
 
         form.addEventListener('submit', () => {
             updateInput(input, wrapper, editor);
+            if (!excerptInput?.value.trim()) syncExcerpt(true);
             wrapper.dataset.dirty = 'false';
             window.localStorage.removeItem(draftKey);
         }, { signal });

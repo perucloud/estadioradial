@@ -75,7 +75,7 @@ class EditorialAdminTest extends TestCase
             ->assertSee('Biblioteca reutilizable')
             ->assertSee('Imagen referencial de la noticia');
 
-        $this->actingAs($editor)
+        $formResponse = $this->actingAs($editor)
             ->get(route('admin.posts.create'))
             ->assertOk()
             ->assertSee('data-ckeditor', false)
@@ -91,7 +91,15 @@ class EditorialAdminTest extends TestCase
             ->assertSee('data-media-picker-upload', false)
             ->assertSee('La carga comenzará automáticamente')
             ->assertDontSee('Subir y seleccionar')
+            ->assertSee('data-excerpt-input', false)
+            ->assertSee('data-publication-datetime', false)
+            ->assertSee('data-auto-datetime="true"', false)
             ->assertSee(route('admin.media.library'), false);
+
+        $this->assertLessThan(
+            strpos($formResponse->getContent(), 'data-excerpt-input'),
+            strpos($formResponse->getContent(), 'data-ckeditor'),
+        );
 
         $this->actingAs($editor)
             ->getJson(route('admin.media.library'))
@@ -164,6 +172,24 @@ class EditorialAdminTest extends TestCase
         $this->assertStringContainsString('<h2>Agenda cultural</h2>', $post->body);
         $this->assertStringNotContainsString('<script', $post->body);
         $this->assertSame($media->id, $post->media_id);
+    }
+
+    public function test_excerpt_is_generated_from_editor_content_when_omitted(): void
+    {
+        $editor = $this->userWithRole('editor');
+
+        $this->actingAs($editor)->post(route('admin.posts.store'), [
+            'title' => 'Reporte ministerial con resumen automático',
+            'body' => '<p>El Ministerio del Interior presentó las nuevas acciones de seguridad ciudadana.</p><p>El plan incorpora coordinación regional y seguimiento permanente.</p>',
+            'category_id' => $this->category()->id,
+            'media_id' => $this->media($editor)->id,
+            'intent' => 'draft',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame(
+            'El Ministerio del Interior presentó las nuevas acciones de seguridad ciudadana. El plan incorpora coordinación regional y seguimiento permanente.',
+            Post::query()->firstOrFail()->excerpt,
+        );
     }
 
     public function test_editor_without_publish_permission_cannot_publish(): void

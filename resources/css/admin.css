@@ -169,6 +169,23 @@ select {
     box-shadow: 0 0 0 3px rgb(201 31 38 / 12%);
 }
 
+.field-help,
+.excerpt-counter {
+    color: var(--admin-muted);
+    font-size: .7rem;
+    font-weight: 550;
+    line-height: 1.45;
+}
+
+.excerpt-counter {
+    white-space: nowrap;
+}
+
+.excerpt-panel textarea {
+    min-height: 118px;
+    line-height: 1.55;
+}
+
 .check-row {
     display: flex;
     align-items: flex-start;

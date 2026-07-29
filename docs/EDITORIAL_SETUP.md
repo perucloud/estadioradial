@@ -53,7 +53,12 @@ Blade y se compila con Vite. Incluye:
 - imágenes seleccionadas desde la biblioteca;
 - deshacer y rehacer;
 - contador de palabras y vista de código fuente;
+- resumen público automático, editable manualmente;
 - copia local automática y aviso de cambios sin guardar.
+
+En noticias nuevas, la fecha visible se inicializa con la hora local actual.
+La publicación inmediata siempre registra la hora real de la acción; para
+programar se debe seleccionar una fecha futura.
 
 El navegador entrega HTML semántico. El servidor vuelve a procesarlo con
 Symfony HTML Sanitizer y una lista explícita de elementos y atributos. Scripts,

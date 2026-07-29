@@ -6,6 +6,14 @@
     $selectedMediaItem = $mediaItems->firstWhere('id', (int) $selectedMedia);
     $selectedTags = old('tag_ids', $post?->tags->pluck('id')->all() ?? []);
     $inlineMediaIds = old('inline_media_ids', $post?->inlineMedia->pluck('id')->join(',') ?? '');
+    $publicationDate = old(
+        'scheduled_for',
+        $post?->scheduled_for?->format('Y-m-d\TH:i')
+            ?? $post?->published_at?->format('Y-m-d\TH:i')
+            ?? now()->format('Y-m-d\TH:i'),
+    );
+    $autoPublicationDate = old('scheduled_for') === null
+        && (! $editing || in_array($post?->status, ['draft', 'in_review'], true));
 @endphp
 
 @section('title', $editing ? 'Editar noticia' : 'Nueva noticia')
@@ -32,11 +40,6 @@
                     Slug
                     <input type="text" name="slug" value="{{ old('slug', $post?->slug) }}" maxlength="200" data-slug-target placeholder="se-genera-desde-el-titulo">
                     @error('slug') <small class="field-error">{{ $message }}</small> @enderror
-                </label>
-                <label>
-                    Resumen
-                    <textarea name="excerpt" rows="4" maxlength="500" required>{{ old('excerpt', $post?->excerpt) }}</textarea>
-                    @error('excerpt') <small class="field-error">{{ $message }}</small> @enderror
                 </label>
             </section>
 
@@ -65,6 +68,31 @@
                     <span data-ckeditor-word-count>0 palabras</span>
                 </div>
                 @error('body') <small class="field-error">{{ $message }}</small> @enderror
+            </section>
+
+            <section class="panel form-stack excerpt-panel">
+                <div class="panel__header">
+                    <div>
+                        <span class="eyebrow">Vista pública</span>
+                        <h2>Resumen de la noticia</h2>
+                    </div>
+                    <span class="excerpt-counter" data-excerpt-counter>0 / 500</span>
+                </div>
+                <label>
+                    Resumen
+                    <textarea
+                        name="excerpt"
+                        rows="4"
+                        maxlength="500"
+                        required
+                        data-excerpt-input
+                        data-excerpt-generated="{{ old('excerpt', $post?->excerpt) ? 'false' : 'true' }}"
+                    >{{ old('excerpt', $post?->excerpt) }}</textarea>
+                    <small class="field-help" data-excerpt-help>
+                        Se genera automáticamente desde el contenido. Puedes modificarlo manualmente.
+                    </small>
+                    @error('excerpt') <small class="field-error">{{ $message }}</small> @enderror
+                </label>
             </section>
 
             <section class="panel form-stack">
@@ -96,12 +124,17 @@
                     </select>
                 </label>
                 <label>
-                    Programar fecha y hora
+                    Fecha y hora de publicación
                     <input
                         type="datetime-local"
                         name="scheduled_for"
-                        value="{{ old('scheduled_for', $post?->scheduled_for?->format('Y-m-d\TH:i')) }}"
+                        value="{{ $publicationDate }}"
+                        data-publication-datetime
+                        data-auto-datetime="{{ $autoPublicationDate ? 'true' : 'false' }}"
                     >
+                    <small class="field-help">
+                        “Publicar ahora” registra la hora real. Para programar, selecciona una fecha futura.
+                    </small>
                 </label>
                 <div class="publish-actions">
                     <button class="button button--quiet" type="submit" name="intent" value="{{ $editing ? 'preserve' : 'draft' }}">
