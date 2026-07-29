@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Category;
 use App\Models\Location;
 use App\Models\Media;
+use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Models\Role;
 use App\Models\User;
@@ -281,6 +282,71 @@ class EditorialAdminTest extends TestCase
             ->assertSee('Alcance geográfico')
             ->assertSee('Perú → Moquegua → Mariscal Nieto → Carumas')
             ->assertSee('name="location_district_id"', false);
+    }
+
+    public function test_dashboard_configures_the_default_geographic_scope_for_new_news(): void
+    {
+        $this->seed(LocationSeeder::class);
+        $superadmin = $this->userWithRole('superadmin');
+        $country = Location::query()->where('slug', 'peru')->where('type', 'country')->firstOrFail();
+        $region = Location::query()->where('slug', 'moquegua')->where('type', 'region')->firstOrFail();
+        $province = Location::query()->where('slug', 'mariscal-nieto')->where('type', 'province')->firstOrFail();
+        $district = Location::query()->where('slug', 'carumas')->where('type', 'district')->firstOrFail();
+
+        $dashboard = $this->actingAs($superadmin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Alcance geográfico predeterminado')
+            ->assertSee('Perú')
+            ->assertSee('Moquegua')
+            ->assertSee('Guardar ubicación predeterminada');
+
+        $this->assertSame([
+            'country' => $country->id,
+            'region' => $region->id,
+        ], $dashboard->viewData('defaultLocationSelection'));
+
+        $newPost = $this->actingAs($superadmin)
+            ->get(route('admin.posts.create'))
+            ->assertOk();
+        $this->assertSame([
+            'country' => $country->id,
+            'region' => $region->id,
+        ], $newPost->viewData('locationSelection'));
+
+        $this->actingAs($superadmin)
+            ->put(route('admin.dashboard.default-location.update'), [
+                'default_location_country_id' => $country->id,
+                'default_location_region_id' => $region->id,
+                'default_location_province_id' => $province->id,
+                'default_location_district_id' => $district->id,
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status', 'Ubicación predeterminada actualizada.');
+
+        $this->assertSame([
+            'country' => $country->id,
+            'region' => $region->id,
+            'province' => $province->id,
+            'district' => $district->id,
+        ], PortalSetting::value('site.default_location'));
+
+        $newPost = $this->actingAs($superadmin)->get(route('admin.posts.create'));
+        $this->assertSame($district->id, $newPost->viewData('locationSelection')['district']);
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'settings.default_location_updated',
+        ]);
+
+        $otherCountry = Location::query()
+            ->where('type', 'country')
+            ->where('slug', 'argentina')
+            ->firstOrFail();
+        $this->actingAs($superadmin)
+            ->put(route('admin.dashboard.default-location.update'), [
+                'default_location_country_id' => $otherCountry->id,
+                'default_location_region_id' => $region->id,
+            ])
+            ->assertSessionHasErrors('default_location_region_id');
     }
 
     public function test_news_can_stop_at_country_and_rejects_an_inconsistent_location_path(): void

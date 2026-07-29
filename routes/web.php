@@ -51,6 +51,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
         Route::get('/', AdminDashboardController::class)
             ->middleware('permission:dashboard.view')
             ->name('dashboard');
+        Route::put('/preferencias/ubicacion', [AdminDashboardController::class, 'updateDefaultLocation'])
+            ->middleware('permission:settings.manage')
+            ->name('dashboard.default-location.update');
 
         Route::middleware('permission:media.manage')->group(function () {
             Route::get('/multimedia', [AdminMediaController::class, 'index'])->name('media.index');

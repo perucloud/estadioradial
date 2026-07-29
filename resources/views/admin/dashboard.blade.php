@@ -82,4 +82,85 @@
             @endif
         </aside>
     </div>
+
+    <section
+        class="panel dashboard-location-settings"
+        data-post-location
+        data-location-options-url="{{ $locationOptionsUrl }}"
+    >
+        <div class="panel__header">
+            <div>
+                <span class="eyebrow">Preferencia editorial</span>
+                <h2>Alcance geográfico predeterminado</h2>
+            </div>
+            <span class="location-selection-status" data-post-location-status>
+                {{ $defaultLocationLabel }}
+            </span>
+        </div>
+
+        <p class="field-help">
+            Esta ubicación se seleccionará automáticamente al crear una noticia nueva.
+            El redactor podrá cambiarla o retirarla en cada publicación.
+        </p>
+
+        @if (auth()->user()->hasPermission('settings.manage'))
+            <form method="post" action="{{ route('admin.dashboard.default-location.update') }}" class="dashboard-location-form">
+                @csrf
+                @method('PUT')
+
+                <div class="post-location-grid">
+                    <label>
+                        País
+                        <select name="default_location_country_id" data-post-location-level="country" required>
+                            <option value="">Seleccionar país</option>
+                            @foreach ($defaultLocationOptions->get('country', collect()) as $location)
+                                <option value="{{ $location->id }}" @selected(($defaultLocationSelection['country'] ?? null) === $location->id)>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('default_location_country_id') <small class="field-error">{{ $message }}</small> @enderror
+                    </label>
+
+                    <label>
+                        Región
+                        <select name="default_location_region_id" data-post-location-level="region">
+                            <option value="">Toda la nación</option>
+                            @foreach ($defaultLocationOptions->get('region', collect()) as $location)
+                                <option value="{{ $location->id }}" @selected(($defaultLocationSelection['region'] ?? null) === $location->id)>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('default_location_region_id') <small class="field-error">{{ $message }}</small> @enderror
+                    </label>
+
+                    <label>
+                        Provincia
+                        <select name="default_location_province_id" data-post-location-level="province">
+                            <option value="">Toda la región</option>
+                            @foreach ($defaultLocationOptions->get('province', collect()) as $location)
+                                <option value="{{ $location->id }}" @selected(($defaultLocationSelection['province'] ?? null) === $location->id)>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('default_location_province_id') <small class="field-error">{{ $message }}</small> @enderror
+                    </label>
+
+                    <label>
+                        Distrito
+                        <select name="default_location_district_id" data-post-location-level="district">
+                            <option value="">Toda la provincia</option>
+                            @foreach ($defaultLocationOptions->get('district', collect()) as $location)
+                                <option value="{{ $location->id }}" @selected(($defaultLocationSelection['district'] ?? null) === $location->id)>{{ $location->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('default_location_district_id') <small class="field-error">{{ $message }}</small> @enderror
+                    </label>
+                </div>
+
+                <div class="dashboard-location-form__footer">
+                    <small>Predeterminado inicial: Perú → Moquegua</small>
+                    <button class="button button--primary" type="submit">Guardar ubicación predeterminada</button>
+                </div>
+            </form>
+        @else
+            <p class="panel-note">Solo un usuario con permisos de configuración puede modificar esta preferencia.</p>
+        @endif
+    </section>
 @endsection

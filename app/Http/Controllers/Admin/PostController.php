@@ -11,6 +11,7 @@ use App\Models\Media;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Services\PostPublisher;
+use App\Support\DefaultLocationSettings;
 use App\Support\PostHtmlSanitizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +23,8 @@ use Illuminate\View\View;
 
 class PostController extends Controller
 {
+    public function __construct(private DefaultLocationSettings $defaultLocations) {}
+
     public function index(Request $request): View
     {
         $search = mb_substr(trim((string) $request->query('q')), 0, 100);
@@ -293,28 +296,9 @@ class PostController extends Controller
             })
             ->filter()
             ->all();
-        $selection = $oldSelection + $locationSelection;
-        $locationsByType = collect([
-            'country' => Location::query()
-                ->active()
-                ->where('type', 'country')
-                ->orderBy('display_order')
-                ->orderBy('name')
-                ->get(),
-        ]);
-
-        foreach (['region' => 'country', 'province' => 'region', 'district' => 'province'] as $type => $parentType) {
-            $parentId = $selection[$parentType] ?? null;
-            $locationsByType->put($type, $parentId
-                ? Location::query()
-                    ->active()
-                    ->where('type', $type)
-                    ->where('parent_id', $parentId)
-                    ->orderBy('display_order')
-                    ->orderBy('name')
-                    ->get()
-                : collect());
-        }
+        $defaultSelection = $post === null ? $this->defaultLocations->selection() : [];
+        $selection = $oldSelection + $locationSelection + $defaultSelection;
+        $locationsByType = $this->defaultLocations->options($selection);
 
         return [
             'post' => $post,
