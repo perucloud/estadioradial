@@ -1522,6 +1522,43 @@ td small {
     transform: translate(-50%, -50%);
 }
 
+.schedule-genie-layer {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    pointer-events: none;
+    background: transparent;
+}
+
+.schedule-genie-layer::backdrop {
+    background: transparent;
+}
+
+.schedule-genie-layer svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.schedule-genie-layer__sheet {
+    fill: url("#schedule-genie-gradient");
+    filter: url("#schedule-genie-glow");
+}
+
+.schedule-genie-layer__shine {
+    fill: none;
+    stroke: rgba(255, 255, 255, .42);
+    stroke-width: 2;
+}
+
 .schedule-dialog[open] {
     display: grid;
     grid-template-rows: auto minmax(0, 1fr) auto;
