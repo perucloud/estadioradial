@@ -88,7 +88,8 @@ class EditorialAdminTest extends TestCase
             ->assertSee('Banners Pub')
             ->assertSee('Apariencia')
             ->assertSee('Configurar')
-            ->assertSee('Ajustes');
+            ->assertSee('Ajustes')
+            ->assertSee('admin-nav-flyout--columns', false);
     }
 
     public function test_upload_rejects_an_image_without_alt_text(): void

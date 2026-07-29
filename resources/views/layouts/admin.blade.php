@@ -142,7 +142,7 @@
                         <span>Ajustes</span>
                         <span class="admin-nav-group__chevron" aria-hidden="true">›</span>
                     </summary>
-                    <div class="admin-nav-flyout">
+                    <div class="admin-nav-flyout admin-nav-flyout--columns">
                         <strong>Ajustes del sistema</strong>
                         @foreach ([
                             ['etiqueta.png', 'Idioma'],

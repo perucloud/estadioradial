@@ -19,6 +19,23 @@ const normaliseUrl = (value) => {
 };
 
 const adminNavGroups = [...document.querySelectorAll('[data-admin-nav-group]')];
+const desktopFlyoutQuery = window.matchMedia('(min-width: 961px)');
+
+const positionAdminFlyout = (group) => {
+    group.classList.remove('opens-upward');
+
+    if (!group.open || !desktopFlyoutQuery.matches) return;
+
+    const flyout = group.querySelector('.admin-nav-flyout');
+    if (!flyout) return;
+
+    const viewportMargin = 14;
+    const flyoutRect = flyout.getBoundingClientRect();
+
+    if (flyoutRect.bottom > window.innerHeight - viewportMargin) {
+        group.classList.add('opens-upward');
+    }
+};
 
 adminNavGroups.forEach((group) => {
     group.addEventListener('toggle', () => {
@@ -27,7 +44,13 @@ adminNavGroups.forEach((group) => {
         adminNavGroups
             .filter((candidate) => candidate !== group)
             .forEach((candidate) => candidate.removeAttribute('open'));
+
+        window.requestAnimationFrame(() => positionAdminFlyout(group));
     });
+});
+
+window.addEventListener('resize', () => {
+    adminNavGroups.forEach(positionAdminFlyout);
 });
 
 document.addEventListener('click', (event) => {

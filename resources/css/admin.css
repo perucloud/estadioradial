@@ -432,13 +432,25 @@ select {
     font-size: .58rem;
 }
 
-.admin-nav-flyout--long {
+.admin-nav-flyout--long,
+.admin-nav-flyout--columns {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 480px;
 }
 
-.admin-nav-flyout--long > strong {
+.admin-nav-flyout--long > strong,
+.admin-nav-flyout--columns > strong {
     grid-column: 1 / -1;
+}
+
+.admin-nav-group.opens-upward .admin-nav-flyout {
+    top: auto;
+    bottom: -8px;
+}
+
+.admin-nav-group.opens-upward .admin-nav-flyout::before {
+    top: auto;
+    bottom: 18px;
 }
 
 .admin-workspace {
