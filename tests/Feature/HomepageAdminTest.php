@@ -161,25 +161,26 @@ class HomepageAdminTest extends TestCase
             ->assertSee('data-slider-interval="9000"', false);
     }
 
-    public function test_a_recent_publication_appears_first_in_latest_news_despite_seed_priorities(): void
+    public function test_a_recent_publication_appears_first_in_the_automatic_hero_regardless_of_category_priority(): void
     {
         $category = Category::query()->where('slug', 'politica')->firstOrFail();
+        $category->update(['relevance_weight' => 1]);
         $post = Post::query()->create([
             'category_id' => $category->id,
             'title' => 'César Astudillo jura como nuevo ministro del Interior del gobierno de Keiko Fujimori',
             'slug' => 'cesar-astudillo-nuevo-ministro-interior',
             'excerpt' => 'El nuevo titular del Interior juró el cargo durante una ceremonia oficial.',
-            'body' => '<p>La publicación reciente debe aparecer en la sección de últimas noticias.</p>',
+            'body' => '<p>La publicación reciente debe ocupar la posición principal del hero.</p>',
             'status' => 'published',
             'is_featured' => false,
-            'editorial_priority' => 50,
+            'editorial_priority' => 0,
             'is_homepage_hidden' => false,
             'published_at' => now(),
         ]);
 
         $response = $this->get(route('home'))->assertOk();
 
-        $this->assertSame($post->id, $response->viewData('latestPosts')->first()->id);
+        $this->assertSame($post->id, $response->viewData('featuredPosts')->first()->id);
         $response->assertSee($post->title);
     }
 }

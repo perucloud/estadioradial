@@ -34,8 +34,8 @@ class HomeController extends Controller
             ->with(['category', 'tags', 'media'])
             ->published()
             ->visibleOnHome()
-            ->orderByDesc('is_featured')
-            ->editorialOrder();
+            ->latest('published_at')
+            ->latest('id');
 
         $manualPostIds = collect($heroSettings['post_ids'] ?? [])
             ->filter(fn ($id) => is_numeric($id))

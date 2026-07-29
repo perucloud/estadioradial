@@ -36,7 +36,7 @@
                     </label>
                     <label>Selección editorial
                         <select name="hero[selection_mode]">
-                            <option value="automatic" @selected($hero['selection_mode'] === 'automatic')>Automática por prioridad</option>
+                            <option value="automatic" @selected($hero['selection_mode'] === 'automatic')>Automática por últimas publicaciones</option>
                             <option value="manual" @selected($hero['selection_mode'] === 'manual')>Selección manual</option>
                         </select>
                     </label>
