@@ -230,3 +230,75 @@ document.querySelectorAll('[data-post-location]').forEach((panel) => {
     badgeCustom?.addEventListener('input', updateBadgePreview);
     synchronize();
 });
+
+document.querySelectorAll('[data-regional-location]').forEach((panel) => {
+    const levels = ['region', 'province', 'district'];
+    const selects = levels.map((level) => panel.querySelector(`[data-regional-location-level="${level}"]`));
+    const summary = panel.querySelector('[data-regional-location-summary]');
+    const optionsUrl = panel.dataset.locationOptionsUrl;
+    let requestController;
+
+    if (selects.some((select) => !select)) return;
+
+    const updateSummary = () => {
+        const labels = selects
+            .map((select) => select.selectedOptions[0])
+            .filter((option) => option?.value)
+            .map((option) => option.textContent.trim());
+
+        if (summary) summary.textContent = labels.length ? labels.join(' → ') : 'Todas las regiones';
+    };
+
+    const synchronize = () => {
+        selects[1].disabled = selects[0].value === '';
+        selects[2].disabled = selects[1].value === '';
+        updateSummary();
+    };
+
+    selects.forEach((select, index) => {
+        select.addEventListener('change', async () => {
+            selects.slice(index + 1).forEach((child) => {
+                child.replaceChildren(child.options[0]);
+                child.disabled = true;
+            });
+
+            const child = selects[index + 1];
+            if (!child || select.value === '' || !optionsUrl) {
+                synchronize();
+                return;
+            }
+
+            requestController?.abort();
+            requestController = new AbortController();
+            child.setAttribute('aria-busy', 'true');
+
+            try {
+                const url = new URL(optionsUrl, window.location.origin);
+                url.searchParams.set('type', levels[index + 1]);
+                url.searchParams.set('parent_id', select.value);
+                const response = await fetch(url, {
+                    headers: { Accept: 'application/json' },
+                    signal: requestController.signal,
+                });
+
+                if (!response.ok) throw new Error('No se pudieron cargar las ubicaciones.');
+                const payload = await response.json();
+
+                payload.data.forEach((location) => {
+                    child.add(new Option(location.name, location.id));
+                });
+                child.disabled = false;
+            } catch (error) {
+                if (error.name !== 'AbortError' && summary) {
+                    summary.textContent = 'No se pudieron cargar las ubicaciones';
+                }
+            } finally {
+                child.removeAttribute('aria-busy');
+            }
+
+            synchronize();
+        });
+    });
+
+    synchronize();
+});

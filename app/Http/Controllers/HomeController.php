@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Advertisement;
+use App\Models\Location;
 use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Models\Program;
 use App\Models\Schedule;
 use App\Models\Stream;
 use App\Support\HomeHeroConfig;
+use App\Support\HomeRegionalConfig;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -79,15 +81,54 @@ class HomeController extends Controller
                 ->get();
         }
 
-        $regionalPosts = Post::query()
+        $storedRegionalSettings = PortalSetting::value('home.regional_news', []);
+        $regionalSettings = HomeRegionalConfig::merge(
+            is_array($storedRegionalSettings) ? $storedRegionalSettings : [],
+        );
+        $regionalCategoryIds = collect($regionalSettings['category_ids'] ?? [])
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $regionalLocationId = collect(['district_id', 'province_id', 'region_id'])
+            ->map(fn (string $key) => $regionalSettings[$key] ?? null)
+            ->first(fn ($id) => is_numeric($id));
+        $regionalLocation = $regionalLocationId
+            ? Location::query()->active()->find((int) $regionalLocationId)
+            : null;
+        $regionalQuery = Post::query()
             ->with(['category', 'location.parent.parent.parent', 'tags', 'media'])
             ->published()
             ->visibleOnHome()
             ->regional()
-            ->latest('published_at')
-            ->latest('id')
-            ->take(5)
-            ->get();
+            ->when(
+                $regionalSettings['category_mode'] === 'selected' && $regionalCategoryIds->isNotEmpty(),
+                fn ($query) => $query->whereIn('category_id', $regionalCategoryIds)
+            )
+            ->when(
+                $regionalLocation,
+                fn ($query) => $query->whereIn('location_id', $regionalLocation->subtreeIds())
+            )
+            ->when(
+                $regionalSettings['sort_order'] === 'oldest',
+                fn ($query) => $query->oldest('published_at')->oldest('id'),
+                fn ($query) => $query->latest('published_at')->latest('id'),
+            );
+        $regionalPaginator = null;
+
+        if ($regionalSettings['enabled'] && $regionalSettings['pagination_enabled']) {
+            $regionalPaginator = $regionalQuery
+                ->paginate((int) $regionalSettings['per_page'], ['*'], 'regional_page')
+                ->withQueryString()
+                ->fragment('noticias-regionales');
+            $regionalPosts = $regionalPaginator->getCollection();
+        } elseif ($regionalSettings['enabled']) {
+            $regionalPosts = $regionalQuery
+                ->take((int) $regionalSettings['per_page'])
+                ->get();
+        } else {
+            $regionalPosts = collect();
+        }
 
         $nationalDefaults = [
             'enabled' => true,
@@ -172,6 +213,8 @@ class HomeController extends Controller
             'featuredPosts' => $featuredPosts,
             'heroSettings' => $heroSettings,
             'regionalPosts' => $regionalPosts,
+            'regionalSettings' => $regionalSettings,
+            'regionalPaginator' => $regionalPaginator,
             'nationalPosts' => $nationalPosts,
             'nationalSettings' => $nationalSettings,
             'mostViewedPosts' => $mostViewedPosts,

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Location;
 use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Models\Role;
@@ -52,6 +53,8 @@ class HomepageAdminTest extends TestCase
             ->assertSee('Cinematográfico')
             ->assertSee('Orden de publicación')
             ->assertSee('Más recientes primero')
+            ->assertSee('Regionales')
+            ->assertSee('data-regional-location', false)
             ->assertDontSee('data-appearance-tab="editorial"', false);
     }
 
@@ -212,6 +215,10 @@ class HomepageAdminTest extends TestCase
         $posts = Post::query()->published()->take(4)->get();
         $manualOrder = $posts->pluck('id')->reverse()->values();
         $configuredPost = $posts->first();
+        $category = Category::query()->where('slug', 'politica')->firstOrFail();
+        $region = Location::query()->where('type', 'region')->where('slug', 'puno')->firstOrFail();
+        $province = Location::query()->where('type', 'province')->where('slug', 'san-roman')->firstOrFail();
+        $district = Location::query()->where('type', 'district')->where('slug', 'juliaca')->firstOrFail();
         $heroPosts = $manualOrder->mapWithKeys(fn (int $id, int $index) => [
             $id => ['selected' => 1, 'order' => $index + 1],
         ])->all();
@@ -238,6 +245,20 @@ class HomepageAdminTest extends TestCase
                     'enabled' => 1,
                     'news_limit' => 4,
                 ],
+                'regional' => [
+                    'enabled' => 1,
+                    'category_mode' => 'selected',
+                    'category_ids' => [$category->id],
+                    'sort_order' => 'oldest',
+                    'pagination_enabled' => 1,
+                    'show_page_numbers' => 1,
+                    'per_page' => 6,
+                    'region_id' => $region->id,
+                    'province_id' => $province->id,
+                    'district_id' => $district->id,
+                    'highlight_province' => 1,
+                    'highlight_district' => 1,
+                ],
                 'posts' => [
                     $configuredPost->id => [
                         'editorial_priority' => 777,
@@ -251,6 +272,7 @@ class HomepageAdminTest extends TestCase
         $hero = PortalSetting::value('home.hero_rotator');
         $slider = PortalSetting::value('home.most_viewed_slider');
         $national = PortalSetting::value('home.national_news');
+        $regional = PortalSetting::value('home.regional_news');
 
         $this->assertSame(12000, $hero['interval']);
         $this->assertSame('fade', $hero['effect']);
@@ -260,6 +282,12 @@ class HomepageAdminTest extends TestCase
         $this->assertSame(6, $slider['news_limit']);
         $this->assertTrue($national['enabled']);
         $this->assertSame(4, $national['news_limit']);
+        $this->assertSame([$category->id], $regional['category_ids']);
+        $this->assertSame('oldest', $regional['sort_order']);
+        $this->assertSame($district->id, $regional['district_id']);
+        $this->assertTrue($regional['pagination_enabled']);
+        $this->assertTrue($regional['highlight_province']);
+        $this->assertTrue($regional['highlight_district']);
         $this->assertSame(777, $configuredPost->refresh()->editorial_priority);
 
         $response = $this->get(route('home'))->assertOk();

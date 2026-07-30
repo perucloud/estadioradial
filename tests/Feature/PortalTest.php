@@ -238,6 +238,70 @@ class PortalTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_regional_module_applies_categories_territory_order_pagination_and_badges(): void
+    {
+        $category = Category::query()->create([
+            'name' => 'Agenda territorial',
+            'slug' => 'agenda-territorial',
+            'color' => '#315f8a',
+        ]);
+        $region = Location::query()->where('type', 'region')->where('slug', 'puno')->firstOrFail();
+        $province = Location::query()->where('type', 'province')->where('slug', 'san-roman')->firstOrFail();
+        $district = Location::query()->where('type', 'district')->where('slug', 'juliaca')->firstOrFail();
+
+        $posts = collect([
+            ['Primera noticia territorial', 'primera-noticia-territorial', now()->subMinutes(3)],
+            ['Segunda noticia territorial', 'segunda-noticia-territorial', now()->subMinutes(2)],
+            ['Tercera noticia territorial', 'tercera-noticia-territorial', now()->subMinute()],
+        ])->map(fn (array $item) => Post::query()->create([
+            'category_id' => $category->id,
+            'location_id' => $district->id,
+            'title' => $item[0],
+            'slug' => $item[1],
+            'excerpt' => 'Contenido territorial para comprobar la portada regional.',
+            'body' => '<p>Contenido regional de prueba.</p>',
+            'image' => '/images/demo/news-government.svg',
+            'status' => 'published',
+            'published_at' => $item[2],
+        ]));
+
+        PortalSetting::put('home.regional_news', [
+            'enabled' => true,
+            'category_mode' => 'selected',
+            'category_ids' => [$category->id],
+            'sort_order' => 'latest',
+            'pagination_enabled' => true,
+            'show_page_numbers' => true,
+            'per_page' => 2,
+            'region_id' => $region->id,
+            'province_id' => $province->id,
+            'district_id' => $district->id,
+            'highlight_province' => true,
+            'highlight_district' => true,
+        ], 'home');
+
+        $firstPage = $this->get(route('home'))->assertOk();
+        $regionalPosts = $firstPage->viewData('regionalPosts');
+
+        $this->assertSame(
+            [$posts[2]->id, $posts[1]->id],
+            $regionalPosts->pluck('id')->all(),
+        );
+        $firstPage
+            ->assertSee('regional-pagination', false)
+            ->assertSee('regional-location-badge--province', false)
+            ->assertSee('regional-location-badge--district', false)
+            ->assertSee('San Roman')
+            ->assertSee('Juliaca')
+            ->assertSee('regional_page=2', false);
+
+        $secondPage = $this->get(route('home', ['regional_page' => 2]))->assertOk();
+
+        $this->assertTrue(
+            $secondPage->viewData('regionalPosts')->contains('id', $posts[0]->id),
+        );
+    }
+
     public function test_article_displays_its_geographic_trail(): void
     {
         $post = Post::query()

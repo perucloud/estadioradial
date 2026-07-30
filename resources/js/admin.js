@@ -345,6 +345,10 @@ document.querySelectorAll('[data-homepage-settings]').forEach((form) => {
     const effectSelect = form.querySelector('[name="hero[effect]"]');
     const parallaxPointer = form.querySelector('[data-parallax-pointer]');
     const intervalInput = form.querySelector('[data-interval-seconds]');
+    const regionalCategoryMode = form.querySelector('[data-regional-category-mode]');
+    const regionalCategorySelector = form.querySelector('[data-regional-category-selector]');
+    const regionalPagination = form.querySelector('[data-regional-pagination]');
+    const regionalPageNumbers = form.querySelector('[data-regional-page-numbers]');
     const presets = JSON.parse(form.dataset.heroPresets || '{}');
     let applyingPreset = false;
 
@@ -395,6 +399,22 @@ document.querySelectorAll('[data-homepage-settings]').forEach((form) => {
         if (parallaxPointer) {
             parallaxPointer.hidden = !usesParallax;
         }
+
+        if (regionalCategorySelector) {
+            const regionalCategoriesEnabled = regionalCategoryMode?.value === 'selected';
+            regionalCategorySelector.hidden = !regionalCategoriesEnabled;
+            regionalCategorySelector.querySelectorAll('input').forEach((input) => {
+                input.disabled = !regionalCategoriesEnabled;
+            });
+        }
+
+        if (regionalPageNumbers) {
+            const paginationEnabled = regionalPagination?.checked ?? false;
+            regionalPageNumbers.classList.toggle('is-disabled', !paginationEnabled);
+            regionalPageNumbers.querySelectorAll('input').forEach((input) => {
+                input.disabled = !paginationEnabled;
+            });
+        }
     };
 
     const setFieldValue = (name, value) => {
@@ -438,6 +458,8 @@ document.querySelectorAll('[data-homepage-settings]').forEach((form) => {
     };
 
     presetSelect?.addEventListener('change', applyPreset);
+    regionalCategoryMode?.addEventListener('change', setVisibility);
+    regionalPagination?.addEventListener('change', setVisibility);
     form.querySelectorAll('[data-hero-setting]').forEach((field) => {
         field.addEventListener('change', () => {
             markCustom();

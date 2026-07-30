@@ -109,8 +109,10 @@
         </div>
     </section>
 
-    <section class="section latest-news" aria-labelledby="regional-news-title">
+    <section class="section latest-news" aria-label="Noticias de portada">
         <div class="container">
+            @if ($regionalSettings['enabled'])
+            <div id="noticias-regionales">
             <div class="section-heading">
                 <div>
                     <span class="eyebrow">Información de nuestra región</span>
@@ -123,7 +125,9 @@
             </div>
 
             @if ($regionalPosts->isNotEmpty())
-                @php($regionalLead = $regionalPosts->first())
+                @php
+                    $regionalLead = $regionalPosts->first();
+                @endphp
 
                 <div class="latest-layout">
                     <article class="latest-lead">
@@ -138,7 +142,7 @@
                                     style="--category-color: {{ $regionalLead->category->color }}"
                                     href="{{ route('posts.category', $regionalLead->category) }}"
                                 >{{ $regionalLead->category->name }}</a>
-                                <x-editorial-territory-badge :post="$regionalLead" variant="compact" />
+                                <x-regional-location-badges :post="$regionalLead" :settings="$regionalSettings" />
                             </div>
                             <a class="location-link" href="{{ $regionalLead->location->publicUrl() }}">
                                 <span aria-hidden="true">⌖</span> {{ $regionalLead->location->name }}
@@ -159,7 +163,7 @@
                     </article>
 
                     <div class="latest-secondary" aria-label="Noticias secundarias">
-                        @foreach ($regionalPosts->skip(1)->take(4) as $post)
+                        @foreach ($regionalPosts->skip(1) as $post)
                             <article class="secondary-story">
                                 <a class="secondary-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
                                     <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}" loading="lazy">
@@ -171,7 +175,7 @@
                                             style="--category-color: {{ $post->category->color }}"
                                             href="{{ route('posts.category', $post->category) }}"
                                         >{{ $post->category->name }}</a>
-                                        <x-editorial-territory-badge :post="$post" variant="compact" />
+                                        <x-regional-location-badges :post="$post" :settings="$regionalSettings" />
                                     </div>
                                     <a class="location-link" href="{{ $post->location->publicUrl() }}">
                                         <span aria-hidden="true">⌖</span> {{ $post->location->name }}
@@ -194,6 +198,40 @@
                         @endforeach
                     </div>
                 </div>
+
+                @if ($regionalPaginator && $regionalPaginator->hasPages())
+                    @php
+                        $pageStart = max(1, $regionalPaginator->currentPage() - 2);
+                        $pageEnd = min($regionalPaginator->lastPage(), $regionalPaginator->currentPage() + 2);
+                    @endphp
+                    <nav class="regional-pagination" aria-label="Paginación de noticias regionales">
+                        @if ($regionalPaginator->onFirstPage())
+                            <span class="regional-pagination__control is-disabled" aria-disabled="true">← Anterior</span>
+                        @else
+                            <a class="regional-pagination__control" href="{{ $regionalPaginator->previousPageUrl() }}">← Anterior</a>
+                        @endif
+
+                        @if ($regionalSettings['show_page_numbers'])
+                            <span class="regional-pagination__pages">
+                                @foreach ($regionalPaginator->getUrlRange($pageStart, $pageEnd) as $page => $url)
+                                    @if ($page === $regionalPaginator->currentPage())
+                                        <span class="is-active" aria-current="page">{{ $page }}</span>
+                                    @else
+                                        <a href="{{ $url }}" aria-label="Página {{ $page }}">{{ $page }}</a>
+                                    @endif
+                                @endforeach
+                            </span>
+                        @endif
+
+                        @if ($regionalPaginator->hasMorePages())
+                            <a class="regional-pagination__control" href="{{ $regionalPaginator->nextPageUrl() }}">Siguiente →</a>
+                        @else
+                            <span class="regional-pagination__control is-disabled" aria-disabled="true">Siguiente →</span>
+                        @endif
+                    </nav>
+                @endif
+            @endif
+            </div>
             @endif
 
             @if ($nationalSettings['enabled'] && $nationalPosts->isNotEmpty())

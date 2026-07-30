@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Advertisement;
 use App\Models\PortalSetting;
 use App\Support\HomeHeroConfig;
+use App\Support\HomeRegionalConfig;
 use Illuminate\Database\Seeder;
 
 class AppearanceSeeder extends Seeder
@@ -86,6 +87,15 @@ class AppearanceSeeder extends Seeder
                     'news_limit' => 8,
                     'period_days' => 30,
                 ],
+                'is_public' => true,
+            ],
+        );
+
+        PortalSetting::query()->firstOrCreate(
+            ['key' => 'home.regional_news'],
+            [
+                'group' => 'home',
+                'value' => HomeRegionalConfig::defaults(),
                 'is_public' => true,
             ],
         );

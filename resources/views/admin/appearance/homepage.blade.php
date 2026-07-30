@@ -7,7 +7,10 @@
 @php
     $selectedCategoryIds = collect(old('hero.category_ids', $hero['category_ids'] ?? []))
         ->map(fn ($id) => (int) $id);
+    $regionalCategoryIds = collect(old('regional.category_ids', $regional['category_ids'] ?? []))
+        ->map(fn ($id) => (int) $id);
     $heroValues = array_replace($hero, old('hero', []));
+    $regionalValues = array_replace($regional, old('regional', []));
 @endphp
 
 @section('content')
@@ -30,6 +33,9 @@
             </button>
             <button type="button" role="tab" aria-selected="false" data-appearance-tab="national">
                 <span>03</span> Noticias nacionales
+            </button>
+            <button type="button" role="tab" aria-selected="false" data-appearance-tab="regional">
+                <span>04</span> Regionales
             </button>
         </nav>
 
@@ -280,6 +286,161 @@
                     <input type="number" name="national[news_limit]" value="{{ $national['news_limit'] }}" min="2" max="5" required>
                 </label>
                 <p class="panel-note">Muestra las publicaciones más recientes de todas las categorías editoriales.</p>
+            </div>
+        </section>
+
+        <section class="appearance-tab-panel" role="tabpanel" data-appearance-panel="regional" hidden>
+            <div class="panel regional-settings-panel form-stack">
+                <div class="panel__header">
+                    <div>
+                        <span class="eyebrow">Información de nuestra región</span>
+                        <h2>Noticias Regionales</h2>
+                        <p class="panel-note">Controla el contenido, alcance territorial y paginación del módulo público.</p>
+                    </div>
+                    <label class="setting-switch setting-switch--compact">
+                        <input type="hidden" name="regional[enabled]" value="0">
+                        <input type="checkbox" name="regional[enabled]" value="1" @checked($regionalValues['enabled'])>
+                        <span aria-hidden="true"></span>
+                        <strong>Mostrar sección</strong>
+                    </label>
+                </div>
+
+                <div class="hero-settings-section">
+                    <div class="hero-settings-section__heading">
+                        <span>Contenido editorial</span>
+                        <small>Selecciona las categorías y el orden de aparición.</small>
+                    </div>
+                    <div class="form-grid">
+                        <label>Categorías
+                            <select name="regional[category_mode]" data-regional-category-mode>
+                                <option value="all" @selected($regionalValues['category_mode'] === 'all')>Todas las categorías</option>
+                                <option value="selected" @selected($regionalValues['category_mode'] === 'selected')>Categorías seleccionadas</option>
+                            </select>
+                        </label>
+                        <label>Orden de publicación
+                            <select name="regional[sort_order]">
+                                <option value="latest" @selected($regionalValues['sort_order'] === 'latest')>Más recientes primero</option>
+                                <option value="oldest" @selected($regionalValues['sort_order'] === 'oldest')>Más antiguas primero</option>
+                            </select>
+                            <small>Ordena utilizando la fecha real de publicación.</small>
+                        </label>
+                    </div>
+                    <div class="category-multiselect" data-regional-category-selector>
+                        @foreach ($categories as $category)
+                            <label style="--category-color: {{ $category->color }}">
+                                <input
+                                    type="checkbox"
+                                    name="regional[category_ids][]"
+                                    value="{{ $category->id }}"
+                                    @checked($regionalCategoryIds->contains($category->id))
+                                >
+                                <span>{{ $category->name }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div
+                    class="hero-settings-section regional-location-settings"
+                    data-regional-location
+                    data-location-options-url="{{ $locationOptionsUrl }}"
+                >
+                    <div class="hero-settings-section__heading">
+                        <span>Alcance geográfico</span>
+                        <small>Puedes detener el filtro en región, provincia o distrito.</small>
+                    </div>
+                    <div class="form-grid form-grid--three">
+                        <label>Región
+                            <select name="regional[region_id]" data-regional-location-level="region">
+                                <option value="">Todas las regiones</option>
+                                @foreach ($regionalRegions as $region)
+                                    <option value="{{ $region->id }}" @selected((int) $regionalValues['region_id'] === $region->id)>{{ $region->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>Provincia
+                            <select
+                                name="regional[province_id]"
+                                data-regional-location-level="province"
+                                @disabled(!$regionalValues['region_id'])
+                            >
+                                <option value="">Todas las provincias</option>
+                                @foreach ($regionalProvinces as $province)
+                                    <option value="{{ $province->id }}" @selected((int) $regionalValues['province_id'] === $province->id)>{{ $province->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                        <label>Distrito
+                            <select
+                                name="regional[district_id]"
+                                data-regional-location-level="district"
+                                @disabled(!$regionalValues['province_id'])
+                            >
+                                <option value="">Todos los distritos</option>
+                                @foreach ($regionalDistricts as $district)
+                                    <option value="{{ $district->id }}" @selected((int) $regionalValues['district_id'] === $district->id)>{{ $district->name }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                    </div>
+                    <div class="regional-location-summary">
+                        <span>Filtro actual</span>
+                        <strong data-regional-location-summary>Todas las regiones</strong>
+                    </div>
+                </div>
+
+                <div class="hero-settings-section">
+                    <div class="hero-settings-section__heading">
+                        <span>Paginación</span>
+                        <small>Divide las noticias regionales en páginas dentro del landing.</small>
+                    </div>
+                    <div class="form-grid">
+                        <label>Noticias por página
+                            <input type="number" name="regional[per_page]" value="{{ $regionalValues['per_page'] }}" min="2" max="12" required>
+                            <small>Entre 2 y 12 noticias por página.</small>
+                        </label>
+                    </div>
+                    <div class="advanced-switches">
+                        <label class="setting-switch">
+                            <input type="hidden" name="regional[pagination_enabled]" value="0">
+                            <input type="checkbox" name="regional[pagination_enabled]" value="1" @checked($regionalValues['pagination_enabled']) data-regional-pagination>
+                            <span aria-hidden="true"></span>
+                            <strong>Activar paginación</strong>
+                        </label>
+                        <label class="setting-switch" data-regional-page-numbers>
+                            <input type="hidden" name="regional[show_page_numbers]" value="0">
+                            <input type="checkbox" name="regional[show_page_numbers]" value="1" @checked($regionalValues['show_page_numbers'])>
+                            <span aria-hidden="true"></span>
+                            <strong>Mostrar números de página</strong>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="hero-settings-section">
+                    <div class="hero-settings-section__heading">
+                        <span>Badges territoriales</span>
+                        <small>Destaca visualmente la procedencia de cada publicación.</small>
+                    </div>
+                    <div class="advanced-switches">
+                        <label class="setting-switch">
+                            <input type="hidden" name="regional[highlight_province]" value="0">
+                            <input type="checkbox" name="regional[highlight_province]" value="1" @checked($regionalValues['highlight_province'])>
+                            <span aria-hidden="true"></span>
+                            <strong>Resaltar provincia</strong>
+                        </label>
+                        <label class="setting-switch">
+                            <input type="hidden" name="regional[highlight_district]" value="0">
+                            <input type="checkbox" name="regional[highlight_district]" value="1" @checked($regionalValues['highlight_district'])>
+                            <span aria-hidden="true"></span>
+                            <strong>Resaltar distrito</strong>
+                        </label>
+                    </div>
+                    <div class="regional-badge-preview" aria-label="Vista previa de badges">
+                        <span class="regional-badge-preview__province"><i>P</i> San Román</span>
+                        <span class="regional-badge-preview__district"><i>D</i> Juliaca</span>
+                        <small>Vista previa referencial</small>
+                    </div>
+                </div>
             </div>
         </section>
 

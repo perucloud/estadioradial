@@ -1247,6 +1247,110 @@ a {
     font-size: .56rem;
 }
 
+.regional-location-badges {
+    display: inline-flex;
+    min-width: 0;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 5px;
+}
+
+.regional-location-badge {
+    display: inline-flex;
+    min-height: 24px;
+    padding: 4px 8px 4px 5px;
+    align-items: center;
+    gap: 5px;
+    color: #fff;
+    border-radius: 999px;
+    box-shadow: 0 4px 10px rgb(15 24 38 / 14%);
+    font-size: .58rem;
+    font-weight: 850;
+    letter-spacing: .035em;
+    line-height: 1;
+    text-transform: uppercase;
+    transition: box-shadow .2s ease, transform .2s ease;
+}
+
+.regional-location-badge > span {
+    display: grid;
+    width: 16px;
+    height: 16px;
+    color: currentColor;
+    background: rgb(255 255 255 / 18%);
+    border-radius: 50%;
+    place-items: center;
+    font-size: .5rem;
+}
+
+.regional-location-badge--province {
+    background: linear-gradient(135deg, #1769d2, #24428c);
+}
+
+.regional-location-badge--district {
+    background: linear-gradient(135deg, #e76d16, #b42d13);
+}
+
+.regional-location-badge:hover,
+.regional-location-badge:focus-visible {
+    color: #fff;
+    box-shadow: 0 7px 15px rgb(15 24 38 / 22%);
+    transform: translateY(-1px);
+}
+
+.regional-pagination {
+    display: flex;
+    margin-top: 22px;
+    padding: 14px;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: #f7f8fa;
+    border: 1px solid #e2e4e8;
+    border-radius: 12px;
+}
+
+.regional-pagination__control,
+.regional-pagination__pages > a,
+.regional-pagination__pages > span {
+    display: inline-grid;
+    min-width: 38px;
+    min-height: 38px;
+    padding: 8px 11px;
+    color: #252a31;
+    background: #fff;
+    border: 1px solid #d9dde3;
+    border-radius: 9px;
+    place-items: center;
+    font-size: .75rem;
+    font-weight: 800;
+    transition: color .2s ease, background .2s ease, border .2s ease, transform .2s ease;
+}
+
+.regional-pagination__control {
+    min-width: 100px;
+}
+
+.regional-pagination__pages {
+    display: flex;
+    gap: 7px;
+}
+
+.regional-pagination a:hover,
+.regional-pagination a:focus-visible,
+.regional-pagination__pages .is-active {
+    color: #fff;
+    background: var(--red);
+    border-color: var(--red);
+    transform: translateY(-1px);
+}
+
+.regional-pagination .is-disabled {
+    color: #969ca6;
+    background: #eef0f3;
+    cursor: not-allowed;
+}
+
 .article__kicker .territory-badge {
     margin-left: 7px;
 }
@@ -3159,6 +3263,23 @@ a.sidebar-ad:hover img {
 }
 
 @media (max-width: 560px) {
+    .regional-pagination {
+        padding: 10px;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .regional-pagination__control {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .regional-pagination__pages {
+        width: 100%;
+        order: -1;
+        justify-content: center;
+    }
+
     .hero-story {
         grid-template-columns: 1fr;
     }

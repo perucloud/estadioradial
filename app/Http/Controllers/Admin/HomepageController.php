@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Category;
+use App\Models\Location;
 use App\Models\PortalSetting;
 use App\Models\Post;
+use App\Support\DefaultLocationSettings;
 use App\Support\HomeHeroConfig;
+use App\Support\HomeRegionalConfig;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +24,30 @@ class HomepageController extends Controller
         $storedHero = PortalSetting::value('home.hero_rotator', []);
         $storedSlider = PortalSetting::value('home.most_viewed_slider', []);
         $storedNational = PortalSetting::value('home.national_news', []);
+        $storedRegional = PortalSetting::value('home.regional_news', []);
+        $regional = HomeRegionalConfig::merge(is_array($storedRegional) ? $storedRegional : []);
+        $countryId = app(DefaultLocationSettings::class)->selection()['country'] ?? null;
+        $regions = Location::query()
+            ->active()
+            ->where('type', 'region')
+            ->when($countryId, fn ($query) => $query->where('parent_id', $countryId))
+            ->orderBy('display_order')
+            ->orderBy('name')
+            ->get(['id', 'parent_id', 'name']);
+        $provinces = Location::query()
+            ->active()
+            ->where('type', 'province')
+            ->when($regional['region_id'], fn ($query, $regionId) => $query->where('parent_id', $regionId), fn ($query) => $query->whereRaw('1 = 0'))
+            ->orderBy('display_order')
+            ->orderBy('name')
+            ->get(['id', 'parent_id', 'name']);
+        $districts = Location::query()
+            ->active()
+            ->where('type', 'district')
+            ->when($regional['province_id'], fn ($query, $provinceId) => $query->where('parent_id', $provinceId), fn ($query) => $query->whereRaw('1 = 0'))
+            ->orderBy('display_order')
+            ->orderBy('name')
+            ->get(['id', 'parent_id', 'name']);
 
         return view('admin.appearance.homepage', [
             'hero' => HomeHeroConfig::merge(is_array($storedHero) ? $storedHero : []),
@@ -35,6 +62,11 @@ class HomepageController extends Controller
                 $this->nationalDefaults(),
                 is_array($storedNational) ? $storedNational : [],
             ),
+            'regional' => $regional,
+            'regionalRegions' => $regions,
+            'regionalProvinces' => $provinces,
+            'regionalDistricts' => $districts,
+            'locationOptionsUrl' => route('admin.locations.options'),
         ]);
     }
 
@@ -42,6 +74,8 @@ class HomepageController extends Controller
     {
         $submittedHero = $request->input('hero', []);
         $submittedHero = is_array($submittedHero) ? $submittedHero : [];
+        $submittedRegional = $request->input('regional', []);
+        $submittedRegional = is_array($submittedRegional) ? $submittedRegional : [];
         $request->merge([
             'hero' => array_replace(
                 HomeHeroConfig::defaults(),
@@ -51,7 +85,10 @@ class HomepageController extends Controller
                 ],
                 $submittedHero,
             ),
+            'regional' => array_replace(HomeRegionalConfig::defaults(), $submittedRegional),
         ]);
+
+        $countryId = app(DefaultLocationSettings::class)->selection()['country'] ?? null;
 
         $data = $request->validate([
             'hero.mode' => ['required', Rule::in(['automatic', 'manual'])],
@@ -92,6 +129,41 @@ class HomepageController extends Controller
             'slider.loop' => ['nullable', 'boolean'],
             'national.enabled' => ['nullable', 'boolean'],
             'national.news_limit' => ['required', 'integer', 'min:2', 'max:5'],
+            'regional.enabled' => ['nullable', 'boolean'],
+            'regional.category_mode' => ['required', Rule::in(['all', 'selected'])],
+            'regional.category_ids' => ['exclude_unless:regional.category_mode,selected', 'required', 'array', 'min:1'],
+            'regional.category_ids.*' => ['integer', Rule::exists('categories', 'id')->where('is_active', true)],
+            'regional.sort_order' => ['required', Rule::in(['latest', 'oldest'])],
+            'regional.pagination_enabled' => ['nullable', 'boolean'],
+            'regional.show_page_numbers' => ['nullable', 'boolean'],
+            'regional.per_page' => ['required', 'integer', 'min:2', 'max:12'],
+            'regional.region_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('locations', 'id')->where(fn ($query) => $query
+                    ->where('type', 'region')
+                    ->where('is_active', true)
+                    ->when($countryId, fn ($query) => $query->where('parent_id', $countryId))),
+            ],
+            'regional.province_id' => [
+                'nullable',
+                'required_with:regional.district_id',
+                'integer',
+                Rule::exists('locations', 'id')->where(fn ($query) => $query
+                    ->where('type', 'province')
+                    ->where('is_active', true)
+                    ->where('parent_id', $request->input('regional.region_id'))),
+            ],
+            'regional.district_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('locations', 'id')->where(fn ($query) => $query
+                    ->where('type', 'district')
+                    ->where('is_active', true)
+                    ->where('parent_id', $request->input('regional.province_id'))),
+            ],
+            'regional.highlight_province' => ['nullable', 'boolean'],
+            'regional.highlight_district' => ['nullable', 'boolean'],
             'posts' => ['nullable', 'array'],
             'posts.*.editorial_priority' => ['required', 'integer', 'min:0', 'max:1000'],
             'posts.*.is_featured' => ['nullable', 'boolean'],
@@ -159,6 +231,21 @@ class HomepageController extends Controller
                 'news_limit' => (int) $data['national']['news_limit'],
             ], 'home');
 
+            PortalSetting::put('home.regional_news', [
+                'enabled' => $request->boolean('regional.enabled'),
+                'category_mode' => $data['regional']['category_mode'],
+                'category_ids' => collect($data['regional']['category_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values()->all(),
+                'sort_order' => $data['regional']['sort_order'],
+                'pagination_enabled' => $request->boolean('regional.pagination_enabled'),
+                'show_page_numbers' => $request->boolean('regional.show_page_numbers'),
+                'per_page' => (int) $data['regional']['per_page'],
+                'region_id' => isset($data['regional']['region_id']) ? (int) $data['regional']['region_id'] : null,
+                'province_id' => isset($data['regional']['province_id']) ? (int) $data['regional']['province_id'] : null,
+                'district_id' => isset($data['regional']['district_id']) ? (int) $data['regional']['district_id'] : null,
+                'highlight_province' => $request->boolean('regional.highlight_province'),
+                'highlight_district' => $request->boolean('regional.highlight_district'),
+            ], 'home');
+
             $allowedPostIds = Post::query()
                 ->published()
                 ->whereIn('id', array_keys($data['posts'] ?? []))
@@ -185,6 +272,12 @@ class HomepageController extends Controller
                     'slider_period_days' => (int) $data['slider']['period_days'],
                     'national_news_enabled' => $request->boolean('national.enabled'),
                     'national_news_limit' => (int) $data['national']['news_limit'],
+                    'regional_news' => [
+                        'categories' => $data['regional']['category_ids'] ?? [],
+                        'region_id' => $data['regional']['region_id'] ?? null,
+                        'province_id' => $data['regional']['province_id'] ?? null,
+                        'district_id' => $data['regional']['district_id'] ?? null,
+                    ],
                 ],
                 'ip_hash' => hash('sha256', (string) $request->ip()),
             ]);
