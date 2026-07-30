@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Category;
 use App\Models\PortalSetting;
 use App\Models\Post;
+use App\Support\HomeHeroConfig;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +23,13 @@ class HomepageController extends Controller
         $storedNational = PortalSetting::value('home.national_news', []);
 
         return view('admin.appearance.homepage', [
-            'hero' => array_replace($this->heroDefaults(), is_array($storedHero) ? $storedHero : []),
+            'hero' => HomeHeroConfig::merge(is_array($storedHero) ? $storedHero : []),
+            'heroPresets' => HomeHeroConfig::presets(),
+            'categories' => Category::query()
+                ->where('is_active', true)
+                ->orderBy('display_order')
+                ->orderBy('name')
+                ->get(['id', 'name', 'color']),
             'slider' => array_replace($this->sliderDefaults(), is_array($storedSlider) ? $storedSlider : []),
             'national' => array_replace(
                 $this->nationalDefaults(),
@@ -39,14 +47,47 @@ class HomepageController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
+        $submittedHero = $request->input('hero', []);
+        $submittedHero = is_array($submittedHero) ? $submittedHero : [];
+        $request->merge([
+            'hero' => array_replace(
+                HomeHeroConfig::defaults(),
+                [
+                    'interval_seconds' => 8,
+                    'preset_mode' => array_key_exists('preset_mode', $submittedHero) ? 'elegant' : 'custom',
+                ],
+                $submittedHero,
+            ),
+        ]);
+
         $data = $request->validate([
             'hero.mode' => ['required', Rule::in(['automatic', 'manual'])],
-            'hero.interval_seconds' => ['required', 'integer', 'min:4', 'max:60'],
-            'hero.effect' => ['required', Rule::in(['slide', 'fade', 'parallax'])],
-            'hero.news_limit' => ['required', 'integer', 'min:4', 'max:8'],
+            'hero.interval_seconds' => ['required', 'integer', 'min:3', 'max:20'],
+            'hero.effect' => ['required', Rule::in(HomeHeroConfig::effects())],
+            'hero.quantity_mode' => ['required', Rule::in(['specific', 'all'])],
+            'hero.news_limit' => ['nullable', 'required_if:hero.quantity_mode,specific', 'integer', 'min:1'],
             'hero.selection_mode' => ['required', Rule::in(['automatic', 'manual'])],
+            'hero.category_mode' => ['required', Rule::in(['all', 'selected'])],
+            'hero.category_ids' => ['exclude_unless:hero.category_mode,selected', 'required', 'array', 'min:1'],
+            'hero.category_ids.*' => ['integer', Rule::exists('categories', 'id')->where('is_active', true)],
+            'hero.preset_mode' => ['required', Rule::in(['elegant', 'dynamic', 'cinematic', 'minimal', 'custom'])],
+            'hero.image_animation' => ['required', Rule::in(['none', 'ken-burns', 'zoom-in', 'zoom-out', 'parallax', 'move-horizontal', 'move-vertical'])],
+            'hero.image_intensity' => ['required', Rule::in(['soft', 'medium', 'high', 'soft-slow'])],
+            'hero.content_animation' => ['required', Rule::in(['none', 'fade', 'fade-up', 'fade-down', 'slide-left', 'slide-right', 'zoom', 'blur'])],
+            'hero.transition_duration' => ['required', 'integer', 'min:300', 'max:1500'],
+            'hero.overlay_opacity' => ['required', 'integer', 'min:0', 'max:60'],
             'hero.loop' => ['nullable', 'boolean'],
             'hero.parallax' => ['nullable', 'boolean'],
+            'hero.preload_images' => ['nullable', 'boolean'],
+            'hero.pause_on_hover' => ['nullable', 'boolean'],
+            'hero.swipe' => ['nullable', 'boolean'],
+            'hero.lazy_load' => ['nullable', 'boolean'],
+            'hero.animate_when_visible' => ['nullable', 'boolean'],
+            'hero.show_arrows' => ['nullable', 'boolean'],
+            'hero.show_indicators' => ['nullable', 'boolean'],
+            'hero.pause_when_hidden' => ['nullable', 'boolean'],
+            'hero.reset_after_manual' => ['nullable', 'boolean'],
+            'hero.reduce_motion_mobile' => ['nullable', 'boolean'],
             'hero_posts' => ['nullable', 'array'],
             'hero_posts.*.selected' => ['nullable', 'boolean'],
             'hero_posts.*.order' => ['nullable', 'integer', 'min:1', 'max:100'],
@@ -69,7 +110,10 @@ class HomepageController extends Controller
             ->sortBy(fn (array $item) => (int) ($item['order'] ?? 100))
             ->keys()
             ->map(fn ($id) => (int) $id)
-            ->take((int) $data['hero']['news_limit']);
+            ->when(
+                $data['hero']['quantity_mode'] === 'specific',
+                fn ($posts) => $posts->take((int) $data['hero']['news_limit'])
+            );
         $validPostIds = Post::query()->published()->whereIn('id', $manualPostIds)->pluck('id');
         $manualPostIds = $manualPostIds->filter(fn (int $id) => $validPostIds->contains($id))->values();
 
@@ -79,10 +123,32 @@ class HomepageController extends Controller
                 'interval' => $data['hero']['interval_seconds'] * 1000,
                 'loop' => $request->boolean('hero.loop'),
                 'effect' => $data['hero']['effect'],
-                'parallax' => $request->boolean('hero.parallax'),
-                'news_limit' => $data['hero']['news_limit'],
+                'parallax' => (
+                    $data['hero']['effect'] === 'parallax'
+                    || $data['hero']['image_animation'] === 'parallax'
+                ) && $request->boolean('hero.parallax'),
+                'news_limit' => (int) ($data['hero']['news_limit'] ?? 4),
+                'quantity_mode' => $data['hero']['quantity_mode'],
                 'selection_mode' => $data['hero']['selection_mode'],
                 'post_ids' => $manualPostIds->all(),
+                'category_mode' => $data['hero']['category_mode'],
+                'category_ids' => collect($data['hero']['category_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values()->all(),
+                'preset_mode' => $data['hero']['preset_mode'],
+                'image_animation' => $data['hero']['image_animation'],
+                'image_intensity' => $data['hero']['image_intensity'],
+                'content_animation' => $data['hero']['content_animation'],
+                'transition_duration' => (int) $data['hero']['transition_duration'],
+                'overlay_opacity' => (int) $data['hero']['overlay_opacity'],
+                'preload_images' => $request->boolean('hero.preload_images'),
+                'pause_on_hover' => $request->boolean('hero.pause_on_hover'),
+                'swipe' => $request->boolean('hero.swipe'),
+                'lazy_load' => $request->boolean('hero.lazy_load'),
+                'animate_when_visible' => $request->boolean('hero.animate_when_visible'),
+                'show_arrows' => $request->boolean('hero.show_arrows'),
+                'show_indicators' => $request->boolean('hero.show_indicators'),
+                'pause_when_hidden' => $request->boolean('hero.pause_when_hidden'),
+                'reset_after_manual' => $request->boolean('hero.reset_after_manual'),
+                'reduce_motion_mobile' => $request->boolean('hero.reduce_motion_mobile'),
             ], 'home');
 
             PortalSetting::put('home.most_viewed_slider', [
@@ -119,6 +185,8 @@ class HomepageController extends Controller
                 'properties' => [
                     'hero_selection' => $data['hero']['selection_mode'],
                     'hero_posts' => $manualPostIds->all(),
+                    'hero_preset' => $data['hero']['preset_mode'],
+                    'hero_categories' => $data['hero']['category_ids'] ?? [],
                     'slider_period_days' => (int) $data['slider']['period_days'],
                     'national_news_enabled' => $request->boolean('national.enabled'),
                     'national_news_limit' => (int) $data['national']['news_limit'],
@@ -128,23 +196,6 @@ class HomepageController extends Controller
         });
 
         return back()->with('status', 'Configuración de portada actualizada.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function heroDefaults(): array
-    {
-        return [
-            'mode' => 'automatic',
-            'interval' => 8000,
-            'loop' => true,
-            'effect' => 'parallax',
-            'parallax' => true,
-            'news_limit' => 4,
-            'selection_mode' => 'automatic',
-            'post_ids' => [],
-        ];
     }
 
     /**

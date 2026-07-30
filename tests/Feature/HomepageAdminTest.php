@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\Role;
 use App\Models\Tag;
 use App\Models\User;
+use App\Support\HomeHeroConfig;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -43,7 +44,12 @@ class HomepageAdminTest extends TestCase
             ->get(route('admin.appearance.homepage.edit'))
             ->assertOk()
             ->assertSee('Hero de noticias')
-            ->assertSee('Slider de noticias más vistas');
+            ->assertSee('Slider de noticias más vistas')
+            ->assertSee('data-appearance-tab="hero"', false)
+            ->assertSee('Configuración avanzada')
+            ->assertSee('Todas las noticias disponibles')
+            ->assertSee('Categorías seleccionadas')
+            ->assertSee('Cinematográfico');
     }
 
     public function test_categories_can_be_created_reordered_and_hidden(): void
@@ -283,5 +289,157 @@ class HomepageAdminTest extends TestCase
 
         $this->assertSame($post->id, $response->viewData('featuredPosts')->first()->id);
         $response->assertSee($post->title);
+    }
+
+    public function test_professional_hero_configuration_is_persisted_and_rendered(): void
+    {
+        $category = Category::query()->where('slug', 'politica')->firstOrFail();
+
+        $this->actingAs($this->superadmin)
+            ->put(route('admin.appearance.homepage.update'), [
+                'hero' => [
+                    'mode' => 'automatic',
+                    'interval_seconds' => 10,
+                    'effect' => 'scale-fade',
+                    'quantity_mode' => 'all',
+                    'news_limit' => 4,
+                    'selection_mode' => 'automatic',
+                    'category_mode' => 'selected',
+                    'category_ids' => [$category->id],
+                    'preset_mode' => 'cinematic',
+                    'image_animation' => 'ken-burns',
+                    'image_intensity' => 'soft-slow',
+                    'content_animation' => 'fade-up',
+                    'transition_duration' => 1200,
+                    'overlay_opacity' => 30,
+                    'preload_images' => 1,
+                    'pause_on_hover' => 1,
+                    'swipe' => 1,
+                    'lazy_load' => 1,
+                    'animate_when_visible' => 1,
+                    'show_arrows' => 1,
+                    'show_indicators' => 0,
+                    'loop' => 1,
+                    'pause_when_hidden' => 1,
+                    'reset_after_manual' => 1,
+                    'reduce_motion_mobile' => 1,
+                ],
+                'slider' => [
+                    'mode' => 'automatic',
+                    'interval_seconds' => 6,
+                    'news_limit' => 8,
+                    'period_days' => 30,
+                    'loop' => 1,
+                ],
+                'national' => [
+                    'enabled' => 1,
+                    'news_limit' => 5,
+                ],
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('status');
+
+        $hero = PortalSetting::value('home.hero_rotator');
+
+        $this->assertSame('all', $hero['quantity_mode']);
+        $this->assertSame([$category->id], $hero['category_ids']);
+        $this->assertSame('cinematic', $hero['preset_mode']);
+        $this->assertSame('scale-fade', $hero['effect']);
+        $this->assertSame(1200, $hero['transition_duration']);
+        $this->assertFalse($hero['show_indicators']);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('data-hero-effect="scale-fade"', false)
+            ->assertSee('data-hero-image-animation="ken-burns"', false)
+            ->assertSee('data-hero-transition-duration="1200"', false)
+            ->assertDontSee('data-hero-dot', false);
+    }
+
+    public function test_hero_category_filter_and_all_quantity_are_applied_to_public_homepage(): void
+    {
+        $included = Category::query()->create([
+            'name' => 'Hero exclusivo',
+            'slug' => 'hero-exclusivo',
+            'color' => '#315f8a',
+            'is_active' => true,
+            'show_in_menu' => true,
+            'show_on_home' => true,
+            'display_order' => 900,
+        ]);
+        $excluded = Category::query()->where('id', '!=', $included->id)->firstOrFail();
+
+        foreach ([1, 2, 3] as $index) {
+            Post::query()->create([
+                'category_id' => $included->id,
+                'title' => "Noticia exclusiva {$index}",
+                'slug' => "noticia-exclusiva-{$index}",
+                'excerpt' => 'Resumen editorial.',
+                'body' => '<p>Contenido.</p>',
+                'status' => 'published',
+                'is_homepage_hidden' => false,
+                'published_at' => now()->subMinutes($index),
+            ]);
+        }
+
+        Post::query()->create([
+            'category_id' => $excluded->id,
+            'title' => 'Noticia fuera del filtro',
+            'slug' => 'noticia-fuera-del-filtro',
+            'excerpt' => 'No debe aparecer.',
+            'body' => '<p>Contenido.</p>',
+            'status' => 'published',
+            'is_homepage_hidden' => false,
+            'published_at' => now(),
+        ]);
+
+        PortalSetting::put('home.hero_rotator', array_replace(
+            HomeHeroConfig::defaults(),
+            [
+                'quantity_mode' => 'all',
+                'category_mode' => 'selected',
+                'category_ids' => [$included->id],
+            ],
+        ), 'home');
+
+        $response = $this->get(route('home'))->assertOk();
+        $featuredPosts = $response->viewData('featuredPosts');
+
+        $this->assertCount(3, $featuredPosts);
+        $this->assertTrue($featuredPosts->every(fn (Post $post) => $post->category_id === $included->id));
+    }
+
+    public function test_hero_rejects_zero_as_a_specific_news_quantity(): void
+    {
+        $this->actingAs($this->superadmin)
+            ->from(route('admin.appearance.homepage.edit'))
+            ->put(route('admin.appearance.homepage.update'), [
+                'hero' => [
+                    'mode' => 'automatic',
+                    'interval_seconds' => 8,
+                    'effect' => 'fade',
+                    'quantity_mode' => 'specific',
+                    'news_limit' => 0,
+                    'selection_mode' => 'automatic',
+                    'category_mode' => 'all',
+                    'preset_mode' => 'custom',
+                    'image_animation' => 'none',
+                    'image_intensity' => 'soft',
+                    'content_animation' => 'fade',
+                    'transition_duration' => 800,
+                    'overlay_opacity' => 0,
+                ],
+                'slider' => [
+                    'mode' => 'automatic',
+                    'interval_seconds' => 6,
+                    'news_limit' => 8,
+                    'period_days' => 30,
+                ],
+                'national' => [
+                    'enabled' => 1,
+                    'news_limit' => 5,
+                ],
+            ])
+            ->assertSessionHasErrors('hero.news_limit');
     }
 }

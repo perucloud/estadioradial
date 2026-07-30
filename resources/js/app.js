@@ -50,13 +50,25 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
     const pauseButton = rotator.querySelector('[data-hero-pause]');
     const status = rotator.querySelector('[data-hero-status]');
 
-    if (slides.length < 2 || !previous || !next) return;
+    if (slides.length < 2) return;
 
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const finePointer = window.matchMedia('(pointer: fine)');
     const automaticMode = rotator.dataset.heroMode === 'automatic';
     const shouldLoop = rotator.dataset.heroLoop !== 'false';
     const parallaxEnabled = rotator.dataset.heroParallax !== 'false';
+    const pauseOnHover = rotator.dataset.heroPauseHover !== 'false';
+    const swipeEnabled = rotator.dataset.heroSwipe !== 'false';
+    const preloadEnabled = rotator.dataset.heroPreload !== 'false';
+    const visibleOnly = rotator.dataset.heroVisibleOnly !== 'false';
+    const pauseWhenHidden = rotator.dataset.heroPauseHidden !== 'false';
+    const resetAfterManual = rotator.dataset.heroResetManual !== 'false';
+    const reduceOnMobile = rotator.dataset.heroReduceMobile !== 'false';
+    const transitionDuration = Math.min(1500, Math.max(
+        300,
+        Number.parseInt(rotator.dataset.heroTransitionDuration ?? '', 10) || 800,
+    ));
+    const smallScreen = window.matchMedia('(max-width: 680px)');
     const configuredInterval = Number.parseInt(rotator.dataset.heroInterval ?? '', 10);
     const interval = Number.isFinite(configuredInterval)
         ? Math.max(4000, configuredInterval)
@@ -69,8 +81,8 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
     let pointerStart;
 
     const updateControls = () => {
-        previous.disabled = !shouldLoop && current === 0;
-        next.disabled = !shouldLoop && current === slides.length - 1;
+        if (previous) previous.disabled = !shouldLoop && current === 0;
+        if (next) next.disabled = !shouldLoop && current === slides.length - 1;
 
         dots.forEach((dot, index) => {
             const active = index === current;
@@ -98,8 +110,8 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
         && !reducedMotion.matches
         && !pausedByUser
         && pauseReasons.size === 0
-        && !document.hidden
-        && visible;
+        && (!pauseWhenHidden || !document.hidden)
+        && (!visibleOnly || visible);
 
     const scheduleAutoplay = () => {
         stopAutoplay();
@@ -119,7 +131,15 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
         return Math.min(slides.length - 1, Math.max(0, requested));
     };
 
-    const show = (requested, announce = false) => {
+    const prepareNextImage = () => {
+        if (!preloadEnabled) return;
+        const nextIndex = normaliseIndex(current + 1);
+        slides[nextIndex]?.querySelectorAll('[data-hero-image]').forEach((image) => {
+            image.loading = 'eager';
+        });
+    };
+
+    const show = (requested, announce = false, manual = false) => {
         const target = normaliseIndex(requested);
 
         if (target === current && requested !== current) {
@@ -128,15 +148,28 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
             return;
         }
 
-        slides[current].classList.remove('is-active');
-        slides[current].setAttribute('aria-hidden', 'true');
-        slides[current].inert = true;
+        const outgoing = slides[current];
+        const incoming = slides[target];
+        const backwards = requested < current && !(current === 0 && target === slides.length - 1);
+        const direction = backwards ? 'backward' : 'forward';
+
+        slides.forEach((slide) => slide.classList.remove(
+            'is-entering-forward',
+            'is-entering-backward',
+            'is-leaving-forward',
+            'is-leaving-backward',
+        ));
+        outgoing.classList.add(`is-leaving-${direction}`);
+        incoming.classList.add(`is-entering-${direction}`);
+        outgoing.classList.remove('is-active');
+        outgoing.setAttribute('aria-hidden', 'true');
+        outgoing.inert = true;
 
         current = target;
 
-        slides[current].classList.add('is-active');
-        slides[current].setAttribute('aria-hidden', 'false');
-        slides[current].inert = false;
+        incoming.classList.add('is-active');
+        incoming.setAttribute('aria-hidden', 'false');
+        incoming.inert = false;
         rotator.style.setProperty('--hero-parallax-x', '0px');
         rotator.style.setProperty('--hero-parallax-y', '0px');
 
@@ -145,13 +178,19 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
         }
 
         updateControls();
-        scheduleAutoplay();
+        prepareNextImage();
+        window.setTimeout(() => {
+            outgoing.classList.remove(`is-leaving-${direction}`);
+            incoming.classList.remove(`is-entering-${direction}`);
+        }, transitionDuration + 80);
+
+        if (!manual || resetAfterManual) scheduleAutoplay();
     };
 
-    previous.addEventListener('click', () => show(current - 1, true));
-    next.addEventListener('click', () => show(current + 1, true));
+    previous?.addEventListener('click', () => show(current - 1, true, true));
+    next?.addEventListener('click', () => show(current + 1, true, true));
     dots.forEach((dot) => {
-        dot.addEventListener('click', () => show(Number.parseInt(dot.dataset.heroDot, 10), true));
+        dot.addEventListener('click', () => show(Number.parseInt(dot.dataset.heroDot, 10), true, true));
     });
 
     pauseButton?.addEventListener('click', () => {
@@ -161,11 +200,12 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
     });
 
     rotator.addEventListener('mouseenter', () => {
+        if (!pauseOnHover) return;
         pauseReasons.add('hover');
         stopAutoplay();
     });
     rotator.addEventListener('mouseleave', () => {
-        pauseReasons.delete('hover');
+        if (pauseOnHover) pauseReasons.delete('hover');
         scheduleAutoplay();
         rotator.style.setProperty('--hero-parallax-x', '0px');
         rotator.style.setProperty('--hero-parallax-y', '0px');
@@ -182,25 +222,27 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
     rotator.addEventListener('keydown', (event) => {
         if (event.key === 'ArrowLeft') {
             event.preventDefault();
-            show(current - 1, true);
+            show(current - 1, true, true);
         }
 
         if (event.key === 'ArrowRight') {
             event.preventDefault();
-            show(current + 1, true);
+            show(current + 1, true, true);
         }
     });
     rotator.addEventListener('pointerdown', (event) => {
+        if (!swipeEnabled) return;
         pointerStart = event.clientX;
         pauseReasons.add('pointer');
         stopAutoplay();
     });
     rotator.addEventListener('pointerup', (event) => {
+        if (!swipeEnabled) return;
         if (Number.isFinite(pointerStart)) {
             const distance = event.clientX - pointerStart;
 
             if (Math.abs(distance) > 55) {
-                show(current + (distance < 0 ? 1 : -1), true);
+                show(current + (distance < 0 ? 1 : -1), true, true);
             }
         }
 
@@ -210,6 +252,7 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
     });
     rotator.addEventListener('pointermove', (event) => {
         if (!parallaxEnabled || reducedMotion.matches || !finePointer.matches) return;
+        if (reduceOnMobile && smallScreen.matches) return;
 
         const bounds = rotator.getBoundingClientRect();
         const x = ((event.clientX - bounds.left) / bounds.width) - .5;
@@ -219,13 +262,15 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
         rotator.style.setProperty('--hero-parallax-y', `${y * -7}px`);
     });
 
-    document.addEventListener('visibilitychange', scheduleAutoplay);
+    document.addEventListener('visibilitychange', () => {
+        if (pauseWhenHidden) scheduleAutoplay();
+    });
     reducedMotion.addEventListener('change', () => {
         updateControls();
         scheduleAutoplay();
     });
 
-    if ('IntersectionObserver' in window) {
+    if (visibleOnly && 'IntersectionObserver' in window) {
         const observer = new IntersectionObserver(([entry]) => {
             visible = entry.isIntersecting;
             scheduleAutoplay();
@@ -235,6 +280,7 @@ document.querySelectorAll('[data-hero-rotator]').forEach((rotator) => {
     }
 
     updateControls();
+    prepareNextImage();
     scheduleAutoplay();
 });
 

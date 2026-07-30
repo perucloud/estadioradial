@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Advertisement;
 use App\Models\PortalSetting;
+use App\Support\HomeHeroConfig;
 use Illuminate\Database\Seeder;
 
 class AppearanceSeeder extends Seeder
@@ -69,16 +70,7 @@ class AppearanceSeeder extends Seeder
             ['key' => 'home.hero_rotator'],
             [
                 'group' => 'home',
-                'value' => [
-                    'mode' => 'automatic',
-                    'interval' => 8000,
-                    'loop' => true,
-                    'effect' => 'parallax',
-                    'parallax' => true,
-                    'news_limit' => 4,
-                    'selection_mode' => 'automatic',
-                    'post_ids' => [],
-                ],
+                'value' => HomeHeroConfig::defaults(),
                 'is_public' => true,
             ],
         );

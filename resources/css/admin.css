@@ -3748,6 +3748,282 @@ details.taxonomy-create {
     gap: 20px;
 }
 
+.homepage-settings {
+    --appearance-accent: #ca1726;
+}
+
+.appearance-tabs {
+    display: grid;
+    padding: 6px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    background: #e9ecf1;
+    border: 1px solid #dfe3e9;
+    border-radius: 14px;
+}
+
+.appearance-tabs button {
+    display: flex;
+    min-height: 50px;
+    padding: 10px 14px;
+    color: #626a78;
+    background: transparent;
+    border: 0;
+    border-radius: 10px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    transition: color .2s ease, background .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+.appearance-tabs button span {
+    color: #9aa1ad;
+    font-size: .7rem;
+}
+
+.appearance-tabs button:hover {
+    color: var(--appearance-accent);
+    background: rgb(255 255 255 / 70%);
+}
+
+.appearance-tabs button.is-active {
+    color: #fff;
+    background: var(--appearance-accent);
+    box-shadow: 0 8px 20px rgb(202 23 38 / 22%);
+}
+
+.appearance-tabs button.is-active span {
+    color: rgb(255 255 255 / 72%);
+}
+
+.appearance-tab-panel[hidden] {
+    display: none;
+}
+
+.appearance-tab-panel.is-active {
+    animation: appearance-panel-in .28s ease both;
+}
+
+@keyframes appearance-panel-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.hero-settings-panel {
+    gap: 20px;
+}
+
+.preset-status {
+    padding: 8px 12px;
+    color: #8b1320;
+    background: #fbe9eb;
+    border: 1px solid #f4cdd2;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 850;
+}
+
+.hero-settings-section {
+    display: grid;
+    padding: 20px;
+    gap: 18px;
+    background: #f9fafc;
+    border: 1px solid #e4e7ec;
+    border-radius: 12px;
+}
+
+.hero-settings-section__heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.hero-settings-section__heading span {
+    font-size: .96rem;
+    font-weight: 850;
+}
+
+.hero-settings-section__heading small,
+.homepage-settings label > small {
+    color: #747d8c;
+    font-weight: 500;
+}
+
+.form-grid--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.category-multiselect {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.category-multiselect[hidden] {
+    display: none;
+}
+
+.category-multiselect label {
+    position: relative;
+}
+
+.category-multiselect input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.category-multiselect span {
+    display: block;
+    padding: 9px 13px;
+    color: #4f5764;
+    background: #fff;
+    border: 1px solid #dce0e6;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: color .18s ease, border .18s ease, box-shadow .18s ease;
+}
+
+.category-multiselect input:checked + span {
+    color: var(--category-color, #ca1726);
+    border-color: var(--category-color, #ca1726);
+    box-shadow: inset 0 0 0 1px var(--category-color, #ca1726);
+}
+
+.category-multiselect input:focus-visible + span {
+    outline: 3px solid rgb(22 112 218 / 22%);
+    outline-offset: 2px;
+}
+
+.advanced-settings {
+    overflow: hidden;
+    border: 1px solid #dde2e8;
+    border-radius: 13px;
+}
+
+.advanced-settings > summary {
+    display: flex;
+    padding: 17px 20px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    cursor: pointer;
+    list-style: none;
+    background: #fff;
+}
+
+.advanced-settings > summary::-webkit-details-marker {
+    display: none;
+}
+
+.advanced-settings > summary > span:first-child {
+    display: grid;
+    gap: 3px;
+}
+
+.advanced-settings > summary small {
+    color: #747d8c;
+}
+
+.advanced-settings > summary > span:last-child {
+    color: var(--appearance-accent);
+    font-size: 1.45rem;
+    transition: transform .2s ease;
+}
+
+.advanced-settings[open] > summary > span:last-child {
+    transform: rotate(45deg);
+}
+
+.advanced-settings__body {
+    padding: 20px;
+    background: #f8f9fb;
+    border-top: 1px solid #e3e6eb;
+}
+
+.input-with-unit {
+    position: relative;
+}
+
+.input-with-unit input {
+    padding-right: 54px;
+}
+
+.input-with-unit span {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    color: #7c8491;
+    font-size: .72rem;
+    font-weight: 800;
+    transform: translateY(-50%);
+}
+
+.advanced-switches {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 20px;
+}
+
+.setting-switch {
+    display: grid;
+    min-height: 42px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+}
+
+.setting-switch input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.setting-switch > span {
+    position: relative;
+    width: 40px;
+    height: 23px;
+    background: #c9ced6;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .2s ease;
+}
+
+.setting-switch > span::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 17px;
+    height: 17px;
+    content: "";
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgb(0 0 0 / 18%);
+    transition: transform .2s ease;
+}
+
+.setting-switch input:checked + span {
+    background: var(--appearance-accent);
+}
+
+.setting-switch input:checked + span::after {
+    transform: translateX(17px);
+}
+
+.setting-switch input:focus-visible + span {
+    outline: 3px solid rgb(22 112 218 / 24%);
+    outline-offset: 2px;
+}
+
+.setting-switch strong {
+    font-size: .78rem;
+}
+
 .homepage-post-table input[type="checkbox"] {
     width: 17px;
     height: 17px;
@@ -3787,6 +4063,14 @@ details.taxonomy-create {
 }
 
 @media (max-width: 960px) {
+    .appearance-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .form-grid--three {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .admin-sidebar {
         position: static;
         width: 100%;
@@ -3979,6 +4263,26 @@ details.taxonomy-create {
 }
 
 @media (max-width: 620px) {
+    .appearance-tabs,
+    .form-grid--three,
+    .advanced-switches {
+        grid-template-columns: 1fr;
+    }
+
+    .appearance-tabs button {
+        justify-content: flex-start;
+    }
+
+    .hero-settings-section,
+    .advanced-settings__body {
+        padding: 16px;
+    }
+
+    .hero-settings-section__heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
     .taxonomy-metrics,
     .taxonomy-filters {
         grid-template-columns: 1fr;

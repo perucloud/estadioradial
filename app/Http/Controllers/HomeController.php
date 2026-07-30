@@ -8,33 +8,32 @@ use App\Models\Post;
 use App\Models\Program;
 use App\Models\Schedule;
 use App\Models\Stream;
+use App\Support\HomeHeroConfig;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
     public function __invoke(): View
     {
-        $heroDefaults = [
-            'mode' => 'automatic',
-            'interval' => 8000,
-            'loop' => true,
-            'effect' => 'parallax',
-            'parallax' => true,
-            'news_limit' => 4,
-            'selection_mode' => 'automatic',
-            'post_ids' => [],
-        ];
         $storedHeroSettings = PortalSetting::value('home.hero_rotator', []);
-        $heroSettings = array_replace(
-            $heroDefaults,
+        $heroSettings = HomeHeroConfig::merge(
             is_array($storedHeroSettings) ? $storedHeroSettings : [],
         );
-        $heroNewsLimit = min(8, max(4, (int) $heroSettings['news_limit']));
+        $heroNewsLimit = max(1, (int) $heroSettings['news_limit']);
+        $selectedCategoryIds = collect($heroSettings['category_ids'] ?? [])
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
 
         $featuredQuery = Post::query()
             ->with(['category', 'tags', 'media'])
             ->published()
             ->visibleOnHome()
+            ->when(
+                $heroSettings['category_mode'] === 'selected' && $selectedCategoryIds->isNotEmpty(),
+                fn ($query) => $query->whereIn('category_id', $selectedCategoryIds)
+            )
             ->latest('published_at')
             ->latest('id');
 
@@ -42,7 +41,10 @@ class HomeController extends Controller
             ->filter(fn ($id) => is_numeric($id))
             ->map(fn ($id) => (int) $id)
             ->unique()
-            ->take($heroNewsLimit);
+            ->when(
+                $heroSettings['quantity_mode'] === 'specific',
+                fn ($ids) => $ids->take($heroNewsLimit)
+            );
 
         if ($heroSettings['selection_mode'] === 'manual' && $manualPostIds->isNotEmpty()) {
             $manualPosts = (clone $featuredQuery)
@@ -55,7 +57,7 @@ class HomeController extends Controller
                 ->filter()
                 ->values();
 
-            if ($featuredPosts->count() < $heroNewsLimit) {
+            if ($heroSettings['quantity_mode'] === 'specific' && $featuredPosts->count() < $heroNewsLimit) {
                 $featuredPosts = $featuredPosts
                     ->concat(
                         (clone $featuredQuery)
@@ -66,7 +68,12 @@ class HomeController extends Controller
                     ->values();
             }
         } else {
-            $featuredPosts = $featuredQuery->take($heroNewsLimit)->get();
+            $featuredPosts = $featuredQuery
+                ->when(
+                    $heroSettings['quantity_mode'] === 'specific',
+                    fn ($query) => $query->take($heroNewsLimit)
+                )
+                ->get();
         }
 
         $regionalPosts = Post::query()

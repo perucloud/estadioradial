@@ -1,4 +1,4 @@
-@props(['leadPost', 'secondaryPosts', 'isFirst' => false, 'position'])
+@props(['leadPost', 'secondaryPosts', 'isFirst' => false, 'position', 'settings' => []])
 
 <div
     id="hero-news-slide-{{ $position }}"
@@ -10,7 +10,13 @@
     <div class="hero-grid">
         <article class="lead-story">
             <a class="lead-story__image" href="{{ route('posts.show', [$leadPost->category, $leadPost]) }}">
-                <img src="{{ $leadPost->coverUrl('article') }}" alt="{{ $leadPost->media?->alt_text ?? '' }}">
+                <img
+                    src="{{ $leadPost->coverUrl('article') }}"
+                    alt="{{ $leadPost->media?->alt_text ?? '' }}"
+                    loading="{{ $isFirst || !($settings['lazy_load'] ?? true) ? 'eager' : 'lazy' }}"
+                    @if($isFirst) fetchpriority="high" @endif
+                    data-hero-image
+                >
                 <span
                     class="category-pill"
                     style="--category-color: {{ $leadPost->category->color }}"
@@ -42,7 +48,12 @@
             @foreach ($secondaryPosts as $post)
                 <article class="hero-story {{ $loop->even ? 'hero-story--reversed' : '' }}">
                     <a class="hero-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
-                        <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}">
+                        <img
+                            src="{{ $post->coverUrl('card') }}"
+                            alt="{{ $post->media?->alt_text ?? '' }}"
+                            loading="{{ $isFirst || !($settings['lazy_load'] ?? true) ? 'eager' : 'lazy' }}"
+                            data-hero-image
+                        >
                     </a>
                     <div class="hero-story__body">
                         <div class="story-labels">

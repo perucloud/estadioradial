@@ -331,3 +331,124 @@ document.querySelectorAll('[data-sortable-categories]').forEach((body) => {
         });
     });
 });
+
+document.querySelectorAll('[data-homepage-settings]').forEach((form) => {
+    const tabs = [...form.querySelectorAll('[data-appearance-tab]')];
+    const panels = [...form.querySelectorAll('[data-appearance-panel]')];
+    const presetSelect = form.querySelector('[data-hero-preset]');
+    const presetStatus = form.querySelector('[data-preset-status]');
+    const quantityMode = form.querySelector('[data-quantity-mode]');
+    const newsLimit = form.querySelector('[data-news-limit]');
+    const categoryMode = form.querySelector('[data-category-mode]');
+    const categorySelector = form.querySelector('[data-category-selector]');
+    const imageAnimation = form.querySelector('[data-image-animation]');
+    const effectSelect = form.querySelector('[name="hero[effect]"]');
+    const parallaxPointer = form.querySelector('[data-parallax-pointer]');
+    const intervalInput = form.querySelector('[data-interval-seconds]');
+    const presets = JSON.parse(form.dataset.heroPresets || '{}');
+    let applyingPreset = false;
+
+    const activateTab = (name, focus = false) => {
+        tabs.forEach((tab) => {
+            const active = tab.dataset.appearanceTab === name;
+            tab.classList.toggle('is-active', active);
+            tab.setAttribute('aria-selected', String(active));
+            tab.tabIndex = active ? 0 : -1;
+            if (active && focus) tab.focus();
+        });
+        panels.forEach((panel) => {
+            const active = panel.dataset.appearancePanel === name;
+            panel.hidden = !active;
+            panel.classList.toggle('is-active', active);
+        });
+    };
+
+    tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => activateTab(tab.dataset.appearanceTab));
+        tab.addEventListener('keydown', (event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            event.preventDefault();
+            const target = event.key === 'Home'
+                ? 0
+                : event.key === 'End'
+                    ? tabs.length - 1
+                    : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+            activateTab(tabs[target].dataset.appearanceTab, true);
+        });
+    });
+
+    const setVisibility = () => {
+        const showLimit = quantityMode?.value === 'specific';
+        if (newsLimit) {
+            newsLimit.hidden = !showLimit;
+            newsLimit.querySelector('input').disabled = !showLimit;
+        }
+
+        if (categorySelector) {
+            categorySelector.hidden = categoryMode?.value !== 'selected';
+            categorySelector.querySelectorAll('input').forEach((input) => {
+                input.disabled = categoryMode?.value !== 'selected';
+            });
+        }
+
+        const usesParallax = imageAnimation?.value === 'parallax' || effectSelect?.value === 'parallax';
+        if (parallaxPointer) {
+            parallaxPointer.hidden = !usesParallax;
+        }
+    };
+
+    const setFieldValue = (name, value) => {
+        if (name === 'interval' && intervalInput) {
+            intervalInput.value = Number(value) / 1000;
+            return;
+        }
+
+        const fields = [...form.querySelectorAll(`[name="hero[${name}]"]`)];
+        if (!fields.length) return;
+
+        const checkbox = fields.find((field) => field.type === 'checkbox');
+        if (checkbox) {
+            checkbox.checked = Boolean(value);
+            return;
+        }
+
+        const field = fields.find((item) => item.type !== 'hidden');
+        if (!field) return;
+        field.value = value;
+    };
+
+    const applyPreset = () => {
+        const preset = presets[presetSelect?.value];
+        if (!preset) {
+            if (presetStatus) presetStatus.textContent = 'Configuración personalizada';
+            return;
+        }
+
+        applyingPreset = true;
+        Object.entries(preset).forEach(([name, value]) => setFieldValue(name, value));
+        applyingPreset = false;
+        setVisibility();
+        if (presetStatus) presetStatus.textContent = `Modo ${presetSelect.selectedOptions[0].textContent.split('—')[0].trim()}`;
+    };
+
+    const markCustom = () => {
+        if (applyingPreset || !presetSelect || presetSelect.value === 'custom') return;
+        presetSelect.value = 'custom';
+        if (presetStatus) presetStatus.textContent = 'Configuración modificada manualmente';
+    };
+
+    presetSelect?.addEventListener('change', applyPreset);
+    form.querySelectorAll('[data-hero-setting]').forEach((field) => {
+        field.addEventListener('change', () => {
+            markCustom();
+            setVisibility();
+        });
+        if (field.matches('input[type="number"]')) field.addEventListener('input', markCustom);
+    });
+
+    setVisibility();
+
+    if (form.querySelector('.validation-error, .alert--danger')) {
+        activateTab('hero');
+    }
+});

@@ -18,6 +18,20 @@
                     data-hero-loop="{{ $heroSettings['loop'] ? 'true' : 'false' }}"
                     data-hero-effect="{{ $heroSettings['effect'] }}"
                     data-hero-parallax="{{ $heroSettings['parallax'] ? 'true' : 'false' }}"
+                    data-hero-image-animation="{{ $heroSettings['image_animation'] }}"
+                    data-hero-image-intensity="{{ $heroSettings['image_intensity'] }}"
+                    data-hero-content-animation="{{ $heroSettings['content_animation'] }}"
+                    data-hero-transition-duration="{{ $heroSettings['transition_duration'] }}"
+                    data-hero-overlay-opacity="{{ $heroSettings['overlay_opacity'] }}"
+                    data-hero-pause-hover="{{ $heroSettings['pause_on_hover'] ? 'true' : 'false' }}"
+                    data-hero-swipe="{{ $heroSettings['swipe'] ? 'true' : 'false' }}"
+                    data-hero-lazy="{{ $heroSettings['lazy_load'] ? 'true' : 'false' }}"
+                    data-hero-preload="{{ $heroSettings['preload_images'] ? 'true' : 'false' }}"
+                    data-hero-visible-only="{{ $heroSettings['animate_when_visible'] ? 'true' : 'false' }}"
+                    data-hero-pause-hidden="{{ $heroSettings['pause_when_hidden'] ? 'true' : 'false' }}"
+                    data-hero-reset-manual="{{ $heroSettings['reset_after_manual'] ? 'true' : 'false' }}"
+                    data-hero-reduce-mobile="{{ $heroSettings['reduce_motion_mobile'] ? 'true' : 'false' }}"
+                    style="--hero-transition-duration: {{ $heroSettings['transition_duration'] }}ms; --hero-overlay-opacity: {{ $heroSettings['overlay_opacity'] / 100 }};"
                     aria-label="Noticias principales"
                     aria-roledescription="carrusel"
                 >
@@ -35,27 +49,32 @@
                                 :secondary-posts="$secondaryPosts"
                                 :is-first="$loop->first"
                                 :position="$loop->iteration"
+                                :settings="$heroSettings"
                             />
                         @endforeach
                     </div>
 
                     @if ($featuredPosts->count() > 1)
-                        <button class="hero-rotator__arrow hero-rotator__arrow--previous" type="button" data-hero-prev aria-label="Noticia anterior">←</button>
-                        <button class="hero-rotator__arrow hero-rotator__arrow--next" type="button" data-hero-next aria-label="Noticia siguiente">→</button>
+                        @if ($heroSettings['show_arrows'])
+                            <button class="hero-rotator__arrow hero-rotator__arrow--previous" type="button" data-hero-prev aria-label="Noticia anterior">←</button>
+                            <button class="hero-rotator__arrow hero-rotator__arrow--next" type="button" data-hero-next aria-label="Noticia siguiente">→</button>
+                        @endif
 
                         <div class="hero-rotator__navigation">
-                            <div class="hero-rotator__dots" aria-label="Seleccionar noticia principal">
-                                @foreach ($featuredPosts as $post)
-                                    <button
-                                        type="button"
-                                        class="{{ $loop->first ? 'is-active' : '' }}"
-                                        data-hero-dot="{{ $loop->index }}"
-                                        aria-label="Mostrar noticia {{ $loop->iteration }}"
-                                        aria-controls="hero-news-slide-{{ $loop->iteration }}"
-                                        aria-current="{{ $loop->first ? 'true' : 'false' }}"
-                                    ></button>
-                                @endforeach
-                            </div>
+                            @if ($heroSettings['show_indicators'])
+                                <div class="hero-rotator__dots" aria-label="Seleccionar noticia principal">
+                                    @foreach ($featuredPosts as $post)
+                                        <button
+                                            type="button"
+                                            class="{{ $loop->first ? 'is-active' : '' }}"
+                                            data-hero-dot="{{ $loop->index }}"
+                                            aria-label="Mostrar noticia {{ $loop->iteration }}"
+                                            aria-controls="hero-news-slide-{{ $loop->iteration }}"
+                                            aria-current="{{ $loop->first ? 'true' : 'false' }}"
+                                        ></button>
+                                    @endforeach
+                                </div>
+                            @endif
                             <button class="hero-rotator__pause" type="button" data-hero-pause aria-label="Pausar rotación automática" aria-pressed="false">
                                 <span aria-hidden="true">Ⅱ</span>
                             </button>
