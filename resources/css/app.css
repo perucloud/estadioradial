@@ -1230,6 +1230,12 @@ a {
     align-items: stretch;
 }
 
+.home-news-module {
+    margin-top: 68px;
+    padding-top: 38px;
+    border-top: 1px solid var(--line);
+}
+
 .latest-lead,
 .secondary-story,
 .popular-card {

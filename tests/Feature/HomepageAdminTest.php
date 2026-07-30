@@ -225,6 +225,10 @@ class HomepageAdminTest extends TestCase
                     'period_days' => 0,
                     'loop' => 1,
                 ],
+                'national' => [
+                    'enabled' => 1,
+                    'news_limit' => 4,
+                ],
                 'posts' => [
                     $configuredPost->id => [
                         'editorial_priority' => 777,
@@ -237,6 +241,7 @@ class HomepageAdminTest extends TestCase
 
         $hero = PortalSetting::value('home.hero_rotator');
         $slider = PortalSetting::value('home.most_viewed_slider');
+        $national = PortalSetting::value('home.national_news');
 
         $this->assertSame(12000, $hero['interval']);
         $this->assertSame('fade', $hero['effect']);
@@ -244,6 +249,8 @@ class HomepageAdminTest extends TestCase
         $this->assertSame('manual', $slider['mode']);
         $this->assertSame(9000, $slider['interval']);
         $this->assertSame(6, $slider['news_limit']);
+        $this->assertTrue($national['enabled']);
+        $this->assertSame(4, $national['news_limit']);
         $this->assertSame(777, $configuredPost->refresh()->editorial_priority);
 
         $response = $this->get(route('home'))->assertOk();

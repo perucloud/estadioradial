@@ -18,10 +18,15 @@ class HomepageController extends Controller
     {
         $storedHero = PortalSetting::value('home.hero_rotator', []);
         $storedSlider = PortalSetting::value('home.most_viewed_slider', []);
+        $storedNational = PortalSetting::value('home.national_news', []);
 
         return view('admin.appearance.homepage', [
             'hero' => array_replace($this->heroDefaults(), is_array($storedHero) ? $storedHero : []),
             'slider' => array_replace($this->sliderDefaults(), is_array($storedSlider) ? $storedSlider : []),
+            'national' => array_replace(
+                $this->nationalDefaults(),
+                is_array($storedNational) ? $storedNational : [],
+            ),
             'posts' => Post::query()
                 ->with(['category', 'media'])
                 ->published()
@@ -50,6 +55,8 @@ class HomepageController extends Controller
             'slider.news_limit' => ['required', 'integer', 'min:4', 'max:12'],
             'slider.period_days' => ['required', Rule::in([0, 7, 30, 90, 365])],
             'slider.loop' => ['nullable', 'boolean'],
+            'national.enabled' => ['nullable', 'boolean'],
+            'national.news_limit' => ['required', 'integer', 'min:2', 'max:5'],
             'posts' => ['nullable', 'array'],
             'posts.*.editorial_priority' => ['required', 'integer', 'min:0', 'max:1000'],
             'posts.*.is_featured' => ['nullable', 'boolean'],
@@ -86,6 +93,11 @@ class HomepageController extends Controller
                 'period_days' => (int) $data['slider']['period_days'],
             ], 'home');
 
+            PortalSetting::put('home.national_news', [
+                'enabled' => $request->boolean('national.enabled'),
+                'news_limit' => (int) $data['national']['news_limit'],
+            ], 'home');
+
             $allowedPostIds = Post::query()
                 ->published()
                 ->whereIn('id', array_keys($data['posts'] ?? []))
@@ -108,6 +120,8 @@ class HomepageController extends Controller
                     'hero_selection' => $data['hero']['selection_mode'],
                     'hero_posts' => $manualPostIds->all(),
                     'slider_period_days' => (int) $data['slider']['period_days'],
+                    'national_news_enabled' => $request->boolean('national.enabled'),
+                    'national_news_limit' => (int) $data['national']['news_limit'],
                 ],
                 'ip_hash' => hash('sha256', (string) $request->ip()),
             ]);
@@ -144,6 +158,17 @@ class HomepageController extends Controller
             'loop' => true,
             'news_limit' => 8,
             'period_days' => 30,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function nationalDefaults(): array
+    {
+        return [
+            'enabled' => true,
+            'news_limit' => 5,
         ];
     }
 }

@@ -27,6 +27,9 @@ class PortalTest extends TestCase
         $this->get('/')
             ->assertOk()
             ->assertSee('Noticias Regionales')
+            ->assertSee('Información de nuestro país')
+            ->assertSee('Noticias Nacionales')
+            ->assertSee('Ver todas las noticias nacionales')
             ->assertSee('Programas')
             ->assertSee('Ahora en vivo')
             ->assertSee('Festival reúne música, memoria y tradiciones de distintas regiones')
@@ -142,6 +145,33 @@ class PortalTest extends TestCase
         $response
             ->assertSee('Información de nuestra región')
             ->assertSee('Ver todas las noticias regionales');
+    }
+
+    public function test_national_news_section_uses_recent_publications_from_all_categories(): void
+    {
+        $economy = Category::query()->where('slug', 'economia')->firstOrFail();
+        $post = Post::query()->create([
+            'category_id' => $economy->id,
+            'title' => 'Economía nacional presenta nuevas oportunidades de inversión',
+            'slug' => 'economia-nacional-nuevas-oportunidades-inversion',
+            'excerpt' => 'El reporte reúne información económica procedente de diferentes regiones.',
+            'body' => '<p>Contenido económico nacional para comprobar el módulo de portada.</p>',
+            'status' => 'published',
+            'published_at' => now(),
+        ]);
+
+        $response = $this->get(route('home'))->assertOk();
+        $nationalPosts = $response->viewData('nationalPosts');
+
+        $this->assertCount(5, $nationalPosts);
+        $this->assertSame($post->id, $nationalPosts->first()->id);
+        $this->assertTrue($nationalPosts->contains(
+            fn (Post $nationalPost) => $nationalPost->category_id === $economy->id
+        ));
+        $response
+            ->assertSee('Información de nuestro país')
+            ->assertSee('Noticias Nacionales')
+            ->assertSee($post->title);
     }
 
     public function test_regional_section_uses_location_instead_of_editorial_category(): void

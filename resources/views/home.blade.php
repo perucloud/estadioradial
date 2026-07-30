@@ -177,6 +177,96 @@
                 </div>
             @endif
 
+            @if ($nationalSettings['enabled'] && $nationalPosts->isNotEmpty())
+                @php($nationalLead = $nationalPosts->first())
+
+                <section class="home-news-module home-news-module--national" aria-labelledby="national-news-title">
+                    <div class="section-heading">
+                        <div>
+                            <span class="eyebrow">Información de nuestro país</span>
+                            <h2 id="national-news-title">Noticias Nacionales</h2>
+                        </div>
+                        <a class="text-link" href="{{ route('posts.index') }}">
+                            Ver todas las noticias nacionales →
+                        </a>
+                    </div>
+
+                    <div class="latest-layout">
+                        <article class="latest-lead">
+                            <a class="latest-lead__image" href="{{ route('posts.show', [$nationalLead->category, $nationalLead]) }}">
+                                <img src="{{ $nationalLead->coverUrl('card') }}" alt="{{ $nationalLead->media?->alt_text ?? '' }}" loading="lazy">
+                                <span class="latest-lead__status">Último minuto</span>
+                            </a>
+                            <div class="latest-lead__body">
+                                <div class="story-labels">
+                                    <a
+                                        class="category-pill"
+                                        style="--category-color: {{ $nationalLead->category->color }}"
+                                        href="{{ route('posts.category', $nationalLead->category) }}"
+                                    >{{ $nationalLead->category->name }}</a>
+                                    <x-editorial-territory-badge :post="$nationalLead" variant="compact" />
+                                </div>
+                                @if ($nationalLead->location)
+                                    <a class="location-link" href="{{ $nationalLead->location->publicUrl() }}">
+                                        <span aria-hidden="true">⌖</span> {{ $nationalLead->location->name }}
+                                    </a>
+                                @endif
+                                <h3>
+                                    <a href="{{ route('posts.show', [$nationalLead->category, $nationalLead]) }}">
+                                        {{ $nationalLead->title }}
+                                    </a>
+                                </h3>
+                                <p>{{ $nationalLead->excerpt }}</p>
+                                <div class="editorial-meta">
+                                    <time datetime="{{ $nationalLead->published_at->toIso8601String() }}">
+                                        {{ $nationalLead->published_at->diffForHumans() }}
+                                    </time>
+                                    <span>{{ number_format($nationalLead->views_count) }} lecturas</span>
+                                </div>
+                            </div>
+                        </article>
+
+                        <div class="latest-secondary" aria-label="Noticias nacionales secundarias">
+                            @foreach ($nationalPosts->skip(1)->take(4) as $post)
+                                <article class="secondary-story">
+                                    <a class="secondary-story__image" href="{{ route('posts.show', [$post->category, $post]) }}">
+                                        <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}" loading="lazy">
+                                    </a>
+                                    <div class="secondary-story__body">
+                                        <div class="story-labels">
+                                            <a
+                                                class="category-pill"
+                                                style="--category-color: {{ $post->category->color }}"
+                                                href="{{ route('posts.category', $post->category) }}"
+                                            >{{ $post->category->name }}</a>
+                                            <x-editorial-territory-badge :post="$post" variant="compact" />
+                                        </div>
+                                        @if ($post->location)
+                                            <a class="location-link" href="{{ $post->location->publicUrl() }}">
+                                                <span aria-hidden="true">⌖</span> {{ $post->location->name }}
+                                            </a>
+                                        @endif
+                                        <h3>
+                                            <a href="{{ route('posts.show', [$post->category, $post]) }}">{{ $post->title }}</a>
+                                        </h3>
+                                        <p>{{ $post->excerpt }}</p>
+                                        <time datetime="{{ $post->published_at->toIso8601String() }}">
+                                            {{ $post->published_at->diffForHumans() }}
+                                        </time>
+                                    </div>
+                                </article>
+                            @endforeach
+                        </div>
+
+                        <div class="ad-rail">
+                            @foreach ($advertisements as $advertisement)
+                                <x-ad-slot :advertisement="$advertisement" :position="$loop->iteration" />
+                            @endforeach
+                        </div>
+                    </div>
+                </section>
+            @endif
+
             @if ($mostViewedPosts->isNotEmpty())
                 <section class="most-viewed" aria-labelledby="most-viewed-title">
                     <div class="most-viewed__heading">

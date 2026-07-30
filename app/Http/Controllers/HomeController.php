@@ -79,6 +79,27 @@ class HomeController extends Controller
             ->take(5)
             ->get();
 
+        $nationalDefaults = [
+            'enabled' => true,
+            'news_limit' => 5,
+        ];
+        $storedNationalSettings = PortalSetting::value('home.national_news', []);
+        $nationalSettings = array_replace(
+            $nationalDefaults,
+            is_array($storedNationalSettings) ? $storedNationalSettings : [],
+        );
+        $nationalLimit = min(5, max(2, (int) $nationalSettings['news_limit']));
+        $nationalPosts = $nationalSettings['enabled']
+            ? Post::query()
+                ->with(['category', 'location.parent.parent.parent', 'tags', 'media'])
+                ->published()
+                ->visibleOnHome()
+                ->latest('published_at')
+                ->latest('id')
+                ->take($nationalLimit)
+                ->get()
+            : collect();
+
         $sliderDefaults = [
             'mode' => 'automatic',
             'interval' => 6000,
@@ -141,6 +162,8 @@ class HomeController extends Controller
             'featuredPosts' => $featuredPosts,
             'heroSettings' => $heroSettings,
             'regionalPosts' => $regionalPosts,
+            'nationalPosts' => $nationalPosts,
+            'nationalSettings' => $nationalSettings,
             'mostViewedPosts' => $mostViewedPosts,
             'sliderSettings' => $sliderSettings,
             'advertisements' => $homeAdvertisements->isNotEmpty() ? $homeAdvertisements : collect([

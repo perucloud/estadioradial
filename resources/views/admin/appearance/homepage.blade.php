@@ -71,6 +71,30 @@
                 <label class="check-row"><input type="checkbox" name="slider[loop]" value="1" @checked($slider['loop'])><span>Repetir continuamente</span></label>
                 <p class="panel-note">Hasta implementar métricas históricas, el periodo limita la fecha de publicación y el ranking utiliza las lecturas acumuladas.</p>
             </section>
+
+            <section class="panel form-stack">
+                <div>
+                    <span class="eyebrow">Información de nuestro país</span>
+                    <h2>Noticias Nacionales</h2>
+                </div>
+                <label class="check-row">
+                    <input type="hidden" name="national[enabled]" value="0">
+                    <input type="checkbox" name="national[enabled]" value="1" @checked($national['enabled'])>
+                    <span>Mostrar el módulo en la portada</span>
+                </label>
+                <label>
+                    Cantidad de noticias
+                    <input
+                        type="number"
+                        name="national[news_limit]"
+                        value="{{ $national['news_limit'] }}"
+                        min="2"
+                        max="5"
+                        required
+                    >
+                </label>
+                <p class="panel-note">Muestra las publicaciones más recientes de todas las categorías editoriales.</p>
+            </section>
         </div>
 
         <section class="panel">
