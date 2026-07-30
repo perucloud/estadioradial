@@ -5,7 +5,9 @@
 .env.production
 .phpactor.json
 .phpunit.result.cache
-/.codex
+/.codex/*
+!/.codex/skills/
+!/.codex/skills/**
 /.cursor/
 /.idea
 /.nova

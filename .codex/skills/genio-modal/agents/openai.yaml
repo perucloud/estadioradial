@@ -1,0 +1,4 @@
+interface:
+  display_name: "Genio Modal"
+  short_description: "Animación líquida para abrir y cerrar modales"
+  default_prompt: "Usa $genio-modal para aplicar el efecto Genio Modal a esta ventana."
