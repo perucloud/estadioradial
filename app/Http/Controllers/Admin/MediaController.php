@@ -115,14 +115,40 @@ class MediaController extends Controller
         return back()->with('status', count($data['files']).' archivo(s) añadidos a la biblioteca.');
     }
 
-    public function update(Request $request, Media $media): RedirectResponse|JsonResponse
-    {
-        $data = $request->validate([
-            'alt_text' => ['nullable', 'string', 'max:255'],
-            'caption' => ['nullable', 'string', 'max:255'],
-            'credit' => ['nullable', 'string', 'max:255'],
-            'license' => ['nullable', 'string', 'max:255'],
-        ]);
+    public function update(
+        Request $request,
+        Media $media,
+        MediaProcessor $processor,
+    ): RedirectResponse|JsonResponse {
+        $data = $request->validate(
+            [
+                'replacement' => [
+                    'nullable',
+                    'file',
+                    'image',
+                    'mimes:jpg,jpeg,png,webp,gif',
+                    'max:8192',
+                    'dimensions:max_width=6000,max_height=6000',
+                ],
+                'alt_text' => ['nullable', 'string', 'max:255'],
+                'caption' => ['nullable', 'string', 'max:255'],
+                'credit' => ['nullable', 'string', 'max:255'],
+                'license' => ['nullable', 'string', 'max:255'],
+            ],
+            [
+                'replacement.image' => 'El archivo de reemplazo no es una imagen válida.',
+                'replacement.mimes' => 'La nueva imagen debe ser JPG, PNG, WebP o GIF.',
+                'replacement.max' => 'La nueva imagen no puede superar los 8 MB.',
+                'replacement.dimensions' => 'La nueva imagen no puede superar los 6000 píxeles por lado.',
+            ],
+        );
+
+        $replacement = $data['replacement'] ?? null;
+        unset($data['replacement']);
+
+        if ($replacement instanceof UploadedFile) {
+            $media = $processor->replace($media, $replacement);
+        }
 
         $data['alt_text'] = trim((string) ($data['alt_text'] ?? ''))
             ?: $this->fallbackFromFilename($media->original_name);
@@ -136,12 +162,19 @@ class MediaController extends Controller
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Metadatos actualizados.',
+                'message' => $replacement instanceof UploadedFile
+                    ? 'Imagen y metadatos actualizados.'
+                    : 'Metadatos actualizados.',
                 'data' => $this->mediaPayload($media->refresh()),
             ]);
         }
 
-        return back()->with('status', 'Metadatos actualizados.');
+        return back()->with(
+            'status',
+            $replacement instanceof UploadedFile
+                ? 'Imagen y metadatos actualizados.'
+                : 'Metadatos actualizados.',
+        );
     }
 
     public function destroy(Request $request, Media $media, MediaProcessor $processor): RedirectResponse

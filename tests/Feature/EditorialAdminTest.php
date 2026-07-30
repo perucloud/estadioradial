@@ -94,6 +94,43 @@ class EditorialAdminTest extends TestCase
         ]);
     }
 
+    public function test_editor_can_replace_media_file_without_changing_its_record(): void
+    {
+        Storage::fake('public');
+        $editor = $this->userWithRole('editor');
+        $media = $this->media($editor);
+        Storage::disk('public')->put($media->path, 'old-image');
+        foreach ($media->variants as $variant) {
+            Storage::disk('public')->put($variant, 'old-variant');
+        }
+
+        $this->actingAs($editor)
+            ->withHeader('Accept', 'application/json')
+            ->post(route('admin.media.update', $media), [
+                '_method' => 'PUT',
+                'replacement' => UploadedFile::fake()->image('juliaca-renovada.png', 1600, 900),
+                'alt_text' => 'Vista renovada de Juliaca',
+            ])
+            ->assertOk()
+            ->assertJsonPath('message', 'Imagen y metadatos actualizados.')
+            ->assertJsonPath('data.id', $media->id)
+            ->assertJsonPath('data.name', 'juliaca-renovada.png')
+            ->assertJsonPath('data.width', 1600)
+            ->assertJsonPath('data.height', 900)
+            ->assertJsonPath('data.alt_text', 'Vista renovada de Juliaca');
+
+        $media->refresh();
+
+        $this->assertSame('juliaca-renovada.png', $media->original_name);
+        $this->assertSame('png', $media->extension);
+        Storage::disk('public')->assertExists($media->path);
+        Storage::disk('public')->assertMissing('media/tests/original.jpg');
+        $this->assertDatabaseHas('media', [
+            'id' => $media->id,
+            'original_name' => 'juliaca-renovada.png',
+        ]);
+    }
+
     public function test_editor_can_open_media_library_and_ckeditor_editor(): void
     {
         $editor = $this->userWithRole('editor');
@@ -111,6 +148,8 @@ class EditorialAdminTest extends TestCase
             ->assertSee('data-media-metadata-dialog', false)
             ->assertSee('data-media-edit', false)
             ->assertSee('data-media-copy', false)
+            ->assertSee('Reemplazar imagen')
+            ->assertSee('data-media-replacement-input', false)
             ->assertDontSee('<details>', false);
 
         $formResponse = $this->actingAs($editor)

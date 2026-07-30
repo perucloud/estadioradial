@@ -124,7 +124,7 @@
         {{ $mediaItems->links() }}
 
         <dialog class="media-metadata-dialog" data-media-metadata-dialog aria-labelledby="media-metadata-title">
-            <form method="post" data-media-metadata-form>
+            <form method="post" enctype="multipart/form-data" data-media-metadata-form>
                 @csrf
                 @method('PUT')
                 <header class="media-metadata-dialog__header">
@@ -132,7 +132,7 @@
                         <span class="media-metadata-dialog__icon" aria-hidden="true">✎</span>
                         <div>
                             <span class="eyebrow">Biblioteca Multimedia</span>
-                            <h2 id="media-metadata-title">Editar metadatos</h2>
+                            <h2 id="media-metadata-title">Editar imagen y metadatos</h2>
                         </div>
                     </div>
                     <button type="button" data-close-media-metadata aria-label="Cerrar">×</button>
@@ -142,6 +142,19 @@
                     <aside class="media-metadata-preview">
                         <img src="" alt="" data-media-metadata-image>
                         <strong data-media-metadata-name></strong>
+                        <label class="media-replacement-picker">
+                            <input
+                                type="file"
+                                name="replacement"
+                                accept="image/jpeg,image/png,image/webp,image/gif"
+                                data-media-replacement-input
+                            >
+                            <span aria-hidden="true">↻</span>
+                            <strong>Reemplazar imagen</strong>
+                        </label>
+                        <small class="media-replacement-status" data-media-replacement-status>
+                            Conserva el registro y sus usos actuales. Máximo 8 MB.
+                        </small>
                         <small>Los campos son opcionales y pueden actualizarse cuando sea necesario.</small>
                     </aside>
                     <div class="media-metadata-fields">
@@ -167,7 +180,7 @@
 
                 <footer class="media-metadata-dialog__footer">
                     <button class="button button--quiet" type="button" data-close-media-metadata>Cancelar</button>
-                    <button class="button button--primary" type="submit" data-save-media-metadata>Guardar metadatos</button>
+                    <button class="button button--primary" type="submit" data-save-media-metadata>Guardar cambios</button>
                 </footer>
             </form>
         </dialog>

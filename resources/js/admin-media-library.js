@@ -19,6 +19,8 @@ if (library) {
     const metadataImage = library.querySelector('[data-media-metadata-image]');
     const metadataName = library.querySelector('[data-media-metadata-name]');
     const metadataError = library.querySelector('[data-media-metadata-error]');
+    const replacementInput = library.querySelector('[data-media-replacement-input]');
+    const replacementStatus = library.querySelector('[data-media-replacement-status]');
     const saveMetadata = library.querySelector('[data-save-media-metadata]');
     const toast = library.querySelector('[data-media-toast]');
     const csrfToken = library.dataset.csrfToken;
@@ -29,6 +31,7 @@ if (library) {
     let isClosing = false;
     let toastTimer;
     let dragDepth = 0;
+    let replacementPreviewUrl;
 
     const metadataFields = {
         alt: library.querySelector('[data-media-metadata-alt]'),
@@ -133,6 +136,52 @@ if (library) {
         total.textContent = `${current + increment} archivo(s)`;
     };
 
+    const resetReplacement = () => {
+        if (replacementPreviewUrl) URL.revokeObjectURL(replacementPreviewUrl);
+        replacementPreviewUrl = null;
+        replacementInput.value = '';
+        replacementStatus.textContent = 'Conserva el registro y sus usos actuales. Máximo 8 MB.';
+        replacementStatus.classList.remove('is-selected', 'is-error');
+    };
+
+    const previewReplacement = () => {
+        const file = replacementInput.files?.[0];
+        if (!file) {
+            metadataImage.src = modalTrigger?.dataset.mediaThumb || '';
+            resetReplacement();
+            return;
+        }
+
+        const rejectReplacement = (message) => {
+            if (replacementPreviewUrl) URL.revokeObjectURL(replacementPreviewUrl);
+            replacementPreviewUrl = null;
+            replacementInput.value = '';
+            metadataImage.src = modalTrigger?.dataset.mediaThumb || '';
+            metadataImage.alt = modalTrigger?.dataset.mediaAlt || '';
+            replacementStatus.textContent = message;
+            replacementStatus.classList.remove('is-selected');
+            replacementStatus.classList.add('is-error');
+        };
+
+        if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+            rejectReplacement('Selecciona una imagen JPG, PNG, WebP o GIF.');
+            return;
+        }
+
+        if (file.size > 8 * 1024 * 1024) {
+            rejectReplacement('La imagen no puede superar los 8 MB.');
+            return;
+        }
+
+        if (replacementPreviewUrl) URL.revokeObjectURL(replacementPreviewUrl);
+        replacementPreviewUrl = URL.createObjectURL(file);
+        metadataImage.src = replacementPreviewUrl;
+        metadataImage.alt = `Vista previa de ${file.name}`;
+        replacementStatus.textContent = `${file.name} está lista para reemplazar la imagen actual.`;
+        replacementStatus.classList.remove('is-error');
+        replacementStatus.classList.add('is-selected');
+    };
+
     const uploadFiles = async (fileList) => {
         const files = [...fileList].slice(0, 10);
         if (uploadInProgress || files.length === 0) return;
@@ -197,6 +246,7 @@ if (library) {
         metadataFields.caption.value = trigger.dataset.mediaCaption || '';
         metadataFields.credit.value = trigger.dataset.mediaCredit || '';
         metadataFields.license.value = trigger.dataset.mediaLicense || '';
+        resetReplacement();
         metadataError.hidden = true;
         metadataError.textContent = '';
 
@@ -229,6 +279,7 @@ if (library) {
         if (!dialog.open || isClosing) return;
         if (reduceMotion.matches) {
             dialog.close();
+            resetReplacement();
             modalTrigger?.focus();
             return;
         }
@@ -238,6 +289,7 @@ if (library) {
         modalAnimation?.cancel();
         const finish = () => {
             dialog.close();
+            resetReplacement();
             dialog.classList.remove('is-closing');
             isClosing = false;
             modalTrigger?.focus();
@@ -356,12 +408,33 @@ if (library) {
 
             const media = payload.data;
             Object.assign(modalTrigger.dataset, {
+                mediaName: media.name,
+                mediaThumb: media.thumb_url,
                 mediaAlt: media.alt_text || '',
                 mediaCaption: media.caption || '',
                 mediaCredit: media.credit || '',
                 mediaLicense: media.license || '',
             });
-            modalTrigger.closest('[data-media-card]')?.querySelector('img')?.setAttribute('alt', media.alt_text || '');
+            const card = modalTrigger.closest('[data-media-card]');
+            const cardImage = card?.querySelector('.media-admin-card__visual img');
+            const cardName = card?.querySelector('.media-admin-card__body > strong');
+            const cardDetails = card?.querySelector('.media-admin-card__body > small');
+            const copyButton = card?.querySelector('[data-media-copy]');
+
+            if (cardImage) {
+                cardImage.src = media.thumb_url;
+                cardImage.alt = media.alt_text || '';
+            }
+            if (cardName) {
+                cardName.textContent = media.name;
+                cardName.title = media.name;
+            }
+            if (cardDetails) {
+                cardDetails.textContent = `${media.width} × ${media.height} · ${formatSize(media.size)}`;
+            }
+            if (copyButton) copyButton.dataset.mediaUrl = media.absolute_article_url;
+
+            resetReplacement();
             closeMetadataDialog();
             showToast(payload.message);
         } catch (error) {
@@ -369,7 +442,8 @@ if (library) {
             metadataError.hidden = false;
         } finally {
             saveMetadata.disabled = false;
-            saveMetadata.textContent = 'Guardar metadatos';
+            saveMetadata.textContent = 'Guardar cambios';
         }
     });
+    replacementInput.addEventListener('change', previewReplacement);
 }

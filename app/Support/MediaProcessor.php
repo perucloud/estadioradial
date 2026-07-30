@@ -58,6 +58,54 @@ class MediaProcessor
         }
     }
 
+    public function replace(Media $media, UploadedFile $file): Media
+    {
+        $contents = $file->get();
+        $dimensions = getimagesizefromstring($contents);
+
+        if ($dimensions === false) {
+            throw new RuntimeException('El archivo no contiene una imagen válida.');
+        }
+
+        $extension = mb_strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension()));
+        $directory = 'media/'.now()->format('Y/m').'/'.Str::uuid();
+        $originalPath = "{$directory}/original.{$extension}";
+        $disk = Storage::disk('public');
+        $previousDisk = $media->disk;
+        $previousFiles = array_values(array_unique([
+            $media->path,
+            ...array_values($media->variants ?? []),
+        ]));
+
+        try {
+            if (! $disk->put($originalPath, $contents)) {
+                throw new RuntimeException('No se pudo guardar la nueva imagen.');
+            }
+
+            $variants = $this->createVariants($contents, $directory);
+
+            $media->update([
+                'disk' => 'public',
+                'path' => $originalPath,
+                'variants' => $variants,
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => (string) $file->getMimeType(),
+                'extension' => $extension,
+                'size' => $file->getSize(),
+                'width' => $dimensions[0],
+                'height' => $dimensions[1],
+                'checksum' => hash('sha256', $contents),
+            ]);
+        } catch (Throwable $exception) {
+            $disk->deleteDirectory($directory);
+            throw $exception;
+        }
+
+        Storage::disk($previousDisk)->delete($previousFiles);
+
+        return $media->refresh();
+    }
+
     public function delete(Media $media): void
     {
         Storage::disk($media->disk)->deleteDirectory(dirname($media->path));
