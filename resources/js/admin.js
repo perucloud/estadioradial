@@ -252,7 +252,7 @@ document.querySelectorAll('[data-schedule-modal]').forEach((dialog) => {
         const shine = layer.querySelector('[data-genie-shine]');
         const triggerRect = trigger?.getBoundingClientRect() ?? dialog.getBoundingClientRect();
         const dialogRect = dialog.getBoundingClientRect();
-        const duration = direction === 'open' ? 680 : 500;
+        const duration = direction === 'open' ? 420 : 300;
         const startedAt = performance.now();
 
         svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
@@ -370,20 +370,20 @@ document.querySelectorAll('[data-schedule-modal]').forEach((dialog) => {
             } catch {
                 dialog.style.removeProperty('opacity');
                 genieAnimation = dialog.animate(genieFrames(trigger), {
-                    duration: 560,
+                    duration: 400,
                     easing: 'cubic-bezier(.2, .82, .2, 1)',
                     fill: 'both',
                 });
             }
         } else if (!reduceMotion.matches) {
             genieAnimation = dialog.animate(genieFrames(trigger), {
-                duration: 560,
+                duration: 400,
                 easing: 'cubic-bezier(.2, .82, .2, 1)',
                 fill: 'both',
             });
         }
 
-        window.setTimeout(() => dateInput.focus(), reduceMotion.matches ? 50 : 430);
+        window.setTimeout(() => dateInput.focus(), reduceMotion.matches ? 50 : 280);
     };
     const closeDialog = () => {
         if (!dialog.open || isClosing) return;
@@ -414,7 +414,7 @@ document.querySelectorAll('[data-schedule-modal]').forEach((dialog) => {
         }
 
         genieAnimation = dialog.animate(genieFrames(triggerButton), {
-            duration: 400,
+            duration: 280,
             easing: 'cubic-bezier(.55, .02, .78, .35)',
             direction: 'reverse',
             fill: 'both',
