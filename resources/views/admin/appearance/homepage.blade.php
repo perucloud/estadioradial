@@ -5,9 +5,6 @@
 @section('heading', 'Portada editorial')
 
 @php
-    $manualIds = collect(old('hero_posts', $hero['post_ids'] ?? []))
-        ->filter(fn ($item) => is_scalar($item))
-        ->map(fn ($id) => (int) $id);
     $selectedCategoryIds = collect(old('hero.category_ids', $hero['category_ids'] ?? []))
         ->map(fn ($id) => (int) $id);
     $heroValues = array_replace($hero, old('hero', []));
@@ -33,9 +30,6 @@
             </button>
             <button type="button" role="tab" aria-selected="false" data-appearance-tab="national">
                 <span>03</span> Noticias nacionales
-            </button>
-            <button type="button" role="tab" aria-selected="false" data-appearance-tab="editorial">
-                <span>04</span> Selección editorial
             </button>
         </nav>
 
@@ -72,11 +66,13 @@
                                 <option value="manual" @selected($heroValues['mode'] === 'manual')>Solo con controles</option>
                             </select>
                         </label>
-                        <label>Selección editorial
-                            <select name="hero[selection_mode]" data-hero-setting data-selection-mode>
-                                <option value="automatic" @selected($heroValues['selection_mode'] === 'automatic')>Automática por últimas publicaciones</option>
-                                <option value="manual" @selected($heroValues['selection_mode'] === 'manual')>Selección manual</option>
+                        <input type="hidden" name="hero[selection_mode]" value="automatic">
+                        <label>Orden de publicación
+                            <select name="hero[sort_order]">
+                                <option value="latest" @selected($heroValues['sort_order'] === 'latest')>Más recientes primero</option>
+                                <option value="oldest" @selected($heroValues['sort_order'] === 'oldest')>Más antiguas primero</option>
                             </select>
+                            <small>“Más recientes” ordena desde la última publicación hacia la más antigua.</small>
                         </label>
                         <label>Tipo de cantidad
                             <select name="hero[quantity_mode]" data-hero-setting data-quantity-mode>
@@ -284,43 +280,6 @@
                     <input type="number" name="national[news_limit]" value="{{ $national['news_limit'] }}" min="2" max="5" required>
                 </label>
                 <p class="panel-note">Muestra las publicaciones más recientes de todas las categorías editoriales.</p>
-            </div>
-        </section>
-
-        <section class="appearance-tab-panel" role="tabpanel" data-appearance-panel="editorial" hidden>
-            <div class="panel">
-                <div class="panel__header">
-                    <div><span class="eyebrow">Selección y prioridades</span><h2>Noticias de portada</h2></div>
-                    <span class="badge">{{ $posts->count() }} publicadas</span>
-                </div>
-                <p class="panel-note">La selección manual solo se utiliza cuando esa modalidad está activa en la pestaña Hero.</p>
-                <div class="responsive-table">
-                    <table class="homepage-post-table">
-                        <thead>
-                            <tr>
-                                <th>Noticia</th><th>Hero manual</th><th>Orden</th><th>Prioridad</th>
-                                <th>Destacada</th><th>Ocultar</th><th>Fijar hasta</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($posts as $post)
-                                @php($manualPosition = collect($hero['post_ids'] ?? [])->map(fn ($id) => (int) $id)->search($post->id))
-                                <tr>
-                                    <td><strong>{{ $post->title }}</strong><small>{{ $post->category->name }} · {{ number_format($post->views_count) }} lecturas</small></td>
-                                    <td>
-                                        <input type="hidden" name="hero_posts[{{ $post->id }}][selected]" value="0">
-                                        <input type="checkbox" name="hero_posts[{{ $post->id }}][selected]" value="1" @checked($manualPosition !== false) aria-label="Seleccionar {{ $post->title }}">
-                                    </td>
-                                    <td><input class="order-input" type="number" name="hero_posts[{{ $post->id }}][order]" value="{{ $manualPosition === false ? 100 : $manualPosition + 1 }}" min="1" max="100"></td>
-                                    <td><input class="order-input" type="number" name="posts[{{ $post->id }}][editorial_priority]" value="{{ $post->editorial_priority }}" min="0" max="1000" required></td>
-                                    <td><input type="hidden" name="posts[{{ $post->id }}][is_featured]" value="0"><input type="checkbox" name="posts[{{ $post->id }}][is_featured]" value="1" @checked($post->is_featured)></td>
-                                    <td><input type="hidden" name="posts[{{ $post->id }}][is_homepage_hidden]" value="0"><input type="checkbox" name="posts[{{ $post->id }}][is_homepage_hidden]" value="1" @checked($post->is_homepage_hidden)></td>
-                                    <td><input type="datetime-local" name="posts[{{ $post->id }}][pinned_until]" value="{{ $post->pinned_until?->format('Y-m-d\TH:i') }}"></td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </section>
 

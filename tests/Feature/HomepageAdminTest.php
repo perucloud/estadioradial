@@ -49,7 +49,10 @@ class HomepageAdminTest extends TestCase
             ->assertSee('Configuración avanzada')
             ->assertSee('Todas las noticias disponibles')
             ->assertSee('Categorías seleccionadas')
-            ->assertSee('Cinematográfico');
+            ->assertSee('Cinematográfico')
+            ->assertSee('Orden de publicación')
+            ->assertSee('Más recientes primero')
+            ->assertDontSee('data-appearance-tab="editorial"', false);
     }
 
     public function test_categories_can_be_created_reordered_and_hidden(): void
@@ -399,6 +402,7 @@ class HomepageAdminTest extends TestCase
                 'quantity_mode' => 'all',
                 'category_mode' => 'selected',
                 'category_ids' => [$included->id],
+                'sort_order' => 'oldest',
             ],
         ), 'home');
 
@@ -407,6 +411,10 @@ class HomepageAdminTest extends TestCase
 
         $this->assertCount(3, $featuredPosts);
         $this->assertTrue($featuredPosts->every(fn (Post $post) => $post->category_id === $included->id));
+        $this->assertSame(
+            ['Noticia exclusiva 3', 'Noticia exclusiva 2', 'Noticia exclusiva 1'],
+            $featuredPosts->pluck('title')->all(),
+        );
     }
 
     public function test_hero_rejects_zero_as_a_specific_news_quantity(): void

@@ -35,13 +35,6 @@ class HomepageController extends Controller
                 $this->nationalDefaults(),
                 is_array($storedNational) ? $storedNational : [],
             ),
-            'posts' => Post::query()
-                ->with(['category', 'media'])
-                ->published()
-                ->orderByDesc('editorial_priority')
-                ->latest('published_at')
-                ->limit(60)
-                ->get(),
         ]);
     }
 
@@ -67,6 +60,7 @@ class HomepageController extends Controller
             'hero.quantity_mode' => ['required', Rule::in(['specific', 'all'])],
             'hero.news_limit' => ['nullable', 'required_if:hero.quantity_mode,specific', 'integer', 'min:1'],
             'hero.selection_mode' => ['required', Rule::in(['automatic', 'manual'])],
+            'hero.sort_order' => ['required', Rule::in(['latest', 'oldest'])],
             'hero.category_mode' => ['required', Rule::in(['all', 'selected'])],
             'hero.category_ids' => ['exclude_unless:hero.category_mode,selected', 'required', 'array', 'min:1'],
             'hero.category_ids.*' => ['integer', Rule::exists('categories', 'id')->where('is_active', true)],
@@ -130,6 +124,7 @@ class HomepageController extends Controller
                 'news_limit' => (int) ($data['hero']['news_limit'] ?? 4),
                 'quantity_mode' => $data['hero']['quantity_mode'],
                 'selection_mode' => $data['hero']['selection_mode'],
+                'sort_order' => $data['hero']['sort_order'],
                 'post_ids' => $manualPostIds->all(),
                 'category_mode' => $data['hero']['category_mode'],
                 'category_ids' => collect($data['hero']['category_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values()->all(),

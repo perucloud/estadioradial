@@ -34,8 +34,11 @@ class HomeController extends Controller
                 $heroSettings['category_mode'] === 'selected' && $selectedCategoryIds->isNotEmpty(),
                 fn ($query) => $query->whereIn('category_id', $selectedCategoryIds)
             )
-            ->latest('published_at')
-            ->latest('id');
+            ->when(
+                $heroSettings['sort_order'] === 'oldest',
+                fn ($query) => $query->oldest('published_at')->oldest('id'),
+                fn ($query) => $query->latest('published_at')->latest('id'),
+            );
 
         $manualPostIds = collect($heroSettings['post_ids'] ?? [])
             ->filter(fn ($id) => is_numeric($id))

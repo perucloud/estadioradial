@@ -18,6 +18,7 @@ final class HomeHeroConfig
             'news_limit' => 4,
             'quantity_mode' => 'specific',
             'selection_mode' => 'automatic',
+            'sort_order' => 'latest',
             'post_ids' => [],
             'category_mode' => 'all',
             'category_ids' => [],
