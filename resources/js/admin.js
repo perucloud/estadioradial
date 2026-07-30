@@ -4,6 +4,7 @@ import './admin-seo';
 import './admin-tags';
 import './admin-locations';
 import './admin-media-library';
+import './admin-delete-modal';
 import {
     canUseGenieMorph,
     genieFallbackFrames,
@@ -88,13 +89,6 @@ document.addEventListener('click', (event) => {
 document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     adminNavGroups.forEach((group) => group.removeAttribute('open'));
-});
-
-document.querySelectorAll('[data-confirm-delete]').forEach((form) => {
-    form.addEventListener('submit', (event) => {
-        if (window.confirm(form.dataset.confirmDelete)) return;
-        event.preventDefault();
-    });
 });
 
 document.querySelectorAll('[data-slug-source]').forEach((title) => {

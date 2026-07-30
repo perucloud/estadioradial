@@ -106,7 +106,10 @@
                         <form
                             method="post"
                             action="{{ route('admin.media.destroy', $media) }}"
-                            data-confirm-delete="¿Retirar esta imagen?"
+                            data-confirm-delete="¿Deseas retirar esta imagen de la biblioteca multimedia?"
+                            data-confirm-title="Eliminar imagen"
+                            data-confirm-name="{{ $media->original_name }}"
+                            data-confirm-button="Eliminar imagen"
                         >
                             @csrf
                             @method('DELETE')

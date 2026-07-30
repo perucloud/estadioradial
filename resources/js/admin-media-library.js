@@ -113,11 +113,11 @@ if (library) {
         });
         copy.dataset.mediaUrl = media.absolute_article_url;
         deleteForm.action = media.destroy_url;
+        deleteForm.dataset.confirmDelete = '¿Deseas retirar esta imagen de la biblioteca multimedia?';
+        deleteForm.dataset.confirmName = media.name;
+        deleteForm.dataset.confirmTitle = 'Eliminar imagen';
+        deleteForm.dataset.confirmButton = 'Eliminar imagen';
         deleteForm.querySelector('[name="_token"]').value = csrfToken;
-        deleteForm.addEventListener('submit', (event) => {
-            if (window.confirm('¿Retirar esta imagen?')) return;
-            event.preventDefault();
-        });
 
         if (media.is_in_use) {
             const usage = document.createElement('span');

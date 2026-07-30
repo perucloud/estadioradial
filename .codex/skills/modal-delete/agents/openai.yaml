@@ -1,0 +1,4 @@
+interface:
+  display_name: "Modal Delete"
+  short_description: "Confirmaciones de eliminación elegantes y seguras"
+  default_prompt: "Usa $modal-delete para reemplazar una confirmación nativa por un modal de eliminación profesional."

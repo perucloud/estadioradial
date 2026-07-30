@@ -150,6 +150,8 @@ class EditorialAdminTest extends TestCase
             ->assertSee('data-media-copy', false)
             ->assertSee('Reemplazar imagen')
             ->assertSee('data-media-replacement-input', false)
+            ->assertSee('data-confirm-delete', false)
+            ->assertSee('data-confirm-name="referencial.jpg"', false)
             ->assertDontSee('<details>', false);
 
         $formResponse = $this->actingAs($editor)
