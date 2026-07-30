@@ -347,6 +347,7 @@ select {
 
 .button--schedule,
 .button--schedule-confirm {
+    --genie-color: #7c3aed;
     border-color: #c4b5fd;
     color: #5b21b6;
     background: #f5f3ff;
@@ -1186,11 +1187,13 @@ td small {
 
 .media-admin-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
     gap: 16px;
 }
 
 .media-admin-card {
+    width: 100%;
+    min-width: 0;
     overflow: hidden;
     border: 1px solid var(--admin-line);
     border-radius: 12px;
@@ -1241,8 +1244,18 @@ td small {
 
 .media-admin-card__body {
     display: grid;
+    min-width: 0;
     gap: 9px;
     padding: 14px;
+}
+
+.media-admin-card__body > strong,
+.media-admin-card__body > small {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .media-admin-card__body > small {
@@ -1251,12 +1264,15 @@ td small {
 
 .media-admin-card__actions {
     display: grid;
+    min-width: 0;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 7px;
     padding-top: 3px;
 }
 
 .media-card-action {
+    min-width: 0;
+    overflow: hidden;
     display: inline-flex;
     min-height: 38px;
     padding: 8px 9px;
@@ -1270,7 +1286,17 @@ td small {
     color: #414753;
     font-size: .78rem;
     font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     transition: color .18s ease, background .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+.media-card-action > span {
+    flex: 0 0 auto;
+}
+
+.media-card-action--edit {
+    --genie-color: #c91725;
 }
 
 .media-card-action:hover,

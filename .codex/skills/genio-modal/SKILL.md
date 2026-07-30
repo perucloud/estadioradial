@@ -11,6 +11,9 @@ Aplicar una transición espacial que muestre con claridad que el modal nace del 
 
 - Dibujar la transición con un SVG superpuesto y una figura rellena creada con curvas Bézier.
 - Empezar en los límites reales del botón activador.
+- Heredar el color del botón activador y conservarlo durante la apertura y el cierre.
+- Resolver el color en este orden: variable CSS `--genie-color`, atributo `data-genie-color`, fondo calculado del botón y color de respaldo.
+- Generar automáticamente tonos oscuro y claro a partir del color base para el degradado líquido.
 - Mantener al inicio un cuello angosto y curvo; ensanchar primero la parte superior y después la inferior.
 - Terminar exactamente en los límites del diálogo centrado.
 - Usar `420 ms` para abrir y `300 ms` para cerrar.
@@ -30,8 +33,8 @@ Aplicar una transición espacial que muestre con claridad que el modal nace del 
 
 En Estación Radial, reutilizar o generalizar antes que duplicar:
 
-- `liquidPath()` y `runLiquidGenie()` en `resources/js/admin.js`.
-- `.schedule-genie-layer` y sus elementos en `resources/css/admin.css`.
+- `runGenieMorph()` y `genieFallbackFrames()` en `resources/js/admin-genie-modal.js`.
+- `.admin-genie-layer` y sus elementos en `resources/css/admin.css`.
 
 ## Requisitos de calidad
 

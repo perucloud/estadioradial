@@ -1,4 +1,5 @@
 const animationFrames = new WeakMap();
+const animationColors = new WeakMap();
 
 const ensureLayer = () => {
     let layer = document.querySelector('[data-admin-genie-layer]');
@@ -13,12 +14,12 @@ const ensureLayer = () => {
         <svg viewBox="0 0 ${window.innerWidth} ${window.innerHeight}" preserveAspectRatio="none">
             <defs>
                 <linearGradient id="admin-genie-gradient" x1="0" y1="1" x2="0" y2="0">
-                    <stop offset="0%" stop-color="#5b21b6" />
-                    <stop offset="52%" stop-color="#7c3aed" />
-                    <stop offset="100%" stop-color="#4f46e5" />
+                    <stop offset="0%" stop-color="#5b21b6" data-genie-color-dark />
+                    <stop offset="52%" stop-color="#7c3aed" data-genie-color-base />
+                    <stop offset="100%" stop-color="#4f46e5" data-genie-color-light />
                 </linearGradient>
                 <filter id="admin-genie-glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#4c1d95" flood-opacity=".3" />
+                    <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#4c1d95" flood-opacity=".3" data-genie-color-shadow />
                 </filter>
             </defs>
             <path class="admin-genie-layer__sheet" data-genie-sheet />
@@ -28,6 +29,46 @@ const ensureLayer = () => {
     document.body.append(layer);
 
     return layer;
+};
+
+const parseColor = (value) => {
+    if (!value) return null;
+
+    const probe = document.createElement('span');
+    probe.style.color = value.trim();
+    if (!probe.style.color) return null;
+    probe.style.position = 'fixed';
+    probe.style.pointerEvents = 'none';
+    probe.style.opacity = '0';
+    document.body.append(probe);
+    const resolved = window.getComputedStyle(probe).color;
+    probe.remove();
+    const channels = resolved.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+
+    return channels?.length === 3 ? channels : null;
+};
+
+const mixColor = (channels, target, amount) => channels.map(
+    (channel) => Math.round(channel + ((target - channel) * amount)),
+);
+const rgb = (channels) => `rgb(${channels.join(', ')})`;
+const resolveTriggerColors = (trigger) => {
+    const computed = trigger ? window.getComputedStyle(trigger) : null;
+    const custom = computed?.getPropertyValue('--genie-color').trim();
+    const background = computed?.backgroundColor;
+    const foreground = computed?.color;
+    const transparent = !background || background === 'transparent' || background === 'rgba(0, 0, 0, 0)';
+    const base = parseColor(custom)
+        ?? parseColor(trigger?.dataset.genieColor)
+        ?? parseColor(transparent ? foreground : background)
+        ?? [124, 58, 237];
+
+    return {
+        base: rgb(base),
+        dark: rgb(mixColor(base, 0, .28)),
+        light: rgb(mixColor(base, 255, .16)),
+        shadow: rgb(mixColor(base, 0, .42)),
+    };
 };
 
 const lerp = (start, end, progress) => start + ((end - start) * progress);
@@ -98,6 +139,15 @@ export const runGenieMorph = ({
     const triggerRect = trigger?.getBoundingClientRect() ?? dialog.getBoundingClientRect();
     const dialogRect = dialog.getBoundingClientRect();
     const startedAt = performance.now();
+    const colors = direction === 'open'
+        ? resolveTriggerColors(trigger)
+        : (animationColors.get(dialog) ?? resolveTriggerColors(trigger));
+
+    if (direction === 'open') animationColors.set(dialog, colors);
+    layer.querySelector('[data-genie-color-dark]').setAttribute('stop-color', colors.dark);
+    layer.querySelector('[data-genie-color-base]').setAttribute('stop-color', colors.base);
+    layer.querySelector('[data-genie-color-light]').setAttribute('stop-color', colors.light);
+    layer.querySelector('[data-genie-color-shadow]').setAttribute('flood-color', colors.shadow);
 
     svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
     if (!layer.matches(':popover-open')) layer.showPopover();
@@ -133,6 +183,7 @@ export const runGenieMorph = ({
         dialog.style.removeProperty('opacity');
         dialog.style.removeProperty('transform');
         animationFrames.delete(dialog);
+        if (direction === 'close') animationColors.delete(dialog);
         onFinish?.();
     };
 
