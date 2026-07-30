@@ -19,6 +19,8 @@ return [
 
     'default' => env('DB_CONNECTION', 'sqlite'),
 
+    'migration_schema_only' => env('DB_MIGRATION_SCHEMA_ONLY', false),
+
     /*
     |--------------------------------------------------------------------------
     | Database Connections
@@ -42,6 +44,36 @@ return [
             'journal_mode' => null,
             'synchronous' => null,
             'transaction_mode' => 'DEFERRED',
+        ],
+
+        'migration_sqlite' => [
+            'driver' => 'sqlite',
+            'database' => env('MIGRATION_SQLITE_DATABASE', database_path('database.sqlite')),
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+            'busy_timeout' => 5000,
+            'journal_mode' => null,
+            'synchronous' => null,
+            'transaction_mode' => 'DEFERRED',
+        ],
+
+        'migration_mysql' => [
+            'driver' => 'mysql',
+            'host' => env('MIGRATION_MYSQL_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('MIGRATION_MYSQL_PORT', env('DB_PORT', '3306')),
+            'database' => env('MIGRATION_MYSQL_DATABASE', 'estacionradial'),
+            'username' => env('MIGRATION_MYSQL_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('MIGRATION_MYSQL_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('MIGRATION_MYSQL_SOCKET', env('DB_SOCKET', '')),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => 'InnoDB',
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
         ],
 
         'mysql' => [
