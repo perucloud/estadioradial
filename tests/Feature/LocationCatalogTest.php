@@ -86,4 +86,25 @@ class LocationCatalogTest extends TestCase
             ->assertSee('Ecuador')
             ->assertDontSee('Carumas');
     }
+
+    public function test_location_admin_uses_responsive_grid_and_professional_modals(): void
+    {
+        AdminAccess::sync();
+        $user = User::factory()->create();
+        $user->roles()->attach(Role::query()->where('slug', 'superadmin')->firstOrFail());
+
+        $response = $this->actingAs($user)->get(route('admin.locations.index', [
+            'q' => 'Carumas',
+        ]));
+
+        $response
+            ->assertOk()
+            ->assertSee('location-admin-table', false)
+            ->assertSee('data-location-create-dialog', false)
+            ->assertSee('data-location-edit-dialog', false)
+            ->assertSee('data-location-edit', false)
+            ->assertSee('data-confirm-delete', false)
+            ->assertSee('Nueva ubicación')
+            ->assertSee('Carumas');
+    }
 }

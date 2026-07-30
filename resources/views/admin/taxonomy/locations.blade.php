@@ -5,300 +5,351 @@
 @section('heading', 'Ubicaciones')
 
 @section('content')
-    <div class="taxonomy-metrics taxonomy-metrics--locations" aria-label="Resumen territorial">
-        <article><span>Total</span><strong>{{ $stats['total'] }}</strong></article>
-        <article><span>Países</span><strong>{{ $stats['countries'] }}</strong></article>
-        <article><span>Regiones</span><strong>{{ $stats['regions'] }}</strong></article>
-        <article><span>Provincias</span><strong>{{ $stats['provinces'] }}</strong></article>
-        <article><span>Distritos</span><strong>{{ $stats['districts'] }}</strong></article>
-        <article><span>Papelera</span><strong>{{ $stats['trash'] }}</strong></article>
-    </div>
+    @php
+        $locationValidationFields = [
+            'name', 'slug', 'type', 'parent_id', 'country_code', 'ubigeo',
+            'latitude', 'longitude', 'description', 'seo_title', 'seo_description', 'is_active',
+        ];
+        $openLocationContext = $errors->hasAny($locationValidationFields)
+            ? old('form_context', 'create')
+            : null;
+        $typeIcons = [
+            'country' => '🌐',
+            'region' => '🗺️',
+            'province' => '📍',
+            'district' => '🏘️',
+        ];
+    @endphp
 
-    <details class="panel taxonomy-create" @if ($errors->hasAny(['name', 'slug', 'type', 'parent_id', 'country_code'])) open @endif>
-        <summary class="taxonomy-create__summary">
-            <span>
+    <div
+        class="category-admin location-admin"
+        data-location-admin
+        @if ($openLocationContext) data-location-open-context="{{ $openLocationContext }}" @endif
+        data-location-old-values="{{ json_encode(old(), JSON_UNESCAPED_UNICODE) }}"
+    >
+        <div class="taxonomy-metrics taxonomy-metrics--locations location-metrics" aria-label="Resumen territorial">
+            <article><span>Total</span><strong>{{ $stats['total'] }}</strong></article>
+            <article><span>Países</span><strong>{{ $stats['countries'] }}</strong></article>
+            <article><span>Regiones</span><strong>{{ $stats['regions'] }}</strong></article>
+            <article><span>Provincias</span><strong>{{ $stats['provinces'] }}</strong></article>
+            <article><span>Distritos</span><strong>{{ $stats['districts'] }}</strong></article>
+            <article><span>Papelera</span><strong>{{ $stats['trash'] }}</strong></article>
+        </div>
+
+        <section class="panel category-create-launch location-create-launch">
+            <div>
                 <span class="eyebrow">Nueva ubicación</span>
-                <strong>Crear división territorial</strong>
-            </span>
-            <span class="button button--primary">+ Ubicación personalizada</span>
-        </summary>
+                <h2>Amplía el catálogo territorial</h2>
+                <p>Agrega una ubicación personalizada únicamente cuando no exista en el catálogo importado.</p>
+            </div>
+            <button class="button button--primary" type="button" data-location-create-open>
+                <span aria-hidden="true">＋</span>
+                Nueva ubicación
+            </button>
+        </section>
 
-        <form method="post" action="{{ route('admin.locations.store') }}" class="form-stack taxonomy-form" data-location-form data-location-options-url="{{ $locationOptionsUrl }}">
-            @csrf
-            <div class="form-grid form-grid--three">
+        <section class="panel taxonomy-toolbar category-toolbar">
+            <form method="get" action="{{ route('admin.locations.index') }}" class="taxonomy-filters taxonomy-filters--locations" data-auto-filter>
+                <label><span class="sr-only">Buscar</span><input type="search" name="q" value="{{ $search }}" placeholder="Buscar nombre, slug o UBIGEO"></label>
                 <label>
-                    Nombre
-                    <input type="text" name="name" value="{{ old('name') }}" maxlength="120" required>
-                    @error('name') <small class="field-error">{{ $message }}</small> @enderror
-                </label>
-                <label>
-                    Slug
-                    <input type="text" name="slug" value="{{ old('slug') }}" maxlength="140" placeholder="Se genera automáticamente">
-                    @error('slug') <small class="field-error">{{ $message }}</small> @enderror
-                </label>
-                <label>
-                    Tipo
-                    <select name="type" data-location-type required>
+                    <span class="sr-only">Tipo</span>
+                    <select name="type">
+                        <option value="">Todos los niveles</option>
                         @foreach ($types as $value => $label)
-                            <option value="{{ $value }}" @selected(old('type', 'country') === $value)>{{ $label }}</option>
+                            <option value="{{ $value }}" @selected($typeFilter === $value)>{{ $label }}</option>
                         @endforeach
                     </select>
-                    @error('type') <small class="field-error">{{ $message }}</small> @enderror
                 </label>
-            </div>
-
-            <div class="form-grid form-grid--three">
                 <label>
-                    Ubicación superior
-                    <select name="parent_id" data-location-parent>
-                        <option value="">Nivel principal</option>
-                        @if ($oldParent)
-                            <option
-                                value="{{ $oldParent->id }}"
-                                data-location-option-type="{{ $oldParent->type }}"
-                                selected
-                            >
-                                {{ $oldParent->name }} · {{ $oldParent->typeLabel() }}
-                            </option>
-                        @endif
+                    <span class="sr-only">Estado</span>
+                    <select name="status">
+                        <option value="">Todos los estados</option>
+                        <option value="active" @selected($status === 'active')>Activas</option>
+                        <option value="inactive" @selected($status === 'inactive')>Inactivas</option>
+                        <option value="trash" @selected($status === 'trash')>Papelera</option>
                     </select>
-                    <small class="field-help" data-location-parent-help>Los países se crean en el nivel principal.</small>
-                    @error('parent_id') <small class="field-error">{{ $message }}</small> @enderror
                 </label>
                 <label>
-                    Código de país
-                    <input type="text" name="country_code" value="{{ old('country_code') }}" maxlength="2" placeholder="PE" data-country-code>
-                    <small class="field-help">ISO de dos letras; opcional en el catálogo nominal de países.</small>
-                    @error('country_code') <small class="field-error">{{ $message }}</small> @enderror
+                    <span class="sr-only">Ubicación superior</span>
+                    <select name="parent">
+                        <option value="">Cualquier ubicación superior</option>
+                        <option value="root" @selected($parentFilter === 'root')>Solo países</option>
+                        @foreach ($filterParentOptions as $option)
+                            <option value="{{ $option->id }}" @selected($parentFilter === (string) $option->id)>Dentro de {{ $option->name }}</option>
+                        @endforeach
+                    </select>
                 </label>
                 <label>
-                    Código UBIGEO
-                    <input type="text" name="ubigeo" value="{{ old('ubigeo') }}" maxlength="12" placeholder="Opcional">
-                    @error('ubigeo') <small class="field-error">{{ $message }}</small> @enderror
+                    <span class="sr-only">Resultados por página</span>
+                    <select name="per_page">
+                        @foreach ([10, 20, 50, 100] as $size)
+                            <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} por página</option>
+                        @endforeach
+                    </select>
                 </label>
+                <button class="button button--primary" type="submit">Filtrar</button>
+                @if ($search !== '' || $status !== '' || $typeFilter !== '' || $parentFilter !== '')
+                    <a class="button button--quiet" href="{{ route('admin.locations.index') }}">Limpiar</a>
+                @endif
+            </form>
+        </section>
+
+        @if ($errors->has('location'))
+            <div class="alert alert--error">{{ $errors->first('location') }}</div>
+        @endif
+
+        <div class="category-list-heading">
+            <div>
+                <span class="eyebrow">{{ $status === 'trash' ? 'Papelera territorial' : 'Jerarquía geográfica' }}</span>
+                <h2>{{ $status === 'trash' ? 'Ubicaciones eliminadas' : 'Países, regiones, provincias y distritos' }}</h2>
+                <p>
+                    {{ $status === 'trash'
+                        ? 'Restaura una ubicación o elimínala definitivamente.'
+                        : 'La sangría representa el nivel geográfico y la dependencia territorial.' }}
+                </p>
             </div>
-
-            <div class="form-grid">
-                <label>Latitud <input type="number" step="0.0000001" name="latitude" value="{{ old('latitude') }}" min="-90" max="90" placeholder="Opcional"></label>
-                <label>Longitud <input type="number" step="0.0000001" name="longitude" value="{{ old('longitude') }}" min="-180" max="180" placeholder="Opcional"></label>
-            </div>
-
-            <label>Descripción <textarea name="description" rows="3" maxlength="1500">{{ old('description') }}</textarea></label>
-            <div class="form-grid">
-                <label>Título SEO <input type="text" name="seo_title" value="{{ old('seo_title') }}" maxlength="70" placeholder="Se completa desde el nombre"></label>
-                <label>Descripción SEO <textarea name="seo_description" rows="2" maxlength="170" placeholder="Se completa desde la descripción">{{ old('seo_description') }}</textarea></label>
-            </div>
-
-            <input type="hidden" name="is_active" value="0">
-            <label class="check-row"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', true))><span>Ubicación activa</span></label>
-
-            <div class="form-actions">
-                <small class="field-help">La jerarquía territorial se valida antes de guardar.</small>
-                <button class="button button--primary" type="submit">Crear ubicación</button>
-            </div>
-        </form>
-    </details>
-
-    <section class="panel taxonomy-toolbar">
-        <form method="get" action="{{ route('admin.locations.index') }}" class="taxonomy-filters taxonomy-filters--locations" data-auto-filter>
-            <label><span class="sr-only">Buscar</span><input type="search" name="q" value="{{ $search }}" placeholder="Buscar nombre, slug o UBIGEO"></label>
-            <label>
-                <span class="sr-only">Tipo</span>
-                <select name="type">
-                    <option value="">Todos los niveles</option>
-                    @foreach ($types as $value => $label)
-                        <option value="{{ $value }}" @selected($typeFilter === $value)>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </label>
-            <label>
-                <span class="sr-only">Estado</span>
-                <select name="status">
-                    <option value="">Todos los estados</option>
-                    <option value="active" @selected($status === 'active')>Activas</option>
-                    <option value="inactive" @selected($status === 'inactive')>Inactivas</option>
-                    <option value="trash" @selected($status === 'trash')>Papelera</option>
-                </select>
-            </label>
-            <label>
-                <span class="sr-only">Ubicación superior</span>
-                <select name="parent">
-                    <option value="">Cualquier ubicación superior</option>
-                    <option value="root" @selected($parentFilter === 'root')>Solo países</option>
-                    @foreach ($filterParentOptions as $option)
-                        <option value="{{ $option->id }}" @selected($parentFilter === (string) $option->id)>Dentro de {{ $option->name }}</option>
-                    @endforeach
-                </select>
-            </label>
-            <label>
-                <span class="sr-only">Resultados por página</span>
-                <select name="per_page">
-                    @foreach ([10, 20, 50, 100] as $size)
-                        <option value="{{ $size }}" @selected($perPage === $size)>{{ $size }} por página</option>
-                    @endforeach
-                </select>
-            </label>
-            <button class="button button--primary" type="submit">Filtrar</button>
-            @if ($search !== '' || $status !== '' || $typeFilter !== '' || $parentFilter !== '')
-                <a class="button button--quiet" href="{{ route('admin.locations.index') }}">Limpiar</a>
+            @if ($status !== 'trash')
+                <button class="button button--primary" type="submit" form="location-order-form">Guardar orden</button>
+                <form id="location-order-form" method="post" action="{{ route('admin.locations.reorder') }}">@csrf</form>
             @endif
-        </form>
-    </section>
-
-    @if ($errors->has('location'))
-        <div class="alert alert--error">{{ $errors->first('location') }}</div>
-    @endif
-
-    @if ($status !== 'trash')
-        <div class="page-actions">
-            <p>Ordena los territorios dentro de su nivel geográfico.</p>
-            <button class="button button--primary" type="submit" form="location-order-form">Guardar orden</button>
         </div>
-        <form id="location-order-form" method="post" action="{{ route('admin.locations.reorder') }}">@csrf</form>
-    @endif
 
-    <section class="panel table-panel">
-        <div class="responsive-table">
-            <table class="taxonomy-table location-table">
-                <thead>
-                    <tr>
-                        @if ($status !== 'trash') <th>Orden</th> @endif
-                        <th>Ubicación</th>
-                        <th>Tipo</th>
-                        <th>Códigos</th>
-                        <th>Noticias</th>
-                        <th>Estado</th>
-                        <th><span class="sr-only">Acciones</span></th>
-                    </tr>
-                </thead>
-                <tbody @if ($status !== 'trash') data-sortable-locations @endif>
-                    @forelse ($locations as $location)
-                        <tr @if ($status !== 'trash') draggable="true" data-location-row @endif>
-                            @if ($status !== 'trash')
-                                <td>
-                                    <span class="drag-handle" aria-hidden="true">⋮⋮</span>
-                                    <input
-                                        class="order-input"
-                                        type="number"
-                                        name="order[{{ $location->id }}]"
-                                        value="{{ $location->display_order }}"
-                                        min="1"
-                                        max="10000"
-                                        form="location-order-form"
-                                        aria-label="Orden de {{ $location->name }}"
-                                    >
-                                </td>
-                            @endif
-                            <td>
-                                <div class="taxonomy-name" style="--tree-depth: {{ $location->tree_depth ?? 0 }}">
-                                    <span class="location-type-icon" aria-hidden="true">
-                                        {{ ['country' => '🌐', 'region' => '🗺️', 'province' => '📍', 'district' => '🏘️'][$location->type] }}
-                                    </span>
-                                    <span>
-                                        <strong>{{ $location->name }}</strong>
-                                        <small>{{ $location->slug }} · superior: {{ $location->parent?->name ?? 'ninguna' }}</small>
-                                    </span>
-                                </div>
-                            </td>
-                            <td><span class="location-type-badge location-type-badge--{{ $location->type }}">{{ $location->typeLabel() }}</span><small>{{ $location->children_count }} elementos hijos</small></td>
-                            <td>
-                                <strong>{{ $location->country_code ?? '—' }}</strong>
-                                <small>UBIGEO: {{ $location->ubigeo ?? 'sin registrar' }}</small>
-                                <small>{{ $location->sourceLabel() }}</small>
-                            </td>
-                            <td><strong>{{ $location->posts_count }}</strong><small>publicaciones</small></td>
-                            <td>
-                                @if ($status === 'trash')
-                                    <span class="badge badge--trash">Papelera</span>
-                                    <small>{{ $location->deleted_at?->diffForHumans() }}</small>
-                                @else
-                                    <span class="badge {{ $location->is_active ? 'badge--success' : 'badge--muted' }}">{{ $location->is_active ? 'Activa' : 'Inactiva' }}</span>
+        <section class="panel table-panel category-table-panel location-table-panel">
+            <div class="responsive-table category-table-wrap">
+                <table class="taxonomy-table category-table location-admin-table {{ $status === 'trash' ? 'location-admin-table--trash' : '' }}">
+                    <thead>
+                        <tr>
+                            @if ($status !== 'trash') <th>Orden</th> @endif
+                            <th>Ubicación</th>
+                            <th>Tipo</th>
+                            <th>Códigos</th>
+                            <th>Noticias</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody @if ($status !== 'trash') data-sortable-locations @endif>
+                        @forelse ($locations as $location)
+                            @php
+                                $editPayload = [
+                                    'id' => $location->id,
+                                    'name' => $location->name,
+                                    'slug' => $location->slug,
+                                    'type' => $location->type,
+                                    'parent_id' => $location->parent_id,
+                                    'country_code' => $location->country_code,
+                                    'ubigeo' => $location->ubigeo,
+                                    'latitude' => $location->latitude,
+                                    'longitude' => $location->longitude,
+                                    'description' => $location->description,
+                                    'seo_title' => $location->seo_title,
+                                    'seo_description' => $location->seo_description,
+                                    'is_active' => (bool) $location->is_active,
+                                    'update_url' => route('admin.locations.update', $location),
+                                ];
+                                $deleteProtected = $location->children_count > 0 || $location->posts_count > 0;
+                                $deleteProtection = $location->children_count > 0
+                                    ? 'Contiene divisiones territoriales'
+                                    : ($location->posts_count > 0 ? 'Está siendo usada por noticias' : null);
+                            @endphp
+                            <tr @if ($status !== 'trash') draggable="true" data-location-row @endif>
+                                @if ($status !== 'trash')
+                                    <td data-label="Orden">
+                                        <div class="category-order-control">
+                                            <span class="drag-handle" aria-hidden="true">⋮⋮</span>
+                                            <input
+                                                class="order-input"
+                                                type="number"
+                                                name="order[{{ $location->id }}]"
+                                                value="{{ $location->display_order }}"
+                                                min="1"
+                                                max="10000"
+                                                form="location-order-form"
+                                                aria-label="Orden de {{ $location->name }}"
+                                            >
+                                        </div>
+                                    </td>
                                 @endif
-                            </td>
-                            <td>
-                                @if ($status === 'trash')
-                                    <div class="taxonomy-row-actions">
-                                        <form method="post" action="{{ route('admin.locations.restore', $location->id) }}">@csrf<button class="button button--quiet button--compact" type="submit">Restaurar</button></form>
-                                        <form method="post" action="{{ route('admin.locations.force-destroy', $location->id) }}" onsubmit="return confirm('¿Eliminar definitivamente esta ubicación?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button class="danger-link" type="submit">Eliminar definitivamente</button>
-                                        </form>
+                                <td data-label="Ubicación">
+                                    <div class="taxonomy-name" style="--tree-depth: {{ $location->tree_depth ?? 0 }}">
+                                        <span class="location-type-icon" aria-hidden="true">{{ $typeIcons[$location->type] }}</span>
+                                        <span>
+                                            <strong>{{ $location->name }}</strong>
+                                            <small>/{{ $location->slug }} · superior: {{ $location->parent?->name ?? 'ninguna' }}</small>
+                                        </span>
                                     </div>
-                                @else
-                                    <details class="row-editor">
-                                        <summary>Editar</summary>
-                                        <div class="row-editor__panel row-editor__panel--category">
-                                            <form method="post" action="{{ route('admin.locations.update', $location) }}" class="form-stack form-stack--compact" data-location-form data-location-options-url="{{ $locationOptionsUrl }}">
+                                </td>
+                                <td data-label="Tipo">
+                                    <span class="location-type-badge location-type-badge--{{ $location->type }}">{{ $location->typeLabel() }}</span>
+                                    <small>{{ $location->children_count }} elementos hijos</small>
+                                </td>
+                                <td data-label="Códigos">
+                                    <strong>{{ $location->country_code ?? '—' }}</strong>
+                                    <small>UBIGEO: {{ $location->ubigeo ?? 'sin registrar' }}</small>
+                                    <small>{{ $location->sourceLabel() }}</small>
+                                </td>
+                                <td data-label="Noticias">
+                                    <strong>{{ $location->posts_count }}</strong>
+                                    <small>publicaciones</small>
+                                </td>
+                                <td data-label="Estado">
+                                    @if ($status === 'trash')
+                                        <span class="badge badge--trash">Papelera</span>
+                                        <small>{{ $location->deleted_at?->diffForHumans() }}</small>
+                                    @else
+                                        <span class="badge {{ $location->is_active ? 'badge--success' : 'badge--muted' }}">
+                                            {{ $location->is_active ? 'Activa' : 'Inactiva' }}
+                                        </span>
+                                    @endif
+                                </td>
+                                <td data-label="Acciones">
+                                    @if ($status === 'trash')
+                                        <div class="category-actions">
+                                            <form method="post" action="{{ route('admin.locations.restore', $location->id) }}">
                                                 @csrf
-                                                @method('PUT')
-                                                <div class="form-grid">
-                                                    <label>Nombre <input type="text" name="name" value="{{ $location->name }}" maxlength="120" required></label>
-                                                    <label>Slug <input type="text" name="slug" value="{{ $location->slug }}" maxlength="140" required></label>
-                                                </div>
-                                                <div class="form-grid">
-                                                    <label>
-                                                        Tipo
-                                                        <select name="type" data-location-type>
-                                                            @foreach ($types as $value => $label)
-                                                                <option value="{{ $value }}" @selected($location->type === $value)>{{ $label }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </label>
-                                                    <label>
-                                                        Ubicación superior
-                                                        <select name="parent_id" data-location-parent>
-                                                            <option value="">Nivel principal</option>
-                                                            @if ($location->parent)
-                                                                <option
-                                                                    value="{{ $location->parent->id }}"
-                                                                    data-location-option-type="{{ $location->parent->type }}"
-                                                                    selected
-                                                                >{{ $location->parent->name }} · {{ $location->parent->typeLabel() }}</option>
-                                                            @endif
-                                                        </select>
-                                                        <small class="field-help" data-location-parent-help></small>
-                                                    </label>
-                                                </div>
-                                                <div class="form-grid">
-                                                    <label>Código país <input type="text" name="country_code" value="{{ $location->country_code }}" maxlength="2" data-country-code></label>
-                                                    <label>UBIGEO <input type="text" name="ubigeo" value="{{ $location->ubigeo }}" maxlength="12"></label>
-                                                </div>
-                                                <div class="form-grid">
-                                                    <label>Latitud <input type="number" step="0.0000001" name="latitude" value="{{ $location->latitude }}"></label>
-                                                    <label>Longitud <input type="number" step="0.0000001" name="longitude" value="{{ $location->longitude }}"></label>
-                                                </div>
-                                                <label>Descripción <textarea name="description" rows="2" maxlength="1500">{{ $location->description }}</textarea></label>
-                                                <label>Título SEO <input type="text" name="seo_title" value="{{ $location->seo_title }}" maxlength="70"></label>
-                                                <label>Descripción SEO <textarea name="seo_description" rows="2" maxlength="170">{{ $location->seo_description }}</textarea></label>
-                                                <input type="hidden" name="is_active" value="0">
-                                                <label class="check-row"><input type="checkbox" name="is_active" value="1" @checked($location->is_active)><span>Ubicación activa</span></label>
-                                                <button class="button button--primary" type="submit">Guardar cambios</button>
+                                                <button class="category-action category-action--restore" type="submit">
+                                                    <span aria-hidden="true">↻</span> Restaurar
+                                                </button>
                                             </form>
-
-                                            <form method="post" action="{{ route('admin.locations.destroy', $location) }}" onsubmit="return confirm('¿Enviar esta ubicación a la papelera?')">
+                                            <form
+                                                method="post"
+                                                action="{{ route('admin.locations.force-destroy', $location->id) }}"
+                                                data-confirm-delete="Esta ubicación será eliminada definitivamente."
+                                                data-confirm-title="Eliminar ubicación definitivamente"
+                                                data-confirm-name="{{ $location->name }}"
+                                                data-confirm-button="Eliminar definitivamente"
+                                            >
                                                 @csrf
                                                 @method('DELETE')
-                                                <button class="danger-link" type="submit" @disabled($location->children_count > 0 || $location->posts_count > 0)>
-                                                    {{ $location->children_count > 0
-                                                        ? 'Contiene divisiones territoriales'
-                                                        : ($location->posts_count > 0 ? 'Ubicación usada por noticias' : 'Enviar a la papelera') }}
+                                                <button class="category-action category-action--delete" type="submit">
+                                                    <span aria-hidden="true">⌫</span> Eliminar
                                                 </button>
                                             </form>
                                         </div>
-                                    </details>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr><td colspan="{{ $status === 'trash' ? 6 : 7 }}">No se encontraron ubicaciones.</td></tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="table-pagination">
-            <p>Mostrando {{ $locations->firstItem() ?? 0 }}–{{ $locations->lastItem() ?? 0 }} de {{ $locations->total() }} ubicaciones</p>
-            {{ $locations->onEachSide(1)->links() }}
-        </div>
-    </section>
+                                    @else
+                                        <div class="category-actions">
+                                            <button
+                                                class="category-action category-action--edit"
+                                                type="button"
+                                                data-location-edit
+                                                data-location-id="{{ $location->id }}"
+                                                data-location-payload="{{ json_encode($editPayload, JSON_UNESCAPED_UNICODE) }}"
+                                            >
+                                                <span aria-hidden="true">✎</span> Editar
+                                            </button>
+                                            <form
+                                                method="post"
+                                                action="{{ route('admin.locations.destroy', $location) }}"
+                                                data-confirm-delete="La ubicación se enviará a la papelera."
+                                                data-confirm-title="Eliminar ubicación"
+                                                data-confirm-name="{{ $location->name }}"
+                                                data-confirm-button="Enviar a la papelera"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+                                                <button
+                                                    class="category-action category-action--delete"
+                                                    type="submit"
+                                                    @disabled($deleteProtected)
+                                                    title="{{ $deleteProtection }}"
+                                                >
+                                                    <span aria-hidden="true">⌫</span> Eliminar
+                                                </button>
+                                            </form>
+                                        </div>
+                                        @if ($deleteProtected)
+                                            <small class="location-delete-protection">{{ $deleteProtection }}</small>
+                                        @endif
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr class="category-table__empty">
+                                <td colspan="{{ $status === 'trash' ? 6 : 7 }}">No se encontraron ubicaciones.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-pagination">
+                <p>Mostrando {{ $locations->firstItem() ?? 0 }}–{{ $locations->lastItem() ?? 0 }} de {{ $locations->total() }} ubicaciones</p>
+                {{ $locations->onEachSide(1)->links() }}
+            </div>
+        </section>
+
+        <dialog
+            class="category-editor-dialog location-editor-dialog"
+            data-location-create-dialog
+            aria-labelledby="location-create-title"
+        >
+            <form
+                method="post"
+                action="{{ route('admin.locations.store') }}"
+                class="category-editor-form"
+                data-location-form
+                data-location-options-url="{{ $locationOptionsUrl }}"
+            >
+                @csrf
+                <header class="category-editor-dialog__header">
+                    <div class="category-editor-dialog__identity">
+                        <span class="category-editor-dialog__icon" aria-hidden="true">＋</span>
+                        <div>
+                            <span class="eyebrow">Cobertura geográfica</span>
+                            <h2 id="location-create-title">Nueva ubicación</h2>
+                        </div>
+                    </div>
+                    <button type="button" data-location-dialog-close aria-label="Cerrar">×</button>
+                </header>
+                <div class="category-editor-dialog__body">
+                    @include('admin.taxonomy.partials.location-form-fields', ['mode' => 'create'])
+                </div>
+                <footer class="category-editor-dialog__footer">
+                    <small>La jerarquía territorial será validada antes de guardar.</small>
+                    <div>
+                        <button class="button button--quiet" type="button" data-location-dialog-close>Cancelar</button>
+                        <button class="button button--primary" type="submit">Crear ubicación</button>
+                    </div>
+                </footer>
+            </form>
+        </dialog>
+
+        <dialog
+            class="category-editor-dialog location-editor-dialog"
+            data-location-edit-dialog
+            aria-labelledby="location-edit-title"
+        >
+            <form
+                method="post"
+                action="{{ route('admin.locations.index') }}"
+                class="category-editor-form"
+                data-location-edit-form
+                data-location-form
+                data-location-options-url="{{ $locationOptionsUrl }}"
+            >
+                @csrf
+                @method('PUT')
+                <header class="category-editor-dialog__header">
+                    <div class="category-editor-dialog__identity">
+                        <span class="category-editor-dialog__icon category-editor-dialog__icon--edit" aria-hidden="true">✎</span>
+                        <div>
+                            <span class="eyebrow">Configuración territorial</span>
+                            <h2 id="location-edit-title">Editar ubicación</h2>
+                        </div>
+                    </div>
+                    <button type="button" data-location-dialog-close aria-label="Cerrar">×</button>
+                </header>
+                <div class="category-editor-dialog__body">
+                    @include('admin.taxonomy.partials.location-form-fields', ['mode' => 'edit'])
+                </div>
+                <footer class="category-editor-dialog__footer">
+                    <small data-location-edit-summary>Actualiza los datos y la jerarquía territorial.</small>
+                    <div>
+                        <button class="button button--quiet" type="button" data-location-dialog-close>Cancelar</button>
+                        <button class="button button--primary category-save-button" type="submit">Guardar cambios</button>
+                    </div>
+                </footer>
+            </form>
+        </dialog>
+    </div>
 @endsection

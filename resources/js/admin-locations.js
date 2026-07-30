@@ -56,7 +56,7 @@ document.querySelectorAll('[data-location-form]').forEach((form) => {
         const expected = parentTypes[type.value];
         if (!expected || !optionsUrl || loadedParentType === expected) return;
 
-        const selectedValue = parent.value;
+        const selectedValue = parent.dataset.pendingValue ?? parent.value;
         parent.disabled = true;
         parent.setAttribute('aria-busy', 'true');
 
@@ -71,11 +71,14 @@ document.querySelectorAll('[data-location-form]').forEach((form) => {
             parent.replaceChildren(root);
 
             payload.data.forEach((location) => {
+                if (String(location.id) === form.dataset.locationId) return;
+
                 const option = new Option(`${location.name} · ${labels[location.type]}`, location.id);
                 option.dataset.locationOptionType = location.type;
                 parent.add(option);
             });
             parent.value = selectedValue;
+            delete parent.dataset.pendingValue;
             loadedParentType = expected;
         } catch {
             if (help) help.textContent = 'No se pudieron cargar las ubicaciones superiores.';

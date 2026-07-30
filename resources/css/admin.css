@@ -3264,6 +3264,55 @@ details.taxonomy-create {
     width: 205px;
 }
 
+.location-admin-table th:first-child {
+    width: 90px;
+}
+
+.location-admin-table th:nth-child(2) {
+    width: 25%;
+}
+
+.location-admin-table th:nth-child(3) {
+    width: 120px;
+}
+
+.location-admin-table th:nth-child(4) {
+    width: 18%;
+}
+
+.location-admin-table th:nth-child(5) {
+    width: 88px;
+}
+
+.location-admin-table th:nth-child(6) {
+    width: 100px;
+}
+
+.location-admin-table th:last-child {
+    width: 205px;
+}
+
+.location-admin-table--trash th:first-child {
+    width: 29%;
+}
+
+.location-admin-table--trash th:nth-child(2) {
+    width: 120px;
+}
+
+.location-admin-table--trash th:nth-child(3) {
+    width: 21%;
+}
+
+.location-admin-table--trash th:nth-child(4),
+.location-admin-table--trash th:nth-child(5) {
+    width: 100px;
+}
+
+.location-admin-table--trash th:last-child {
+    width: 205px;
+}
+
 .category-table tbody tr {
     background: #fff;
     transition: background-color .18s ease, box-shadow .18s ease, transform .18s ease;
@@ -3371,6 +3420,45 @@ details.taxonomy-create {
     color: #176442;
     background: #e7f6ee;
     border-color: #b9e3cc;
+}
+
+.category-action:disabled {
+    color: #848c98;
+    background: #f1f3f5;
+    border-color: #dde1e6;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: .8;
+    transform: none;
+}
+
+.location-delete-protection {
+    display: block;
+    margin-top: 7px;
+    color: #8c5660;
+    font-size: .64rem;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+}
+
+.location-editor-active .check-row {
+    padding: 10px 11px;
+    align-items: flex-start;
+    background: #f8f9fb;
+    border: 1px solid #e2e5e9;
+    border-radius: 9px;
+}
+
+.location-editor-active .check-row > span {
+    display: grid;
+    gap: 2px;
+}
+
+.location-editor-active small {
+    color: var(--admin-muted);
+    font-size: .68rem;
+    font-weight: 500;
 }
 
 .category-delete-replacement[hidden] {
@@ -3826,6 +3914,7 @@ details.taxonomy-create {
     }
 
     .category-table tbody td[data-label="Categoría"],
+    .location-admin-table tbody td[data-label="Ubicación"],
     .category-table tbody td[data-label="Acciones"] {
         grid-column: 1 / -1;
     }
