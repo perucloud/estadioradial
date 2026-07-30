@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Location;
 use App\Models\PortalSetting;
+use App\Models\Post;
 use Illuminate\Support\Collection;
 
 class DefaultLocationSettings
@@ -121,6 +122,21 @@ class DefaultLocationSettings
             'location' => $location,
             'region' => $region,
         ];
+    }
+
+    public function shouldShowEditorialBadge(Post $post): bool
+    {
+        $identity = $this->editorialIdentity();
+
+        if (! $identity['enabled'] || $identity['label'] === '' || ! $identity['location']) {
+            return false;
+        }
+
+        if ($post->category?->slug !== 'regionales') {
+            return false;
+        }
+
+        return (int) $post->location_id === (int) $identity['location']->id;
     }
 
     /**

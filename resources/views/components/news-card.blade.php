@@ -11,7 +11,7 @@
                 style="--category-color: {{ $post->category->color }}"
                 href="{{ route('posts.category', $post->category) }}"
             >{{ $post->category->name }}</a>
-            <x-editorial-territory-badge variant="compact" />
+            <x-editorial-territory-badge :post="$post" variant="compact" />
         </div>
         @if ($post->location)
             <a class="location-link" href="{{ $post->location->publicUrl() }}">

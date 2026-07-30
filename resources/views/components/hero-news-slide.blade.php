@@ -15,7 +15,7 @@
                     class="category-pill"
                     style="--category-color: {{ $leadPost->category->color }}"
                 >{{ $leadPost->category->name }}</span>
-                <x-editorial-territory-badge variant="overlay" />
+                <x-editorial-territory-badge :post="$leadPost" variant="overlay" />
             </a>
             <div class="lead-story__body">
                 @if ($isFirst)
@@ -51,7 +51,7 @@
                                 style="--category-color: {{ $post->category->color }}"
                                 href="{{ route('posts.category', $post->category) }}"
                             >{{ $post->category->name }}</a>
-                            <x-editorial-territory-badge variant="compact" />
+                            <x-editorial-territory-badge :post="$post" variant="compact" />
                         </div>
                         <h2>
                             <a href="{{ route('posts.show', [$post->category, $post]) }}">

@@ -119,7 +119,7 @@
                                     style="--category-color: {{ $regionalLead->category->color }}"
                                     href="{{ route('posts.category', $regionalLead->category) }}"
                                 >{{ $regionalLead->category->name }}</a>
-                                <x-editorial-territory-badge variant="compact" />
+                                <x-editorial-territory-badge :post="$regionalLead" variant="compact" />
                             </div>
                             <a class="location-link" href="{{ $regionalLead->location->publicUrl() }}">
                                 <span aria-hidden="true">⌖</span> {{ $regionalLead->location->name }}
@@ -152,7 +152,7 @@
                                             style="--category-color: {{ $post->category->color }}"
                                             href="{{ route('posts.category', $post->category) }}"
                                         >{{ $post->category->name }}</a>
-                                        <x-editorial-territory-badge variant="compact" />
+                                        <x-editorial-territory-badge :post="$post" variant="compact" />
                                     </div>
                                     <a class="location-link" href="{{ $post->location->publicUrl() }}">
                                         <span aria-hidden="true">⌖</span> {{ $post->location->name }}
@@ -218,7 +218,7 @@
                                                 style="--category-color: {{ $post->category->color }}"
                                                 href="{{ route('posts.category', $post->category) }}"
                                             >{{ $post->category->name }}</a>
-                                            <x-editorial-territory-badge variant="compact" />
+                                            <x-editorial-territory-badge :post="$post" variant="compact" />
                                         </div>
                                         <h4>
                                             <a href="{{ route('posts.show', [$post->category, $post]) }}">{{ $post->title }}</a>

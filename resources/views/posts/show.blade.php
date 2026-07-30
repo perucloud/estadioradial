@@ -37,7 +37,7 @@
                             style="--category-color: {{ $post->category->color }}"
                             href="{{ route('posts.category', $post->category) }}"
                         >{{ $post->category->name }}</a>
-                        <x-editorial-territory-badge />
+                        <x-editorial-territory-badge :post="$post" />
                         <time datetime="{{ $post->published_at->toIso8601String() }}">
                             {{ $post->published_at->translatedFormat('d \d\e F \d\e Y, H:i') }}
                         </time>

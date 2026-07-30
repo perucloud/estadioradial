@@ -1,8 +1,11 @@
-@props(['variant' => 'inline'])
+@props(['post', 'variant' => 'inline'])
 
-@php($identity = app(\App\Support\DefaultLocationSettings::class)->editorialIdentity())
+@php
+    $settings = app(\App\Support\DefaultLocationSettings::class);
+    $identity = $settings->editorialIdentity();
+@endphp
 
-@if ($identity['enabled'] && $identity['label'] !== '')
+@if ($settings->shouldShowEditorialBadge($post))
     <span
         {{ $attributes->class([
             'territory-badge',

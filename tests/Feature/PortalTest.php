@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\Program;
 use Database\Seeders\PortalSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Blade;
 use Tests\TestCase;
 
 class PortalTest extends TestCase
@@ -39,8 +40,7 @@ class PortalTest extends TestCase
             ->assertSee('data-slider-mode="automatic"', false)
             ->assertSee('data-slider-interval="6000"', false)
             ->assertSee('data-slider-autoplay-toggle', false)
-            ->assertSee('Sede editorial: Juliaca · Puno')
-            ->assertSee('Juliaca · Puno')
+            ->assertDontSee('Sede editorial: Juliaca · Puno')
             ->assertSeeInOrder([
                 'aria-label="Facebook"',
                 'aria-label="X"',
@@ -50,6 +50,69 @@ class PortalTest extends TestCase
                 'aria-label="Abrir búsqueda"',
                 'aria-label="Abrir menú"',
             ], false);
+    }
+
+    public function test_editorial_badge_only_appears_for_regional_news_from_juliaca(): void
+    {
+        $regionales = Category::query()->where('slug', 'regionales')->firstOrFail();
+        $nacional = Category::query()->where('slug', 'nacional')->firstOrFail();
+        $juliaca = Location::query()
+            ->where('type', 'district')
+            ->where('slug', 'juliaca')
+            ->firstOrFail();
+        $carumas = Location::query()
+            ->where('type', 'district')
+            ->where('slug', 'carumas')
+            ->firstOrFail();
+
+        $regionalJuliaca = Post::query()->create([
+            'category_id' => $regionales->id,
+            'location_id' => $juliaca->id,
+            'title' => 'Información regional desde Juliaca',
+            'slug' => 'informacion-regional-desde-juliaca',
+            'excerpt' => 'Información correspondiente a la ciudad de Juliaca.',
+            'body' => '<p>Contenido regional de prueba.</p>',
+            'status' => 'published',
+            'published_at' => now(),
+        ])->load('category');
+        $nationalJuliaca = Post::query()->create([
+            'category_id' => $nacional->id,
+            'location_id' => $juliaca->id,
+            'title' => 'Información nacional registrada en Juliaca',
+            'slug' => 'informacion-nacional-registrada-en-juliaca',
+            'excerpt' => 'Información nacional de prueba.',
+            'body' => '<p>Contenido nacional de prueba.</p>',
+            'status' => 'published',
+            'published_at' => now(),
+        ])->load('category');
+        $regionalCarumas = Post::query()->create([
+            'category_id' => $regionales->id,
+            'location_id' => $carumas->id,
+            'title' => 'Información regional desde Carumas',
+            'slug' => 'informacion-regional-desde-carumas',
+            'excerpt' => 'Información correspondiente al distrito de Carumas.',
+            'body' => '<p>Contenido regional de otra ubicación.</p>',
+            'status' => 'published',
+            'published_at' => now(),
+        ])->load('category');
+
+        $matchingBadge = Blade::render(
+            '<x-editorial-territory-badge :post="$post" />',
+            ['post' => $regionalJuliaca],
+        );
+        $nationalBadge = Blade::render(
+            '<x-editorial-territory-badge :post="$post" />',
+            ['post' => $nationalJuliaca],
+        );
+        $otherRegionBadge = Blade::render(
+            '<x-editorial-territory-badge :post="$post" />',
+            ['post' => $regionalCarumas],
+        );
+
+        $this->assertStringContainsString('Sede editorial: Juliaca · Puno', $matchingBadge);
+        $this->assertStringContainsString('Juliaca · Puno', $matchingBadge);
+        $this->assertStringNotContainsString('territory-badge', $nationalBadge);
+        $this->assertStringNotContainsString('territory-badge', $otherRegionBadge);
     }
 
     public function test_most_viewed_news_are_ordered_by_view_count(): void
