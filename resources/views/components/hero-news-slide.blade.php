@@ -15,6 +15,7 @@
                     class="category-pill"
                     style="--category-color: {{ $leadPost->category->color }}"
                 >{{ $leadPost->category->name }}</span>
+                <x-editorial-territory-badge variant="overlay" />
             </a>
             <div class="lead-story__body">
                 @if ($isFirst)
@@ -44,11 +45,14 @@
                         <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}">
                     </a>
                     <div class="hero-story__body">
-                        <a
-                            class="category-pill"
-                            style="--category-color: {{ $post->category->color }}"
-                            href="{{ route('posts.category', $post->category) }}"
-                        >{{ $post->category->name }}</a>
+                        <div class="story-labels">
+                            <a
+                                class="category-pill"
+                                style="--category-color: {{ $post->category->color }}"
+                                href="{{ route('posts.category', $post->category) }}"
+                            >{{ $post->category->name }}</a>
+                            <x-editorial-territory-badge variant="compact" />
+                        </div>
                         <h2>
                             <a href="{{ route('posts.show', [$post->category, $post]) }}">
                                 {{ $post->title }}

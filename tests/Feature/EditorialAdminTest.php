@@ -289,21 +289,26 @@ class EditorialAdminTest extends TestCase
         $this->seed(LocationSeeder::class);
         $superadmin = $this->userWithRole('superadmin');
         $country = Location::query()->where('slug', 'peru')->where('type', 'country')->firstOrFail();
-        $region = Location::query()->where('slug', 'moquegua')->where('type', 'region')->firstOrFail();
-        $province = Location::query()->where('slug', 'mariscal-nieto')->where('type', 'province')->firstOrFail();
-        $district = Location::query()->where('slug', 'carumas')->where('type', 'district')->firstOrFail();
+        $region = Location::query()->where('slug', 'puno')->where('type', 'region')->firstOrFail();
+        $province = Location::query()->where('slug', 'san-roman')->where('type', 'province')->firstOrFail();
+        $district = Location::query()->where('slug', 'juliaca')->where('type', 'district')->firstOrFail();
 
         $dashboard = $this->actingAs($superadmin)
             ->get(route('admin.dashboard'))
             ->assertOk()
             ->assertSee('Alcance geográfico predeterminado')
             ->assertSee('Perú')
-            ->assertSee('Moquegua')
+            ->assertSee('Puno')
+            ->assertSee('San Roman')
+            ->assertSee('Juliaca')
+            ->assertSee('Badge territorial de las noticias')
             ->assertSee('Guardar ubicación predeterminada');
 
         $this->assertSame([
             'country' => $country->id,
             'region' => $region->id,
+            'province' => $province->id,
+            'district' => $district->id,
         ], $dashboard->viewData('defaultLocationSelection'));
 
         $newPost = $this->actingAs($superadmin)
@@ -312,6 +317,8 @@ class EditorialAdminTest extends TestCase
         $this->assertSame([
             'country' => $country->id,
             'region' => $region->id,
+            'province' => $province->id,
+            'district' => $district->id,
         ], $newPost->viewData('locationSelection'));
 
         $this->actingAs($superadmin)
@@ -320,6 +327,8 @@ class EditorialAdminTest extends TestCase
                 'default_location_region_id' => $region->id,
                 'default_location_province_id' => $province->id,
                 'default_location_district_id' => $district->id,
+                'editorial_badge_enabled' => '1',
+                'editorial_badge_label' => 'Juliaca · Puno',
             ])
             ->assertSessionHasNoErrors()
             ->assertSessionHas('status', 'Ubicación predeterminada actualizada.');
@@ -330,6 +339,10 @@ class EditorialAdminTest extends TestCase
             'province' => $province->id,
             'district' => $district->id,
         ], PortalSetting::value('site.default_location'));
+        $this->assertSame([
+            'enabled' => true,
+            'label' => 'Juliaca · Puno',
+        ], PortalSetting::value('site.editorial_territory'));
 
         $newPost = $this->actingAs($superadmin)->get(route('admin.posts.create'));
         $this->assertSame($district->id, $newPost->viewData('locationSelection')['district']);

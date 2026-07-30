@@ -39,6 +39,8 @@ class PortalTest extends TestCase
             ->assertSee('data-slider-mode="automatic"', false)
             ->assertSee('data-slider-interval="6000"', false)
             ->assertSee('data-slider-autoplay-toggle', false)
+            ->assertSee('Sede editorial: Juliaca · Puno')
+            ->assertSee('Juliaca · Puno')
             ->assertSeeInOrder([
                 'aria-label="Facebook"',
                 'aria-label="X"',

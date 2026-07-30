@@ -5,11 +5,14 @@
         <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}" loading="{{ $featured ? 'eager' : 'lazy' }}">
     </a>
     <div class="news-card__body">
-        <a
-            class="category-pill"
-            style="--category-color: {{ $post->category->color }}"
-            href="{{ route('posts.category', $post->category) }}"
-        >{{ $post->category->name }}</a>
+        <div class="story-labels">
+            <a
+                class="category-pill"
+                style="--category-color: {{ $post->category->color }}"
+                href="{{ route('posts.category', $post->category) }}"
+            >{{ $post->category->name }}</a>
+            <x-editorial-territory-badge variant="compact" />
+        </div>
         @if ($post->location)
             <a class="location-link" href="{{ $post->location->publicUrl() }}">
                 <span aria-hidden="true">⌖</span> {{ $post->location->name }}

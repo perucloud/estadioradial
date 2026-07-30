@@ -51,6 +51,8 @@ class UpdateDefaultLocationRequest extends FormRequest
                     ->where('is_active', true)
                     ->whereNull('deleted_at'),
             ],
+            'editorial_badge_enabled' => ['nullable', 'boolean'],
+            'editorial_badge_label' => ['nullable', 'string', 'max:60'],
         ];
     }
 

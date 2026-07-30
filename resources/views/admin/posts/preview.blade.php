@@ -16,6 +16,7 @@
             <header class="article__header">
                 <div class="article__kicker">
                     <span class="category-pill" style="--category-color: {{ $post->category->color }}">{{ $post->category->name }}</span>
+                    <x-editorial-territory-badge />
                     <span>{{ ucfirst(str_replace('_', ' ', $post->status)) }}</span>
                 </div>
                 <h1>{{ $post->title }}</h1>

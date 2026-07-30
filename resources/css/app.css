@@ -962,6 +962,66 @@ a {
     text-transform: uppercase;
 }
 
+.story-labels {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.territory-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 23px;
+    padding: 4px 9px 4px 7px;
+    color: #fff;
+    background: linear-gradient(135deg, #17191d, #30343a);
+    border: 1px solid rgb(255 255 255 / 13%);
+    border-radius: 999px;
+    box-shadow: 0 5px 13px rgb(24 27 31 / 16%);
+    font-size: .62rem;
+    font-weight: 850;
+    line-height: 1;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.territory-badge svg {
+    width: 13px;
+    height: 13px;
+    overflow: visible;
+    fill: none;
+    stroke: #ff4438;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+}
+
+.territory-badge--overlay {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 2;
+    min-height: 28px;
+    padding: 6px 11px 6px 9px;
+    background: rgb(18 20 23 / 90%);
+    border-color: rgb(255 255 255 / 22%);
+    box-shadow: 0 8px 22px rgb(0 0 0 / 28%);
+    backdrop-filter: blur(8px);
+}
+
+.territory-badge--compact {
+    min-height: 21px;
+    padding-block: 3px;
+    font-size: .56rem;
+}
+
+.article__kicker .territory-badge {
+    margin-left: 7px;
+}
+
 .on-air {
     border-block: 1px solid var(--line);
 }

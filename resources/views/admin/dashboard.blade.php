@@ -154,8 +154,58 @@
                     </label>
                 </div>
 
+                <div class="editorial-territory-settings">
+                    <div class="editorial-territory-settings__copy">
+                        <span class="eyebrow">Identidad pública</span>
+                        <h3>Badge territorial de las noticias</h3>
+                        <p>
+                            Se mostrará junto a cualquier categoría temática. Si dejas el texto vacío,
+                            se construirá automáticamente con el distrito y la región seleccionados.
+                        </p>
+                    </div>
+                    <div class="editorial-territory-settings__controls">
+                        <label class="check-row">
+                            <input type="hidden" name="editorial_badge_enabled" value="0">
+                            <input
+                                type="checkbox"
+                                name="editorial_badge_enabled"
+                                value="1"
+                                data-editorial-badge-enabled
+                                @checked(old('editorial_badge_enabled', $editorialIdentity['enabled']))
+                            >
+                            <span>Mostrar badge territorial</span>
+                        </label>
+                        <label>
+                            Texto personalizado
+                            <input
+                                type="text"
+                                name="editorial_badge_label"
+                                value="{{ old('editorial_badge_label', $editorialIdentity['custom_label']) }}"
+                                maxlength="60"
+                                placeholder="{{ $editorialIdentity['automatic_label'] ?: 'Juliaca · Puno' }}"
+                                data-editorial-badge-custom
+                            >
+                            @error('editorial_badge_label') <small class="field-error">{{ $message }}</small> @enderror
+                        </label>
+                    </div>
+                    <div
+                        class="editorial-territory-settings__preview"
+                        data-editorial-badge-preview
+                        aria-label="Vista previa del badge"
+                        @unless(old('editorial_badge_enabled', $editorialIdentity['enabled'])) hidden @endunless
+                    >
+                        <small>Vista previa</small>
+                        <span>
+                            <i aria-hidden="true">⌖</i>
+                            <b data-editorial-badge-label>
+                                {{ old('editorial_badge_label') ?: ($editorialIdentity['automatic_label'] ?: 'Juliaca · Puno') }}
+                            </b>
+                        </span>
+                    </div>
+                </div>
+
                 <div class="dashboard-location-form__footer">
-                    <small>Predeterminado inicial: Perú → Moquegua</small>
+                    <small>Predeterminado inicial: Perú → Puno → San Román → Juliaca</small>
                     <button class="button button--primary" type="submit">Guardar ubicación predeterminada</button>
                 </div>
             </form>

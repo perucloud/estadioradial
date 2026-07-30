@@ -113,11 +113,14 @@
                             <span class="latest-lead__status">Último minuto</span>
                         </a>
                         <div class="latest-lead__body">
-                            <a
-                                class="category-pill"
-                                style="--category-color: {{ $regionalLead->category->color }}"
-                                href="{{ route('posts.category', $regionalLead->category) }}"
-                            >{{ $regionalLead->category->name }}</a>
+                            <div class="story-labels">
+                                <a
+                                    class="category-pill"
+                                    style="--category-color: {{ $regionalLead->category->color }}"
+                                    href="{{ route('posts.category', $regionalLead->category) }}"
+                                >{{ $regionalLead->category->name }}</a>
+                                <x-editorial-territory-badge variant="compact" />
+                            </div>
                             <a class="location-link" href="{{ $regionalLead->location->publicUrl() }}">
                                 <span aria-hidden="true">⌖</span> {{ $regionalLead->location->name }}
                             </a>
@@ -143,11 +146,14 @@
                                     <img src="{{ $post->coverUrl('card') }}" alt="{{ $post->media?->alt_text ?? '' }}" loading="lazy">
                                 </a>
                                 <div class="secondary-story__body">
-                                    <a
-                                        class="category-pill"
-                                        style="--category-color: {{ $post->category->color }}"
-                                        href="{{ route('posts.category', $post->category) }}"
-                                    >{{ $post->category->name }}</a>
+                                    <div class="story-labels">
+                                        <a
+                                            class="category-pill"
+                                            style="--category-color: {{ $post->category->color }}"
+                                            href="{{ route('posts.category', $post->category) }}"
+                                        >{{ $post->category->name }}</a>
+                                        <x-editorial-territory-badge variant="compact" />
+                                    </div>
                                     <a class="location-link" href="{{ $post->location->publicUrl() }}">
                                         <span aria-hidden="true">⌖</span> {{ $post->location->name }}
                                     </a>
@@ -206,11 +212,14 @@
                                         <span>{{ str_pad((string) $loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
                                     </a>
                                     <div class="popular-card__body">
-                                        <a
-                                            class="category-pill"
-                                            style="--category-color: {{ $post->category->color }}"
-                                            href="{{ route('posts.category', $post->category) }}"
-                                        >{{ $post->category->name }}</a>
+                                        <div class="story-labels">
+                                            <a
+                                                class="category-pill"
+                                                style="--category-color: {{ $post->category->color }}"
+                                                href="{{ route('posts.category', $post->category) }}"
+                                            >{{ $post->category->name }}</a>
+                                            <x-editorial-territory-badge variant="compact" />
+                                        </div>
                                         <h4>
                                             <a href="{{ route('posts.show', [$post->category, $post]) }}">{{ $post->title }}</a>
                                         </h4>

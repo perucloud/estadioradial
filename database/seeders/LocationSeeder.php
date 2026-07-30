@@ -64,6 +64,10 @@ class LocationSeeder extends Seeder
             'district',
             ($index + 1) * 10,
         ));
+
+        $puno = $regions->get('puno');
+        $sanRoman = $this->location($puno, 'San Roman', 'province', 110);
+        $this->location($sanRoman, 'Juliaca', 'district', 10);
     }
 
     /**

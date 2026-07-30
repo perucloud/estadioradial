@@ -133,9 +133,30 @@ document.querySelectorAll('[data-post-location]').forEach((panel) => {
         .map((level) => panel.querySelector(`[data-post-location-level="${level}"]`))
         .filter(Boolean);
     const status = panel.querySelector('[data-post-location-status]');
+    const badgeEnabled = panel.querySelector('[data-editorial-badge-enabled]');
+    const badgeCustom = panel.querySelector('[data-editorial-badge-custom]');
+    const badgePreview = panel.querySelector('[data-editorial-badge-preview]');
+    const badgeLabel = panel.querySelector('[data-editorial-badge-label]');
     const optionsUrl = panel.dataset.locationOptionsUrl;
     let requestController;
     if (selects.length !== levelNames.length) return;
+
+    const selectedName = (level) => {
+        const select = selects[levelNames.indexOf(level)];
+        const option = select?.selectedOptions[0];
+
+        return option?.value ? option.textContent.trim() : '';
+    };
+
+    const updateBadgePreview = () => {
+        if (!badgePreview || !badgeLabel) return;
+
+        badgePreview.hidden = badgeEnabled ? !badgeEnabled.checked : false;
+        const automatic = [selectedName('district'), selectedName('region')]
+            .filter((name, index, names) => name && names.indexOf(name) === index)
+            .join(' · ');
+        badgeLabel.textContent = badgeCustom?.value.trim() || automatic || selectedName('country') || 'Sin ubicación';
+    };
 
     const updateStatus = () => {
         const path = selects
@@ -144,6 +165,7 @@ document.querySelectorAll('[data-post-location]').forEach((panel) => {
             .map((option) => option.textContent.trim());
 
         if (status) status.textContent = path.length > 0 ? path.join(' → ') : 'Sin ubicación';
+        updateBadgePreview();
     };
 
     const synchronize = () => {
@@ -201,5 +223,7 @@ document.querySelectorAll('[data-post-location]').forEach((panel) => {
         });
     });
 
+    badgeEnabled?.addEventListener('change', updateBadgePreview);
+    badgeCustom?.addEventListener('input', updateBadgePreview);
     synchronize();
 });

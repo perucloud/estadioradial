@@ -33,6 +33,7 @@ class DashboardController extends Controller
             ->all();
         $defaultLocationSelection = $oldSelection + $defaultLocations->selection();
         $selectedLocationId = collect($defaultLocationSelection)->last();
+        $editorialIdentity = $defaultLocations->editorialIdentity();
 
         return view('admin.dashboard', [
             'metrics' => [
@@ -56,6 +57,7 @@ class DashboardController extends Controller
                 ? Location::query()->find($selectedLocationId)?->fullName()
                 : 'Sin ubicación predeterminada',
             'locationOptionsUrl' => route('admin.locations.options'),
+            'editorialIdentity' => $editorialIdentity,
         ]);
     }
 
@@ -73,13 +75,25 @@ class DashboardController extends Controller
             'site',
             false,
         );
+        PortalSetting::put(
+            DefaultLocationSettings::BADGE_SETTING_KEY,
+            [
+                'enabled' => $request->boolean('editorial_badge_enabled'),
+                'label' => trim((string) $request->input('editorial_badge_label')) ?: null,
+            ],
+            'site',
+            true,
+        );
 
         ActivityLog::query()->create([
             'user_id' => $request->user()->id,
             'action' => 'settings.default_location_updated',
             'subject_type' => $setting->getMorphClass(),
             'subject_id' => $setting->id,
-            'properties' => ['selection' => $selection],
+            'properties' => [
+                'selection' => $selection,
+                'editorial_badge_enabled' => $request->boolean('editorial_badge_enabled'),
+            ],
             'ip_hash' => hash('sha256', (string) $request->ip()),
         ]);
 
