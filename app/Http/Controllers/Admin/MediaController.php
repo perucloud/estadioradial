@@ -115,7 +115,7 @@ class MediaController extends Controller
         return back()->with('status', count($data['files']).' archivo(s) añadidos a la biblioteca.');
     }
 
-    public function update(Request $request, Media $media): RedirectResponse
+    public function update(Request $request, Media $media): RedirectResponse|JsonResponse
     {
         $data = $request->validate([
             'alt_text' => ['nullable', 'string', 'max:255'],
@@ -126,9 +126,20 @@ class MediaController extends Controller
 
         $data['alt_text'] = trim((string) ($data['alt_text'] ?? ''))
             ?: $this->fallbackFromFilename($media->original_name);
+        foreach (['caption', 'credit', 'license'] as $field) {
+            $value = trim((string) ($data[$field] ?? ''));
+            $data[$field] = $value !== '' ? $value : null;
+        }
 
         $media->update($data);
         $this->log($request, 'media.updated', $media);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Metadatos actualizados.',
+                'data' => $this->mediaPayload($media->refresh()),
+            ]);
+        }
 
         return back()->with('status', 'Metadatos actualizados.');
     }
@@ -168,8 +179,17 @@ class MediaController extends Controller
             'name' => $media->original_name,
             'alt_text' => $media->alt_text,
             'caption' => $media->caption,
+            'credit' => $media->credit,
+            'license' => $media->license,
             'thumb_url' => $media->url('thumb'),
             'article_url' => $media->url('article'),
+            'absolute_article_url' => url($media->url('article')),
+            'width' => $media->width,
+            'height' => $media->height,
+            'size' => $media->size,
+            'is_in_use' => $media->isInUse(),
+            'update_url' => route('admin.media.update', $media),
+            'destroy_url' => route('admin.media.destroy', $media),
             'created_at' => $media->created_at?->toIso8601String(),
         ];
     }

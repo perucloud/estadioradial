@@ -67,6 +67,33 @@ class EditorialAdminTest extends TestCase
         $this->assertDatabaseCount('media', 1);
     }
 
+    public function test_editor_can_update_media_metadata_from_the_modal(): void
+    {
+        $editor = $this->userWithRole('editor');
+        $media = $this->media($editor);
+
+        $this->actingAs($editor)
+            ->putJson(route('admin.media.update', $media), [
+                'alt_text' => 'Vista panorámica de Juliaca',
+                'caption' => 'Centro urbano de Juliaca',
+                'credit' => 'Archivo Estación Radial',
+                'license' => '',
+            ])
+            ->assertOk()
+            ->assertJsonPath('message', 'Metadatos actualizados.')
+            ->assertJsonPath('data.alt_text', 'Vista panorámica de Juliaca')
+            ->assertJsonPath('data.caption', 'Centro urbano de Juliaca')
+            ->assertJsonPath('data.credit', 'Archivo Estación Radial')
+            ->assertJsonPath('data.license', null)
+            ->assertJsonStructure(['data' => ['absolute_article_url', 'update_url', 'destroy_url']]);
+
+        $this->assertDatabaseHas('media', [
+            'id' => $media->id,
+            'alt_text' => 'Vista panorámica de Juliaca',
+            'license' => null,
+        ]);
+    }
+
     public function test_editor_can_open_media_library_and_ckeditor_editor(): void
     {
         $editor = $this->userWithRole('editor');
@@ -77,7 +104,14 @@ class EditorialAdminTest extends TestCase
             ->get(route('admin.media.index'))
             ->assertOk()
             ->assertSee('Biblioteca reutilizable')
-            ->assertSee('Imagen referencial de la noticia');
+            ->assertSee('Imagen referencial de la noticia')
+            ->assertSee('Elegir archivos')
+            ->assertSee('Arrastra tus imágenes aquí')
+            ->assertSee('data-media-dropzone', false)
+            ->assertSee('data-media-metadata-dialog', false)
+            ->assertSee('data-media-edit', false)
+            ->assertSee('data-media-copy', false)
+            ->assertDontSee('<details>', false);
 
         $formResponse = $this->actingAs($editor)
             ->get(route('admin.posts.create'))
