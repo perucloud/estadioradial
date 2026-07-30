@@ -169,7 +169,13 @@ class HomepageAdminTest extends TestCase
             ->assertSee('Categoría superior')
             ->assertSee('10 por página')
             ->assertSee('Título SEO')
-            ->assertSee('Papelera');
+            ->assertSee('Papelera')
+            ->assertSee('data-category-create-dialog', false)
+            ->assertSee('data-category-edit-dialog', false)
+            ->assertSee('data-category-edit', false)
+            ->assertSee('data-confirm-delete', false)
+            ->assertSee('Nueva categoría')
+            ->assertDontSee('row-editor__panel--category', false);
     }
 
     public function test_tags_can_be_merged_without_losing_post_relations(): void

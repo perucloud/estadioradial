@@ -26,9 +26,10 @@ Aplicar un único patrón reutilizable para confirmar eliminaciones o acciones d
 1. Reutilizar `resources/js/admin-delete-modal.js` y los estilos `.admin-delete-modal` de `resources/css/admin.css`.
 2. Marcar el formulario con `data-confirm-delete`.
 3. Proporcionar el mensaje en `data-confirm-delete`, el nombre en `data-confirm-name` y, cuando sea necesario, el título y texto del botón mediante `data-confirm-title` y `data-confirm-button`.
-4. Usar escucha delegada para admitir elementos creados dinámicamente.
-5. Reenviar el formulario original solamente después de la confirmación.
-6. Mantener intactos CSRF, método HTTP simulado, validaciones y rutas Laravel.
+4. Para solicitar datos antes de eliminar, envolver los controles en `data-delete-modal-field` y marcar los obligatorios con `data-delete-modal-required`; moverlos temporalmente al diálogo y devolverlos al formulario antes de enviarlo.
+5. Usar escucha delegada para admitir elementos creados dinámicamente.
+6. Reenviar el formulario original solamente después de la confirmación.
+7. Mantener intactos CSRF, método HTTP simulado, validaciones y rutas Laravel.
 
 ## Requisitos de calidad
 

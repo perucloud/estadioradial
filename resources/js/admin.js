@@ -5,6 +5,7 @@ import './admin-tags';
 import './admin-locations';
 import './admin-media-library';
 import './admin-delete-modal';
+import './admin-category-modal';
 import {
     canUseGenieMorph,
     genieFallbackFrames,
