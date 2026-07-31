@@ -2054,10 +2054,44 @@ td small {
 }
 
 .ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable {
-    min-height: 500px;
+    height: clamp(500px, 65dvh, 720px);
+    min-height: 0;
+    max-height: 720px;
     padding: clamp(20px, 4vw, 38px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: rgb(201 31 38 / 72%) #eef0f3;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
     border-width: 0;
     box-shadow: none;
+}
+
+.ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable::-webkit-scrollbar {
+    width: 10px;
+}
+
+.ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable::-webkit-scrollbar-track {
+    background: #eef0f3;
+}
+
+.ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable::-webkit-scrollbar-thumb {
+    border: 2px solid #eef0f3;
+    background: rgb(201 31 38 / 72%);
+    border-radius: 999px;
+}
+
+.ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable::-webkit-scrollbar-thumb:hover {
+    background: var(--admin-red);
+}
+
+.ckeditor-wrapper .ck-source-editing-area {
+    height: clamp(500px, 65dvh, 720px);
+    max-height: 720px;
+}
+
+.ckeditor-wrapper .ck-source-editing-area textarea {
+    overflow-y: auto;
 }
 
 .ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable.ck-focused {
@@ -2066,7 +2100,7 @@ td small {
 }
 
 .ckeditor-wrapper .ck-content {
-    min-height: 430px;
+    min-height: 0;
     outline: none;
     font-family: Georgia, "Times New Roman", serif;
     font-size: 1.05rem;
@@ -4557,6 +4591,16 @@ details.taxonomy-create {
 
     .ckeditor-wrapper {
         padding: 0;
+    }
+
+    .ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable,
+    .ckeditor-wrapper .ck-source-editing-area {
+        height: clamp(360px, 55dvh, 560px);
+        max-height: 560px;
+    }
+
+    .ckeditor-wrapper .ck.ck-editor__main > .ck-editor__editable {
+        padding: 20px 18px;
     }
 
     .admin-nav-flyout,
