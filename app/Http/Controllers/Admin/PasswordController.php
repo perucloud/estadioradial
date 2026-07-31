@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Support\PasswordPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class PasswordController extends Controller
@@ -21,7 +21,7 @@ class PasswordController extends Controller
     {
         $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password' => ['required', 'confirmed', Password::min(8)->letters()->mixedCase()->numbers()],
+            'password' => ['required', 'confirmed', PasswordPolicy::rule()],
         ]);
 
         $request->user()->forceFill([

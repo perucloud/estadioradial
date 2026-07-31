@@ -7,11 +7,11 @@ use App\Models\ActivityLog;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Support\PasswordPolicy;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class UserController extends Controller
@@ -129,7 +129,7 @@ class UserController extends Controller
             'password' => [
                 $user ? 'nullable' : 'required',
                 'confirmed',
-                Password::min(8)->letters()->numbers(),
+                PasswordPolicy::rule(),
             ],
             'is_active' => ['nullable', 'boolean'],
             'permissions' => ['nullable', 'array'],

@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsurePasswordWasChanged;
 use App\Http\Middleware\EnsureUserHasPermission;
 use App\Http\Middleware\EnsureUserIsActive;
+use App\Http\Middleware\PortalMaintenanceMode;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [
+            PortalMaintenanceMode::class,
+        ]);
+
         $middleware->alias([
             'active' => EnsureUserIsActive::class,
             'password.changed' => EnsurePasswordWasChanged::class,

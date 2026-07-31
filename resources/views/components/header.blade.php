@@ -1,12 +1,16 @@
-@props(['categories', 'socialLinks', 'contactEmail'])
+@props(['categories', 'socialLinks', 'contactEmail', 'identity', 'logoUrl' => null])
 
 <header class="site-header">
     <div class="container site-header__main">
-        <a class="brand" href="{{ route('home') }}" aria-label="Estación Radial, inicio">
+        <a class="brand" href="{{ route('home') }}" aria-label="{{ $identity['name'] }}, inicio">
+            @if ($logoUrl)
+                <img src="{{ $logoUrl }}" alt="{{ $identity['name'] }}" style="max-width:180px;max-height:64px;object-fit:contain">
+            @else
             <span class="brand__signal" aria-hidden="true">
                 <i></i><i></i><i></i>
             </span>
-            <span class="brand__name">estación<br><strong>radial</strong></span>
+            <span class="brand__name">{{ $identity['name'] }}</span>
+            @endif
         </a>
 
         <nav id="main-navigation" class="main-nav" aria-label="Navegación principal">
@@ -91,7 +95,7 @@
 
     <div class="live-bar">
         <div class="container live-bar__inner">
-            <p><span class="live-dot"></span> Señal disponible las 24 horas</p>
+            <p><span class="live-dot"></span> Señal disponible las 24 horas @if($identity['frequency']) · {{ $identity['frequency'] }} @endif</p>
             <div>
                 <a class="button button--light" href="{{ route('live') }}">Escuchar radio</a>
                 <a class="button button--outline-light" href="{{ route('live') }}#video">Ver video</a>

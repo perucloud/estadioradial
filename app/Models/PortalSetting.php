@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class PortalSetting extends Model
 {
@@ -26,7 +27,7 @@ class PortalSetting extends Model
 
     public static function put(string $key, mixed $value, string $group, bool $isPublic = true): static
     {
-        return static::query()->updateOrCreate(
+        $setting = static::query()->updateOrCreate(
             ['key' => $key],
             [
                 'group' => $group,
@@ -34,5 +35,9 @@ class PortalSetting extends Model
                 'is_public' => $isPublic,
             ],
         );
+
+        Cache::forget('portal.settings.all');
+
+        return $setting;
     }
 }

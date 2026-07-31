@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\ProgramController as AdminProgramController;
 use App\Http\Controllers\Admin\ScheduleController as AdminScheduleController;
 use App\Http\Controllers\Admin\StreamController as AdminStreamController;
+use App\Http\Controllers\Admin\SystemSettingsController as AdminSystemSettingsController;
 use App\Http\Controllers\Admin\TagController as AdminTagController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -160,6 +161,15 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
         Route::middleware('permission:settings.manage')->group(function () {
             Route::get('/configuracion/portal', [AdminPortalSettingsController::class, 'edit'])->name('settings.portal.edit');
             Route::put('/configuracion/portal', [AdminPortalSettingsController::class, 'update'])->name('settings.portal.update');
+            Route::get('/configurar/{section?}', [AdminSystemSettingsController::class, 'configure'])->name('settings.configure');
+            Route::put('/configurar/{section}', [AdminSystemSettingsController::class, 'updateConfigure'])->name('settings.configure.update');
+            Route::get('/ajustes/{section?}', [AdminSystemSettingsController::class, 'system'])->name('settings.system');
+            Route::put('/ajustes/{section}', [AdminSystemSettingsController::class, 'updateSystem'])->name('settings.system.update');
+            Route::post('/ajustes/cache/limpiar', [AdminSystemSettingsController::class, 'clearCache'])->name('settings.cache.clear');
+            Route::post('/ajustes/smtp/probar', [AdminSystemSettingsController::class, 'testSmtp'])->name('settings.smtp.test');
+            Route::post('/ajustes/respaldos/crear', [AdminSystemSettingsController::class, 'createBackup'])->name('settings.backups.create');
+            Route::get('/ajustes/respaldos/{filename}/descargar', [AdminSystemSettingsController::class, 'downloadBackup'])->name('settings.backups.download');
+            Route::delete('/ajustes/respaldos/{filename}', [AdminSystemSettingsController::class, 'deleteBackup'])->name('settings.backups.delete');
         });
 
         Route::middleware('permission:appearance.manage')->group(function () {

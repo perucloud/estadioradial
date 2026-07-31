@@ -1,13 +1,17 @@
-@props(['contactEmail'])
+@props(['contactEmail', 'contact', 'identity', 'logoUrl' => null])
 
 <footer class="site-footer">
     <div class="container footer-grid">
         <div>
             <a class="brand brand--footer" href="{{ route('home') }}">
+                @if ($logoUrl)
+                    <img src="{{ $logoUrl }}" alt="{{ $identity['name'] }}" style="max-width:180px;max-height:64px;object-fit:contain">
+                @else
                 <span class="brand__signal" aria-hidden="true"><i></i><i></i><i></i></span>
-                <span class="brand__name">estación<br><strong>radial</strong></span>
+                <span class="brand__name">{{ $identity['name'] }}</span>
+                @endif
             </a>
-            <p>Noticias, cultura, entretenimiento y la señal de radio que te acompaña todos los días.</p>
+            <p>{{ $identity['slogan'] ?: 'Noticias, cultura, entretenimiento y radio en vivo.' }}</p>
         </div>
         <div>
             <h2>Explora</h2>
@@ -23,13 +27,15 @@
         </div>
         <div>
             <h2>Contacto</h2>
-            <span>Ciudad, Perú</span>
+            @if ($contact['address'])<span>{{ $contact['address'] }}</span>@endif
+            @if ($contact['phone'])<a href="tel:{{ preg_replace('/[^0-9+]/', '', $contact['phone']) }}">{{ $contact['phone'] }}</a>@endif
+            @if ($contact['whatsapp'])<a href="https://wa.me/{{ preg_replace('/\D/', '', $contact['whatsapp']) }}" target="_blank" rel="noopener">WhatsApp</a>@endif
             <x-utility-access-links :email="$contactEmail" surface="footer" />
         </div>
     </div>
     <div class="footer-bottom">
         <div class="container">
-            <span>&copy; {{ now()->year }} Estación Radial</span>
+            <span>&copy; {{ now()->year }} {{ $identity['name'] }}</span>
             <span>Primera versión en desarrollo</span>
         </div>
     </div>

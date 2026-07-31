@@ -87,12 +87,6 @@
                   </a>
               @endif
 
-              @if (auth()->user()->hasPermission('settings.manage'))
-                  <a class="{{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}" href="{{ route('admin.settings.portal.edit') }}">
-                      <x-admin-nav-icon name="configurar.png" /> Configuración del portal
-                  </a>
-              @endif
-
               @if (auth()->user()->hasPermission('advertising.manage'))
                   <a class="{{ request()->routeIs('admin.advertisements.*') ? 'is-active' : '' }}" href="{{ route('admin.advertisements.index') }}">
                       <x-admin-nav-icon name="publicidad.gif" /> Publicidad y banners
@@ -131,21 +125,22 @@
                     <div class="admin-nav-flyout admin-nav-flyout--long">
                         <strong>Configuración del portal</strong>
                         @foreach ([
-                            ['home.png', 'Logo'],
-                            ['editar1.png', 'Nombre de radio'],
-                            ['etiqueta.png', 'Slogan'],
-                            ['audio.png', 'Frecuencia'],
-                            ['home.png', 'Dirección'],
-                            ['perfil.png', 'Teléfono'],
-                            ['whatsapp.png', 'WhatsApp'],
-                            ['correo.png', 'Correo'],
-                            ['fb.png', 'Redes sociales'],
-                            ['color.png', 'Colores del sitio'],
-                            ['buscar.png', 'SEO'],
-                        ] as [$icon, $label])
-                            <span class="admin-nav-flyout__disabled">
+                            ['home.png', 'Logo', 'identity', 'logo'],
+                            ['editar1.png', 'Nombre de radio', 'identity', 'nombre'],
+                            ['etiqueta.png', 'Slogan', 'identity', 'slogan'],
+                            ['audio.png', 'Frecuencia', 'identity', 'frecuencia'],
+                            ['home.png', 'Dirección', 'contact', 'direccion'],
+                            ['perfil.png', 'Teléfono', 'contact', 'telefono'],
+                            ['whatsapp.png', 'WhatsApp', 'contact', 'whatsapp'],
+                            ['correo.png', 'Correo', 'contact', 'correo'],
+                            ['fb.png', 'Redes sociales', 'social', 'redes'],
+                            ['color.png', 'Colores del sitio', 'colors', 'colores'],
+                            ['buscar.png', 'SEO', 'seo', 'seo'],
+                        ] as [$icon, $label, $section, $anchor])
+                            <a class="{{ request()->routeIs('admin.settings.configure*') && request()->route('section', 'identity') === $section ? 'is-active' : '' }}"
+                               href="{{ route('admin.settings.configure', ['section' => $section]).'#'.$anchor }}">
                                 <x-admin-nav-icon :name="$icon" /> {{ $label }}
-                            </span>
+                            </a>
                         @endforeach
                     </div>
                 </details>
@@ -159,18 +154,19 @@
                     <div class="admin-nav-flyout admin-nav-flyout--columns">
                         <strong>Ajustes del sistema</strong>
                         @foreach ([
-                            ['etiqueta.png', 'Idioma'],
-                            ['calendar.png', 'Zona horaria'],
-                            ['calendario.png', 'Formato de fecha'],
-                            ['correo.png', 'SMTP (correo)'],
-                            ['nube.png', 'Caché'],
-                            ['tools.png', 'Mantenimiento'],
-                            ['guardar.png', 'Respaldos'],
-                            ['bloquear.png', 'Seguridad'],
-                        ] as [$icon, $label])
-                            <span class="admin-nav-flyout__disabled">
+                            ['etiqueta.png', 'Idioma', 'regional', 'idioma'],
+                            ['calendar.png', 'Zona horaria', 'regional', 'zona-horaria'],
+                            ['calendario.png', 'Formato de fecha', 'regional', 'formato-fecha'],
+                            ['correo.png', 'SMTP (correo)', 'smtp', 'smtp'],
+                            ['nube.png', 'Caché', 'cache', 'cache'],
+                            ['tools.png', 'Mantenimiento', 'maintenance', 'mantenimiento'],
+                            ['guardar.png', 'Respaldos', 'backups', 'respaldos'],
+                            ['bloquear.png', 'Seguridad', 'security', 'seguridad'],
+                        ] as [$icon, $label, $section, $anchor])
+                            <a class="{{ request()->routeIs('admin.settings.system*') && request()->route('section', 'regional') === $section ? 'is-active' : '' }}"
+                               href="{{ route('admin.settings.system', ['section' => $section]).'#'.$anchor }}">
                                 <x-admin-nav-icon :name="$icon" /> {{ $label }}
-                            </span>
+                            </a>
                         @endforeach
                     </div>
                 </details>
