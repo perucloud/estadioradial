@@ -122,23 +122,16 @@
                         <span>Configurar</span>
                         <span class="admin-nav-group__chevron" aria-hidden="true">›</span>
                     </summary>
-                    <div class="admin-nav-flyout admin-nav-flyout--long">
+                    <div class="admin-nav-flyout admin-nav-flyout--columns">
                         <strong>Configuración del portal</strong>
                         @foreach ([
-                            ['home.png', 'Logo', 'identity', 'logo'],
-                            ['editar1.png', 'Nombre de radio', 'identity', 'nombre'],
-                            ['etiqueta.png', 'Slogan', 'identity', 'slogan'],
-                            ['audio.png', 'Frecuencia', 'identity', 'frecuencia'],
-                            ['home.png', 'Dirección', 'contact', 'direccion'],
-                            ['perfil.png', 'Teléfono', 'contact', 'telefono'],
-                            ['whatsapp.png', 'WhatsApp', 'contact', 'whatsapp'],
-                            ['correo.png', 'Correo', 'contact', 'correo'],
-                            ['fb.png', 'Redes sociales', 'social', 'redes'],
-                            ['color.png', 'Colores del sitio', 'colors', 'colores'],
-                            ['buscar.png', 'SEO', 'seo', 'seo'],
-                        ] as [$icon, $label, $section, $anchor])
+                            ['editar1.png', 'Identidad', 'identity'],
+                            ['perfil.png', 'Contacto', 'contact'],
+                            ['fb.png', 'Redes sociales', 'social'],
+                            ['buscar.png', 'SEO', 'seo'],
+                        ] as [$icon, $label, $section])
                             <a class="{{ request()->routeIs('admin.settings.configure*') && request()->route('section', 'identity') === $section ? 'is-active' : '' }}"
-                               href="{{ route('admin.settings.configure', ['section' => $section]).'#'.$anchor }}">
+                               href="{{ route('admin.settings.configure', ['section' => $section]) }}">
                                 <x-admin-nav-icon :name="$icon" /> {{ $label }}
                             </a>
                         @endforeach
@@ -154,17 +147,15 @@
                     <div class="admin-nav-flyout admin-nav-flyout--columns">
                         <strong>Ajustes del sistema</strong>
                         @foreach ([
-                            ['etiqueta.png', 'Idioma', 'regional', 'idioma'],
-                            ['calendar.png', 'Zona horaria', 'regional', 'zona-horaria'],
-                            ['calendario.png', 'Formato de fecha', 'regional', 'formato-fecha'],
-                            ['correo.png', 'SMTP (correo)', 'smtp', 'smtp'],
-                            ['nube.png', 'Caché', 'cache', 'cache'],
-                            ['tools.png', 'Mantenimiento', 'maintenance', 'mantenimiento'],
-                            ['guardar.png', 'Respaldos', 'backups', 'respaldos'],
-                            ['bloquear.png', 'Seguridad', 'security', 'seguridad'],
-                        ] as [$icon, $label, $section, $anchor])
+                            ['etiqueta.png', 'Regionalización', 'regional'],
+                            ['correo.png', 'SMTP', 'smtp'],
+                            ['nube.png', 'Caché', 'cache'],
+                            ['tools.png', 'Mantenimiento', 'maintenance'],
+                            ['guardar.png', 'Respaldos', 'backups'],
+                            ['bloquear.png', 'Seguridad', 'security'],
+                        ] as [$icon, $label, $section])
                             <a class="{{ request()->routeIs('admin.settings.system*') && request()->route('section', 'regional') === $section ? 'is-active' : '' }}"
-                               href="{{ route('admin.settings.system', ['section' => $section]).'#'.$anchor }}">
+                               href="{{ route('admin.settings.system', ['section' => $section]) }}">
                                 <x-admin-nav-icon :name="$icon" /> {{ $label }}
                             </a>
                         @endforeach

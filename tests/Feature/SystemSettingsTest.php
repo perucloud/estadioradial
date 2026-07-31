@@ -40,6 +40,32 @@ class SystemSettingsTest extends TestCase
         }
     }
 
+    public function test_sidebar_uses_grouped_configuration_options(): void
+    {
+        $response = $this->actingAs($this->superadmin)
+            ->get(route('admin.settings.configure', 'identity'))
+            ->assertOk()
+            ->assertSee('Identidad')
+            ->assertSee('Contacto')
+            ->assertSee('Redes sociales')
+            ->assertSee('SEO');
+
+        $response->assertDontSee(route('admin.settings.configure', 'colors'), false);
+
+        $this->actingAs($this->superadmin)
+            ->get(route('admin.settings.system', 'regional'))
+            ->assertOk()
+            ->assertSee('Regionalización')
+            ->assertSee('SMTP')
+            ->assertSee('Caché')
+            ->assertSee('Mantenimiento')
+            ->assertSee('Respaldos')
+            ->assertSee('Seguridad')
+            ->assertDontSee(route('admin.settings.system', 'regional').'#idioma', false)
+            ->assertDontSee(route('admin.settings.system', 'regional').'#zona-horaria', false)
+            ->assertDontSee(route('admin.settings.system', 'regional').'#formato-fecha', false);
+    }
+
     public function test_identity_and_security_settings_are_persisted(): void
     {
         $this->actingAs($this->superadmin)

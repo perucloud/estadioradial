@@ -4859,6 +4859,10 @@ details.taxonomy-create {
     grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+.settings-tabs--configure {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .settings-tabs a {
     min-width: 0;
     padding: 14px 16px;

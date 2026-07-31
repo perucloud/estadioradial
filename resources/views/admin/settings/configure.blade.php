@@ -10,12 +10,11 @@
         'identity' => ['Identidad', 'Logo, nombre, slogan y frecuencia'],
         'contact' => ['Contacto', 'Dirección y canales directos'],
         'social' => ['Redes sociales', 'Perfiles oficiales'],
-        'colors' => ['Colores', 'Paleta visual del sitio'],
         'seo' => ['SEO', 'Buscadores y redes'],
     ];
 @endphp
 
-<nav class="settings-tabs" aria-label="Secciones de configuración">
+<nav class="settings-tabs settings-tabs--configure" aria-label="Secciones de configuración">
     @foreach ($tabs as $key => [$label, $description])
         <a class="{{ $section === $key ? 'is-active' : '' }}" href="{{ route('admin.settings.configure', $key) }}">
             <strong>{{ $label }}</strong><small>{{ $description }}</small>
