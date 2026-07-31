@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Advertisement;
 use App\Models\PortalSetting;
 use App\Support\HomeHeroConfig;
+use App\Support\HomeNationalConfig;
 use App\Support\HomeRegionalConfig;
 use Illuminate\Database\Seeder;
 
@@ -96,6 +97,15 @@ class AppearanceSeeder extends Seeder
             [
                 'group' => 'home',
                 'value' => HomeRegionalConfig::defaults(),
+                'is_public' => true,
+            ],
+        );
+
+        PortalSetting::query()->firstOrCreate(
+            ['key' => 'home.national_news'],
+            [
+                'group' => 'home',
+                'value' => HomeNationalConfig::defaults(),
                 'is_public' => true,
             ],
         );

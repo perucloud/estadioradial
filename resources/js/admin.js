@@ -345,6 +345,8 @@ document.querySelectorAll('[data-homepage-settings]').forEach((form) => {
     const effectSelect = form.querySelector('[name="hero[effect]"]');
     const parallaxPointer = form.querySelector('[data-parallax-pointer]');
     const intervalInput = form.querySelector('[data-interval-seconds]');
+    const nationalCategoryMode = form.querySelector('[data-national-category-mode]');
+    const nationalCategorySelector = form.querySelector('[data-national-category-selector]');
     const regionalCategoryMode = form.querySelector('[data-regional-category-mode]');
     const regionalCategorySelector = form.querySelector('[data-regional-category-selector]');
     const regionalPagination = form.querySelector('[data-regional-pagination]');
@@ -408,6 +410,14 @@ document.querySelectorAll('[data-homepage-settings]').forEach((form) => {
             });
         }
 
+        if (nationalCategorySelector) {
+            const nationalCategoriesEnabled = nationalCategoryMode?.value === 'selected';
+            nationalCategorySelector.hidden = !nationalCategoriesEnabled;
+            nationalCategorySelector.querySelectorAll('input').forEach((input) => {
+                input.disabled = !nationalCategoriesEnabled;
+            });
+        }
+
         if (regionalPageNumbers) {
             const paginationEnabled = regionalPagination?.checked ?? false;
             regionalPageNumbers.classList.toggle('is-disabled', !paginationEnabled);
@@ -458,6 +468,7 @@ document.querySelectorAll('[data-homepage-settings]').forEach((form) => {
     };
 
     presetSelect?.addEventListener('change', applyPreset);
+    nationalCategoryMode?.addEventListener('change', setVisibility);
     regionalCategoryMode?.addEventListener('change', setVisibility);
     regionalPagination?.addEventListener('change', setVisibility);
     form.querySelectorAll('[data-hero-setting]').forEach((field) => {
@@ -471,6 +482,6 @@ document.querySelectorAll('[data-homepage-settings]').forEach((form) => {
     setVisibility();
 
     if (form.querySelector('.validation-error, .alert--danger')) {
-        activateTab('hero');
+        activateTab(form.dataset.errorTab || 'hero');
     }
 });

@@ -55,6 +55,9 @@ class HomepageAdminTest extends TestCase
             ->assertSee('Más recientes primero')
             ->assertSee('Regionales')
             ->assertSee('data-regional-location', false)
+            ->assertSee('data-national-category-mode', false)
+            ->assertSee('Solo alcance nacional')
+            ->assertSee('Excluir noticias ya mostradas en Regionales')
             ->assertDontSee('data-appearance-tab="editorial"', false);
     }
 
@@ -243,7 +246,12 @@ class HomepageAdminTest extends TestCase
                 ],
                 'national' => [
                     'enabled' => 1,
+                    'category_mode' => 'selected',
+                    'category_ids' => [$category->id],
+                    'sort_order' => 'oldest',
                     'news_limit' => 4,
+                    'coverage_mode' => 'all_peru',
+                    'exclude_regional_duplicates' => 1,
                 ],
                 'regional' => [
                     'enabled' => 1,
@@ -282,6 +290,10 @@ class HomepageAdminTest extends TestCase
         $this->assertSame(6, $slider['news_limit']);
         $this->assertTrue($national['enabled']);
         $this->assertSame(4, $national['news_limit']);
+        $this->assertSame([$category->id], $national['category_ids']);
+        $this->assertSame('oldest', $national['sort_order']);
+        $this->assertSame('all_peru', $national['coverage_mode']);
+        $this->assertTrue($national['exclude_regional_duplicates']);
         $this->assertSame([$category->id], $regional['category_ids']);
         $this->assertSame('oldest', $regional['sort_order']);
         $this->assertSame($district->id, $regional['district_id']);

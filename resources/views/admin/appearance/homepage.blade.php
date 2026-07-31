@@ -7,9 +7,12 @@
 @php
     $selectedCategoryIds = collect(old('hero.category_ids', $hero['category_ids'] ?? []))
         ->map(fn ($id) => (int) $id);
+    $nationalCategoryIds = collect(old('national.category_ids', $national['category_ids'] ?? []))
+        ->map(fn ($id) => (int) $id);
     $regionalCategoryIds = collect(old('regional.category_ids', $regional['category_ids'] ?? []))
         ->map(fn ($id) => (int) $id);
     $heroValues = array_replace($hero, old('hero', []));
+    $nationalValues = array_replace($national, old('national', []));
     $regionalValues = array_replace($regional, old('regional', []));
 @endphp
 
@@ -20,6 +23,7 @@
         class="form-stack homepage-settings"
         data-homepage-settings
         data-hero-presets='@json($heroPresets)'
+        data-error-tab="{{ $errors->has('national.*') ? 'national' : ($errors->has('regional.*') ? 'regional' : ($errors->has('slider.*') ? 'trends' : 'hero')) }}"
     >
         @csrf
         @method('PUT')
@@ -275,17 +279,108 @@
         </section>
 
         <section class="appearance-tab-panel" role="tabpanel" data-appearance-panel="national" hidden>
-            <div class="panel form-stack">
-                <div><span class="eyebrow">Información de nuestro país</span><h2>Noticias Nacionales</h2></div>
-                <label class="check-row">
-                    <input type="hidden" name="national[enabled]" value="0">
-                    <input type="checkbox" name="national[enabled]" value="1" @checked($national['enabled'])>
-                    <span>Mostrar el módulo en la portada</span>
-                </label>
-                <label>Cantidad de noticias
-                    <input type="number" name="national[news_limit]" value="{{ $national['news_limit'] }}" min="2" max="5" required>
-                </label>
-                <p class="panel-note">Muestra las publicaciones más recientes de todas las categorías editoriales.</p>
+            <div class="panel national-settings-panel form-stack">
+                <div class="panel__header">
+                    <div>
+                        <span class="eyebrow">Información de nuestro país</span>
+                        <h2>Noticias Nacionales</h2>
+                        <p class="panel-note">Define el contenido nacional sin convertir esta sección en otro filtro regional.</p>
+                    </div>
+                    <label class="setting-switch setting-switch--compact">
+                        <input type="hidden" name="national[enabled]" value="0">
+                        <input type="checkbox" name="national[enabled]" value="1" @checked($nationalValues['enabled'])>
+                        <span aria-hidden="true"></span>
+                        <strong>Mostrar sección</strong>
+                    </label>
+                </div>
+
+                <div class="national-country-summary">
+                    <span class="national-country-summary__flag" aria-hidden="true">PE</span>
+                    <div>
+                        <small>País configurado</small>
+                        <strong>{{ $nationalCountry?->name ?? 'Perú' }}</strong>
+                        <p>La ubicación nacional se obtiene de la configuración general del portal.</p>
+                    </div>
+                    <span class="national-country-summary__status">Cobertura nacional</span>
+                </div>
+
+                <div class="hero-settings-section">
+                    <div class="hero-settings-section__heading">
+                        <span>Contenido editorial</span>
+                        <small>Selecciona las categorías y el orden de aparición.</small>
+                    </div>
+                    <div class="form-grid">
+                        <label>Categorías
+                            <select name="national[category_mode]" data-national-category-mode>
+                                <option value="all" @selected($nationalValues['category_mode'] === 'all')>Todas las categorías</option>
+                                <option value="selected" @selected($nationalValues['category_mode'] === 'selected')>Categorías seleccionadas</option>
+                            </select>
+                        </label>
+                        <label>Orden de publicación
+                            <select name="national[sort_order]">
+                                <option value="latest" @selected($nationalValues['sort_order'] === 'latest')>Más recientes primero</option>
+                                <option value="oldest" @selected($nationalValues['sort_order'] === 'oldest')>Más antiguas primero</option>
+                            </select>
+                            <small>Utiliza la fecha real de publicación.</small>
+                        </label>
+                    </div>
+                    <div class="category-multiselect" data-national-category-selector>
+                        @foreach ($categories as $category)
+                            <label style="--category-color: {{ $category->color }}">
+                                <input
+                                    type="checkbox"
+                                    name="national[category_ids][]"
+                                    value="{{ $category->id }}"
+                                    @checked($nationalCategoryIds->contains($category->id))
+                                >
+                                <span>{{ $category->name }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="hero-settings-section">
+                    <div class="hero-settings-section__heading">
+                        <span>Cobertura de las noticias</span>
+                        <small>Determina qué publicaciones peruanas pueden entrar al módulo.</small>
+                    </div>
+                    <div class="form-grid">
+                        <label>Regla de cobertura
+                            <select name="national[coverage_mode]">
+                                <option value="national_only" @selected($nationalValues['coverage_mode'] === 'national_only')>Solo alcance nacional — Recomendado</option>
+                                <option value="all_peru" @selected($nationalValues['coverage_mode'] === 'all_peru')>Todas las noticias del Perú</option>
+                            </select>
+                            <small>“Solo alcance nacional” incluye publicaciones marcadas en Perú o sin ubicación específica.</small>
+                        </label>
+                        <label>Cantidad de noticias
+                            <input type="number" name="national[news_limit]" value="{{ $nationalValues['news_limit'] }}" min="2" max="5" required>
+                            <small>Entre 2 y 5 noticias en la portada.</small>
+                        </label>
+                    </div>
+                    <div class="advanced-switches">
+                        <label class="setting-switch">
+                            <input type="hidden" name="national[exclude_regional_duplicates]" value="0">
+                            <input
+                                type="checkbox"
+                                name="national[exclude_regional_duplicates]"
+                                value="1"
+                                @checked($nationalValues['exclude_regional_duplicates'])
+                            >
+                            <span aria-hidden="true"></span>
+                            <strong>Excluir noticias ya mostradas en Regionales</strong>
+                        </label>
+                    </div>
+                    <div class="national-rule-preview">
+                        <span>Ejemplo editorial</span>
+                        <div>
+                            <strong>Política</strong>
+                            <i>+</i>
+                            <strong>{{ $nationalCountry?->name ?? 'Perú' }}</strong>
+                            <i>→</i>
+                            <b>Noticias Nacionales</b>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 

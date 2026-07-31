@@ -10,6 +10,7 @@ use App\Models\PortalSetting;
 use App\Models\Post;
 use App\Support\DefaultLocationSettings;
 use App\Support\HomeHeroConfig;
+use App\Support\HomeNationalConfig;
 use App\Support\HomeRegionalConfig;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -25,8 +26,12 @@ class HomepageController extends Controller
         $storedSlider = PortalSetting::value('home.most_viewed_slider', []);
         $storedNational = PortalSetting::value('home.national_news', []);
         $storedRegional = PortalSetting::value('home.regional_news', []);
+        $national = HomeNationalConfig::merge(is_array($storedNational) ? $storedNational : []);
         $regional = HomeRegionalConfig::merge(is_array($storedRegional) ? $storedRegional : []);
         $countryId = app(DefaultLocationSettings::class)->selection()['country'] ?? null;
+        $country = $countryId
+            ? Location::query()->active()->where('type', 'country')->find($countryId)
+            : null;
         $regions = Location::query()
             ->active()
             ->where('type', 'region')
@@ -58,10 +63,8 @@ class HomepageController extends Controller
                 ->orderBy('name')
                 ->get(['id', 'name', 'color']),
             'slider' => array_replace($this->sliderDefaults(), is_array($storedSlider) ? $storedSlider : []),
-            'national' => array_replace(
-                $this->nationalDefaults(),
-                is_array($storedNational) ? $storedNational : [],
-            ),
+            'national' => $national,
+            'nationalCountry' => $country,
             'regional' => $regional,
             'regionalRegions' => $regions,
             'regionalProvinces' => $provinces,
@@ -74,6 +77,8 @@ class HomepageController extends Controller
     {
         $submittedHero = $request->input('hero', []);
         $submittedHero = is_array($submittedHero) ? $submittedHero : [];
+        $submittedNational = $request->input('national', []);
+        $submittedNational = is_array($submittedNational) ? $submittedNational : [];
         $submittedRegional = $request->input('regional', []);
         $submittedRegional = is_array($submittedRegional) ? $submittedRegional : [];
         $request->merge([
@@ -85,6 +90,7 @@ class HomepageController extends Controller
                 ],
                 $submittedHero,
             ),
+            'national' => array_replace(HomeNationalConfig::defaults(), $submittedNational),
             'regional' => array_replace(HomeRegionalConfig::defaults(), $submittedRegional),
         ]);
 
@@ -128,7 +134,13 @@ class HomepageController extends Controller
             'slider.period_days' => ['required', Rule::in([0, 7, 30, 90, 365])],
             'slider.loop' => ['nullable', 'boolean'],
             'national.enabled' => ['nullable', 'boolean'],
+            'national.category_mode' => ['required', Rule::in(['all', 'selected'])],
+            'national.category_ids' => ['exclude_unless:national.category_mode,selected', 'required', 'array', 'min:1'],
+            'national.category_ids.*' => ['integer', Rule::exists('categories', 'id')->where('is_active', true)],
+            'national.sort_order' => ['required', Rule::in(['latest', 'oldest'])],
             'national.news_limit' => ['required', 'integer', 'min:2', 'max:5'],
+            'national.coverage_mode' => ['required', Rule::in(['national_only', 'all_peru'])],
+            'national.exclude_regional_duplicates' => ['nullable', 'boolean'],
             'regional.enabled' => ['nullable', 'boolean'],
             'regional.category_mode' => ['required', Rule::in(['all', 'selected'])],
             'regional.category_ids' => ['exclude_unless:regional.category_mode,selected', 'required', 'array', 'min:1'],
@@ -228,7 +240,12 @@ class HomepageController extends Controller
 
             PortalSetting::put('home.national_news', [
                 'enabled' => $request->boolean('national.enabled'),
+                'category_mode' => $data['national']['category_mode'],
+                'category_ids' => collect($data['national']['category_ids'] ?? [])->map(fn ($id) => (int) $id)->unique()->values()->all(),
+                'sort_order' => $data['national']['sort_order'],
                 'news_limit' => (int) $data['national']['news_limit'],
+                'coverage_mode' => $data['national']['coverage_mode'],
+                'exclude_regional_duplicates' => $request->boolean('national.exclude_regional_duplicates'),
             ], 'home');
 
             PortalSetting::put('home.regional_news', [
@@ -272,6 +289,11 @@ class HomepageController extends Controller
                     'slider_period_days' => (int) $data['slider']['period_days'],
                     'national_news_enabled' => $request->boolean('national.enabled'),
                     'national_news_limit' => (int) $data['national']['news_limit'],
+                    'national_news' => [
+                        'categories' => $data['national']['category_ids'] ?? [],
+                        'coverage_mode' => $data['national']['coverage_mode'],
+                        'exclude_regional_duplicates' => $request->boolean('national.exclude_regional_duplicates'),
+                    ],
                     'regional_news' => [
                         'categories' => $data['regional']['category_ids'] ?? [],
                         'region_id' => $data['regional']['region_id'] ?? null,
@@ -297,17 +319,6 @@ class HomepageController extends Controller
             'loop' => true,
             'news_limit' => 8,
             'period_days' => 30,
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function nationalDefaults(): array
-    {
-        return [
-            'enabled' => true,
-            'news_limit' => 5,
         ];
     }
 }

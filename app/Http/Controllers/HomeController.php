@@ -9,7 +9,9 @@ use App\Models\Post;
 use App\Models\Program;
 use App\Models\Schedule;
 use App\Models\Stream;
+use App\Support\DefaultLocationSettings;
 use App\Support\HomeHeroConfig;
+use App\Support\HomeNationalConfig;
 use App\Support\HomeRegionalConfig;
 use Illuminate\View\View;
 
@@ -130,23 +132,55 @@ class HomeController extends Controller
             $regionalPosts = collect();
         }
 
-        $nationalDefaults = [
-            'enabled' => true,
-            'news_limit' => 5,
-        ];
         $storedNationalSettings = PortalSetting::value('home.national_news', []);
-        $nationalSettings = array_replace(
-            $nationalDefaults,
+        $nationalSettings = HomeNationalConfig::merge(
             is_array($storedNationalSettings) ? $storedNationalSettings : [],
         );
         $nationalLimit = min(5, max(2, (int) $nationalSettings['news_limit']));
+        $nationalCategoryIds = collect($nationalSettings['category_ids'] ?? [])
+            ->filter(fn ($id) => is_numeric($id))
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+        $nationalCountryId = app(DefaultLocationSettings::class)->selection()['country'] ?? null;
+        $nationalCountry = $nationalCountryId
+            ? Location::query()->active()->where('type', 'country')->find((int) $nationalCountryId)
+            : null;
+        $nationalLocationIds = $nationalCountry?->subtreeIds() ?? collect();
+        $regionalPostIds = $regionalPosts->pluck('id');
         $nationalPosts = $nationalSettings['enabled']
             ? Post::query()
                 ->with(['category', 'location.parent.parent.parent', 'tags', 'media'])
                 ->published()
                 ->visibleOnHome()
-                ->latest('published_at')
-                ->latest('id')
+                ->when(
+                    $nationalSettings['category_mode'] === 'selected' && $nationalCategoryIds->isNotEmpty(),
+                    fn ($query) => $query->whereIn('category_id', $nationalCategoryIds)
+                )
+                ->where(function ($query) use ($nationalSettings, $nationalCountry, $nationalLocationIds): void {
+                    $query->whereNull('location_id');
+
+                    if (! $nationalCountry) {
+                        return;
+                    }
+
+                    if ($nationalSettings['coverage_mode'] === 'all_peru') {
+                        $query->orWhereIn('location_id', $nationalLocationIds);
+
+                        return;
+                    }
+
+                    $query->orWhere('location_id', $nationalCountry->id);
+                })
+                ->when(
+                    $nationalSettings['exclude_regional_duplicates'] && $regionalPostIds->isNotEmpty(),
+                    fn ($query) => $query->whereNotIn('id', $regionalPostIds)
+                )
+                ->when(
+                    $nationalSettings['sort_order'] === 'oldest',
+                    fn ($query) => $query->oldest('published_at')->oldest('id'),
+                    fn ($query) => $query->latest('published_at')->latest('id'),
+                )
                 ->take($nationalLimit)
                 ->get()
             : collect();

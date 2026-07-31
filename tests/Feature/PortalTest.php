@@ -174,6 +174,79 @@ class PortalTest extends TestCase
             ->assertSee($post->title);
     }
 
+    public function test_national_module_applies_categories_coverage_and_regional_deduplication(): void
+    {
+        $category = Category::query()->create([
+            'name' => 'Agenda nacional',
+            'slug' => 'agenda-nacional',
+            'color' => '#ba1f2b',
+        ]);
+        $country = Location::query()->where('type', 'country')->where('slug', 'peru')->firstOrFail();
+        $district = Location::query()->where('type', 'district')->where('slug', 'juliaca')->firstOrFail();
+        $withoutLocation = Post::query()->create([
+            'category_id' => $category->id,
+            'title' => 'Agenda nacional sin ubicación específica',
+            'slug' => 'agenda-nacional-sin-ubicacion',
+            'excerpt' => 'Información de alcance nacional.',
+            'body' => '<p>Contenido nacional de prueba.</p>',
+            'status' => 'published',
+            'published_at' => now()->subMinutes(3),
+        ]);
+        $countryPost = Post::query()->create([
+            'category_id' => $category->id,
+            'location_id' => $country->id,
+            'title' => 'Agenda correspondiente a todo el Perú',
+            'slug' => 'agenda-correspondiente-todo-peru',
+            'excerpt' => 'Información asignada al país completo.',
+            'body' => '<p>Contenido nacional con país.</p>',
+            'status' => 'published',
+            'published_at' => now()->subMinutes(2),
+        ]);
+        $districtPost = Post::query()->create([
+            'category_id' => $category->id,
+            'location_id' => $district->id,
+            'title' => 'Agenda local correspondiente a Juliaca',
+            'slug' => 'agenda-local-correspondiente-juliaca',
+            'excerpt' => 'Información localizada en un distrito.',
+            'body' => '<p>Contenido distrital de prueba.</p>',
+            'status' => 'published',
+            'published_at' => now()->subMinute(),
+        ]);
+        $settings = [
+            'enabled' => true,
+            'category_mode' => 'selected',
+            'category_ids' => [$category->id],
+            'sort_order' => 'latest',
+            'news_limit' => 5,
+            'coverage_mode' => 'national_only',
+            'exclude_regional_duplicates' => false,
+        ];
+
+        PortalSetting::put('home.national_news', $settings, 'home');
+        $strictPosts = $this->get(route('home'))->assertOk()->viewData('nationalPosts');
+
+        $this->assertSame([$countryPost->id, $withoutLocation->id], $strictPosts->pluck('id')->all());
+        $this->assertFalse($strictPosts->contains('id', $districtPost->id));
+
+        PortalSetting::put('home.national_news', [
+            ...$settings,
+            'coverage_mode' => 'all_peru',
+        ], 'home');
+        $inclusivePosts = $this->get(route('home'))->assertOk()->viewData('nationalPosts');
+
+        $this->assertSame($districtPost->id, $inclusivePosts->first()->id);
+
+        PortalSetting::put('home.national_news', [
+            ...$settings,
+            'coverage_mode' => 'all_peru',
+            'exclude_regional_duplicates' => true,
+        ], 'home');
+        $deduplicatedPosts = $this->get(route('home'))->assertOk()->viewData('nationalPosts');
+
+        $this->assertFalse($deduplicatedPosts->contains('id', $districtPost->id));
+        $this->assertSame([$countryPost->id, $withoutLocation->id], $deduplicatedPosts->pluck('id')->all());
+    }
+
     public function test_regional_section_uses_location_instead_of_editorial_category(): void
     {
         $politics = Category::query()->where('slug', 'politica')->firstOrFail();
