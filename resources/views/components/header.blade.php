@@ -4,7 +4,7 @@
     <div class="container site-header__main">
         <a class="brand" href="{{ route('home') }}" aria-label="{{ $identity['name'] }}, inicio">
             @if ($logoUrl)
-                <img src="{{ $logoUrl }}" alt="{{ $identity['name'] }}" style="max-width:180px;max-height:64px;object-fit:contain">
+                <img src="{{ $logoUrl }}" alt="{{ $identity['name'] }}" style="width:min(230px, 32vw);max-height:72px;object-fit:contain">
             @else
             <span class="brand__signal" aria-hidden="true">
                 <i></i><i></i><i></i>
