@@ -10,10 +10,10 @@
 }
 
 :root {
-    --blue: #173f73;
-    --blue-dark: #0b294a;
-    --wine: #8b1e3f;
-    --wine-dark: #68142e;
+    --blue: #153fab;
+    --blue-dark: #0d2f82;
+    --wine: #6b1e1f;
+    --wine-dark: #4b1516;
     --black: #111820;
     --red: var(--blue);
     --red-dark: var(--blue-dark);
@@ -357,7 +357,7 @@ a {
 
 .search-panel input:focus {
     border-color: var(--blue);
-    box-shadow: 0 0 0 3px rgb(23 63 115 / 14%);
+    box-shadow: 0 0 0 3px rgb(21 63 171 / 14%);
 }
 
 .search-panel button {
@@ -443,7 +443,7 @@ a {
 .utility-access__link:focus-visible {
     color: var(--blue);
     background: var(--white);
-    border-color: rgb(23 63 115 / 35%);
+    border-color: rgb(21 63 171 / 35%);
     transform: translateY(-2px);
 }
 
@@ -512,7 +512,7 @@ a {
     margin-right: 6px;
     background: var(--wine);
     border-radius: 50%;
-    box-shadow: 0 0 0 5px rgb(139 30 63 / 22%);
+    box-shadow: 0 0 0 5px rgb(107 30 31 / 22%);
 }
 
 .button {
@@ -536,12 +536,12 @@ a {
 .button--primary {
     color: var(--white);
     background: var(--blue);
-    box-shadow: 0 8px 20px rgb(23 63 115 / 18%);
+    box-shadow: 0 8px 20px rgb(21 63 171 / 18%);
 }
 
 .button--primary:hover {
     background: var(--wine);
-    box-shadow: 0 11px 24px rgb(139 30 63 / 24%);
+    box-shadow: 0 11px 24px rgb(107 30 31 / 24%);
 }
 
 .button--light {
@@ -1527,7 +1527,7 @@ a {
 }
 
 .territory-links a:hover {
-    border-color: rgb(23 63 115 / 35%);
+    border-color: rgb(21 63 171 / 35%);
     box-shadow: 0 10px 24px rgb(24 27 31 / 8%);
     transform: translateY(-2px);
 }
@@ -1589,7 +1589,7 @@ a {
 .latest-lead:hover,
 .secondary-story:hover,
 .popular-card:hover {
-    border-color: rgb(23 63 115 / 28%);
+    border-color: rgb(21 63 171 / 28%);
     box-shadow: 0 14px 34px rgb(24 27 31 / 9%);
     transform: translateY(-2px);
 }
@@ -1632,7 +1632,7 @@ a {
     color: var(--white);
     background: var(--red);
     border-radius: 5px;
-    box-shadow: 0 5px 16px rgb(23 63 115 / 24%);
+    box-shadow: 0 5px 16px rgb(21 63 171 / 24%);
     font-size: .67rem;
     font-weight: 900;
     letter-spacing: .04em;
@@ -2869,7 +2869,7 @@ a.sidebar-ad:hover img {
     margin: 0;
     padding: 9px 10px;
     color: #d5d7da;
-    background: rgb(23 63 115 / 32%);
+    background: rgb(21 63 171 / 32%);
     border-color: rgb(255 255 255 / 13%);
 }
 

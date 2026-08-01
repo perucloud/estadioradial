@@ -35,9 +35,9 @@ class PortalSettings
                 'youtube' => 'https://www.youtube.com/',
             ],
             'site.theme' => [
-                'primary' => '#173f73',
+                'primary' => '#153fab',
                 'secondary' => '#111820',
-                'accent' => '#8b1e3f',
+                'accent' => '#6b1e1f',
                 'surface' => '#ffffff',
                 'text' => '#111820',
             ],
