@@ -1,3 +1,9 @@
+import {
+    canUseGenieMorph,
+    genieFallbackFrames,
+    runGenieMorph,
+} from './admin-genie-modal';
+
 const mediaPicker = document.querySelector('[data-media-picker]');
 
 if (mediaPicker) {
@@ -25,6 +31,10 @@ if (mediaPicker) {
     let lastPage = 1;
     let loadingController;
     let uploadInProgress = false;
+    let modalTrigger;
+    let modalAnimation;
+    let isClosing = false;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const automaticUploadMessage = 'La carga comenzará automáticamente al seleccionar el archivo.';
 
     const setLoading = (loading) => {
@@ -42,7 +52,9 @@ if (mediaPicker) {
         applyButton.disabled = mediaPicker.classList.contains('is-loading') || !media;
         applyButton.textContent = activeMode === 'featured'
             ? 'Usar como imagen destacada'
-            : 'Insertar en la noticia';
+            : activeMode === 'logo'
+                ? 'Usar como logo'
+                : 'Insertar en la noticia';
 
         grid.querySelectorAll('[data-media-picker-item]').forEach((button) => {
             const isSelected = Number(button.dataset.mediaId) === Number(selectedId);
@@ -137,20 +149,83 @@ if (mediaPicker) {
     };
 
     const openPicker = (button) => {
+        modalTrigger = button;
         activeMode = button.dataset.mediaPickerMode || 'inline';
         ownerForm = button.closest('form');
         selectedId = activeMode === 'featured'
             ? Number(ownerForm?.querySelector('[data-featured-media-input]')?.value) || undefined
-            : undefined;
+            : activeMode === 'logo'
+                ? Number(ownerForm?.querySelector('[data-logo-media-input]')?.value) || undefined
+                : undefined;
         title.textContent = activeMode === 'featured'
             ? 'Seleccionar imagen destacada'
-            : 'Insertar imagen en la noticia';
+            : activeMode === 'logo'
+                ? 'Seleccionar logo del portal'
+                : 'Insertar imagen en la noticia';
+        uploadToggle.textContent = activeMode === 'logo'
+            ? 'Subir logo desde ordenador'
+            : '+ Añadir nueva imagen';
         searchInput.value = '';
         uploadForm.hidden = true;
         uploadForm.reset();
         uploadStatus.textContent = automaticUploadMessage;
+        isClosing = false;
+        mediaPicker.classList.remove('is-closing');
+        if (canUseGenieMorph(reduceMotion)) mediaPicker.style.opacity = '0';
         mediaPicker.showModal();
+        modalAnimation?.cancel();
+
+        if (canUseGenieMorph(reduceMotion)) {
+            try {
+                runGenieMorph({ dialog: mediaPicker, trigger: button, direction: 'open', duration: 300 });
+            } catch {
+                mediaPicker.style.removeProperty('opacity');
+                modalAnimation = mediaPicker.animate(genieFallbackFrames(mediaPicker, button), {
+                    duration: 300,
+                    easing: 'cubic-bezier(.2, .82, .2, 1)',
+                    fill: 'both',
+                });
+            }
+        }
         loadMedia();
+    };
+
+    const closePicker = () => {
+        if (!mediaPicker.open || isClosing) return;
+
+        if (reduceMotion.matches || !modalTrigger) {
+            mediaPicker.close();
+            modalTrigger?.focus();
+            return;
+        }
+
+        isClosing = true;
+        mediaPicker.classList.add('is-closing');
+        modalAnimation?.cancel();
+        const finish = () => {
+            mediaPicker.close();
+            mediaPicker.classList.remove('is-closing');
+            isClosing = false;
+            modalTrigger?.focus();
+        };
+
+        if (canUseGenieMorph(reduceMotion)) {
+            try {
+                runGenieMorph({ dialog: mediaPicker, trigger: modalTrigger, direction: 'close', duration: 300, onFinish: finish });
+                return;
+            } catch {
+                mediaPicker.style.removeProperty('opacity');
+                mediaPicker.style.removeProperty('transform');
+            }
+        }
+
+        modalAnimation = mediaPicker.animate(genieFallbackFrames(mediaPicker, modalTrigger), {
+            duration: 300,
+            easing: 'cubic-bezier(.55, .02, .78, .35)',
+            direction: 'reverse',
+            fill: 'both',
+        });
+        modalAnimation.addEventListener('finish', finish, { once: true });
     };
 
     const updateFeaturedPreview = (media) => {
@@ -177,12 +252,32 @@ if (mediaPicker) {
         ownerForm.querySelector('.featured-media-panel .field-error')?.remove();
     };
 
+    const updateLogoPreview = (media) => {
+        const input = ownerForm?.querySelector('[data-logo-media-input]');
+        const preview = ownerForm?.querySelector('[data-logo-media-preview]');
+        if (!input || !preview) return;
+
+        input.value = media.id;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        const image = preview.querySelector('[data-logo-media-image]');
+        const placeholder = preview.querySelector('[data-logo-media-placeholder]');
+        image.src = media.thumb_url;
+        image.alt = media.alt_text || media.name;
+        image.hidden = false;
+        placeholder.hidden = true;
+        preview.querySelector('[data-logo-media-name]').textContent = media.name;
+        preview.querySelector('[data-logo-media-alt]').textContent = media.alt_text || 'Logo del portal';
+        preview.querySelector('[data-remove-logo]').hidden = false;
+        preview.querySelector('.settings-logo-picker__preview')?.classList.add('has-image');
+    };
+
     document.querySelectorAll('[data-open-media-picker]').forEach((button) => {
         button.addEventListener('click', () => openPicker(button));
     });
 
-    mediaPicker.querySelector('[data-media-picker-close]').addEventListener('click', () => mediaPicker.close());
-    mediaPicker.querySelector('[data-media-picker-cancel]').addEventListener('click', () => mediaPicker.close());
+    mediaPicker.querySelector('[data-media-picker-close]').addEventListener('click', closePicker);
+    mediaPicker.querySelector('[data-media-picker-cancel]').addEventListener('click', closePicker);
     mediaPicker.querySelector('[data-media-picker-refresh]').addEventListener('click', () => loadMedia());
     mediaPicker.querySelector('[data-media-picker-upload-close]').addEventListener('click', () => {
         uploadForm.hidden = true;
@@ -287,12 +382,32 @@ if (mediaPicker) {
         if (!media || !ownerForm) return;
 
         if (activeMode === 'featured') updateFeaturedPreview(media);
+        if (activeMode === 'logo') updateLogoPreview(media);
 
         ownerForm.dispatchEvent(new CustomEvent('media-picker:selected', {
             bubbles: true,
             detail: { mode: activeMode, media },
         }));
-        mediaPicker.close();
+        closePicker();
+    });
+
+    document.querySelector('[data-remove-logo]')?.addEventListener('click', (event) => {
+        const form = event.currentTarget.closest('form');
+        const input = form?.querySelector('[data-logo-media-input]');
+        const preview = form?.querySelector('[data-logo-media-preview]');
+        if (!input || !preview) return;
+        input.value = '';
+        preview.querySelector('[data-logo-media-image]').hidden = true;
+        preview.querySelector('[data-logo-media-placeholder]').hidden = false;
+        preview.querySelector('[data-logo-media-name]').textContent = 'Logo predeterminado';
+        preview.querySelector('[data-logo-media-alt]').textContent = 'Se utilizará la identidad tipográfica del portal.';
+        preview.querySelector('.settings-logo-picker__preview')?.classList.remove('has-image');
+        event.currentTarget.hidden = true;
+    });
+
+    mediaPicker.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        closePicker();
     });
 
     window.addEventListener('focus', () => {

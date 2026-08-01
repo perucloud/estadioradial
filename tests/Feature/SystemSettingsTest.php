@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Support\PortalSettings;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class SystemSettingsTest extends TestCase
@@ -64,6 +66,40 @@ class SystemSettingsTest extends TestCase
             ->assertDontSee(route('admin.settings.system', 'regional').'#idioma', false)
             ->assertDontSee(route('admin.settings.system', 'regional').'#zona-horaria', false)
             ->assertDontSee(route('admin.settings.system', 'regional').'#formato-fecha', false);
+    }
+
+    public function test_identity_uses_logo_modal_and_can_upload_to_media_library(): void
+    {
+        Storage::fake('public');
+
+        $this->actingAs($this->superadmin)
+            ->get(route('admin.settings.configure', 'identity'))
+            ->assertOk()
+            ->assertSee('Elegir logo desde Media')
+            ->assertSee('Subir logo desde ordenador')
+            ->assertSee('data-media-picker-mode="logo"', false)
+            ->assertSee('data-logo-media-preview', false)
+            ->assertDontSee('class="settings-media-grid"', false);
+
+        $upload = $this->actingAs($this->superadmin)
+            ->postJson(route('admin.settings.media.store'), [
+                'files' => [UploadedFile::fake()->image('logo-radio.png', 1200, 600)],
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.0.name', 'logo-radio.png');
+
+        $mediaId = $upload->json('data.0.id');
+
+        $this->actingAs($this->superadmin)
+            ->put(route('admin.settings.configure.update', 'identity'), [
+                'name' => 'Estación Radial',
+                'slogan' => 'Voces que conectan',
+                'frequency' => '99.3 FM',
+                'logo_media_id' => $mediaId,
+            ])
+            ->assertSessionHas('status');
+
+        $this->assertSame($mediaId, PortalSetting::value('site.identity')['logo_media_id']);
     }
 
     public function test_identity_and_security_settings_are_persisted(): void

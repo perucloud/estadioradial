@@ -4925,8 +4925,61 @@ details.taxonomy-create {
 .settings-grid input,
 .settings-grid select,
 .settings-grid textarea,
-.settings-form > label input {
+.settings-test-card input {
     width: 100%;
+}
+
+.settings-grid .check-row input[type="checkbox"],
+.settings-form > .check-row input[type="checkbox"] {
+    width: 17px;
+    min-width: 17px;
+    height: 17px;
+}
+
+.settings-form input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="hidden"]),
+.settings-form select,
+.settings-form textarea,
+.settings-test-card input,
+.settings-logo-dialog input:not([type="file"]) {
+    min-height: 46px;
+    padding: 11px 13px;
+    color: #20242c;
+    border: 1px solid #bfc7d4;
+    border-radius: 10px;
+    outline: none;
+    background: #fff;
+    box-shadow: inset 0 1px 2px rgba(20, 27, 40, .035);
+    transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.settings-form textarea {
+    min-height: 104px;
+    resize: vertical;
+}
+
+.settings-form input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="hidden"]):hover,
+.settings-form select:hover,
+.settings-form textarea:hover,
+.settings-test-card input:hover,
+.settings-logo-dialog input:not([type="file"]):hover {
+    border-color: #8995a7;
+}
+
+.settings-form input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="hidden"]):focus,
+.settings-form select:focus,
+.settings-form textarea:focus,
+.settings-test-card input:focus,
+.settings-logo-dialog input:not([type="file"]):focus {
+    border-color: #c91725;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(201, 23, 37, .12);
+}
+
+.settings-form input[aria-invalid="true"],
+.settings-form select[aria-invalid="true"],
+.settings-form textarea[aria-invalid="true"] {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, .1);
 }
 
 .settings-grid small {
@@ -4953,6 +5006,88 @@ details.taxonomy-create {
 .settings-callout p {
     margin: 4px 0 0;
     color: #697181;
+}
+
+.settings-logo-picker {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) 1fr;
+    gap: clamp(18px, 3vw, 34px);
+    align-items: center;
+    padding: clamp(16px, 2vw, 24px);
+    border: 1px solid #dce1e9;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #fff, #f7f8fb);
+}
+
+.settings-logo-picker__preview {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    color: #fff;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #20242c, #c91725);
+    box-shadow: 0 12px 28px rgba(20, 26, 38, .14);
+}
+
+.settings-logo-picker__preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #fff;
+}
+
+.settings-logo-picker__preview span {
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 900;
+}
+
+.settings-logo-picker__content {
+    display: grid;
+    gap: 8px;
+    min-width: 0;
+}
+
+.settings-logo-picker__content > strong {
+    overflow: hidden;
+    font-size: 1.2rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-logo-picker__content > small {
+    color: #687182;
+}
+
+.settings-logo-picker__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 9px;
+}
+
+.settings-logo-picker__button,
+.settings-logo-upload-button {
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 22px rgba(201, 23, 37, .2);
+    transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.settings-logo-picker__button:hover,
+.settings-logo-picker__button:focus-visible,
+.settings-logo-upload-button:hover,
+.settings-logo-upload-button:focus-visible {
+    filter: saturate(1.12);
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(201, 23, 37, .3);
+}
+
+.settings-logo-dialog {
+    --genie-color: #c91725;
+    width: min(1040px, calc(100vw - 32px));
+    max-height: min(860px, calc(100dvh - 32px));
 }
 
 .settings-media-grid {
@@ -5157,6 +5292,19 @@ details.taxonomy-create {
     .settings-backup-list .button,
     .settings-backup-list form,
     .settings-backup-list button {
+        width: 100%;
+    }
+
+    .settings-logo-picker {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-logo-picker__preview {
+        max-width: 260px;
+    }
+
+    .settings-logo-picker__actions,
+    .settings-logo-picker__actions .button {
         width: 100%;
     }
 }

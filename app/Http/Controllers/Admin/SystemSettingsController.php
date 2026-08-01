@@ -26,14 +26,21 @@ class SystemSettingsController extends Controller
     {
         abort_unless(in_array($section, self::CONFIGURE_SECTIONS, true), 404);
 
+        $identity = PortalSettings::get('site.identity');
+
         return view('admin.settings.configure', [
             'section' => $section,
-            'identity' => PortalSettings::get('site.identity'),
+            'identity' => $identity,
             'contact' => PortalSettings::get('site.contact'),
             'social' => PortalSettings::get('social.links'),
             'theme' => PortalSettings::get('site.theme'),
             'seo' => PortalSettings::get('site.seo'),
-            'mediaItems' => Media::query()->latest()->limit(24)->get(),
+            'identityLogo' => filled($identity['logo_media_id'] ?? null)
+                ? Media::query()->find($identity['logo_media_id'])
+                : null,
+            'mediaItems' => $section === 'seo'
+                ? Media::query()->latest()->limit(24)->get()
+                : collect(),
         ]);
     }
 

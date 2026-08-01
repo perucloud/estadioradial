@@ -161,6 +161,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'active'])->group(fu
         Route::middleware('permission:settings.manage')->group(function () {
             Route::get('/configuracion/portal', [AdminPortalSettingsController::class, 'edit'])->name('settings.portal.edit');
             Route::put('/configuracion/portal', [AdminPortalSettingsController::class, 'update'])->name('settings.portal.update');
+            Route::get('/configuracion/recursos/biblioteca', [AdminMediaController::class, 'library'])->name('settings.media.library');
+            Route::post('/configuracion/recursos', [AdminMediaController::class, 'store'])->name('settings.media.store');
             Route::get('/configurar/{section?}', [AdminSystemSettingsController::class, 'configure'])->name('settings.configure');
             Route::put('/configurar/{section}', [AdminSystemSettingsController::class, 'updateConfigure'])->name('settings.configure.update');
             Route::get('/ajustes/{section?}', [AdminSystemSettingsController::class, 'system'])->name('settings.system');
