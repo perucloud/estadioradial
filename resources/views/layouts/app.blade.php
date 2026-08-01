@@ -30,7 +30,7 @@
     <title>@yield('title', $siteIdentity['name'])</title>
     <link rel="icon" href="{{ $siteFaviconUrl ?: asset('favicon.svg') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <style>:root{--red:{{ $siteTheme['primary'] }};--red-dark:{{ $siteTheme['secondary'] }};--ink:{{ $siteTheme['text'] }};--white:{{ $siteTheme['surface'] }};--brand-accent:{{ $siteTheme['accent'] }};}</style>
+    <style>:root{--blue:{{ $siteTheme['primary'] }};--red:{{ $siteTheme['primary'] }};--black:{{ $siteTheme['secondary'] }};--ink:{{ $siteTheme['text'] }};--white:{{ $siteTheme['surface'] }};--wine:{{ $siteTheme['accent'] }};--brand-accent:{{ $siteTheme['accent'] }};}</style>
 </head>
 <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>

@@ -61,7 +61,7 @@
                             type="button"
                             data-open-media-picker
                             data-media-picker-mode="logo"
-                            style="--genie-color:#c91725"
+                            style="--genie-color:#173f73"
                         >
                             Elegir logo desde Media
                         </button>
@@ -98,7 +98,7 @@
                             type="button"
                             data-open-media-picker
                             data-media-picker-mode="favicon"
-                            style="--genie-color:#c91725"
+                            style="--genie-color:#173f73"
                         >
                             Elegir favicon desde Media
                         </button>

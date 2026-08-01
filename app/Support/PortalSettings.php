@@ -35,11 +35,11 @@ class PortalSettings
                 'youtube' => 'https://www.youtube.com/',
             ],
             'site.theme' => [
-                'primary' => '#c91725',
-                'secondary' => '#15181d',
-                'accent' => '#ef3340',
+                'primary' => '#173f73',
+                'secondary' => '#111820',
+                'accent' => '#8b1e3f',
                 'surface' => '#ffffff',
-                'text' => '#17191d',
+                'text' => '#111820',
             ],
             'site.seo' => [
                 'title' => 'Estación Radial',
