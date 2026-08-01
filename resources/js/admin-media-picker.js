@@ -285,6 +285,13 @@ if (mediaPicker) {
     });
 
     uploadToggle.addEventListener('click', () => {
+        if (activeMode === 'logo') {
+            uploadForm.hidden = true;
+            uploadStatus.textContent = automaticUploadMessage;
+            uploadFileInput.click();
+            return;
+        }
+
         uploadForm.hidden = !uploadForm.hidden;
         uploadStatus.textContent = automaticUploadMessage;
 
@@ -310,6 +317,7 @@ if (mediaPicker) {
         uploadForm.classList.add('is-uploading');
         uploadFileInput.disabled = true;
         uploadStatus.textContent = 'Subiendo y procesando la imagen…';
+        if (activeMode === 'logo') status.textContent = 'Subiendo y procesando el nuevo logo…';
 
         try {
             const response = await fetch(uploadUrl, {
@@ -338,6 +346,7 @@ if (mediaPicker) {
             status.textContent = 'Imagen añadida correctamente y lista para utilizar.';
         } catch (error) {
             uploadStatus.textContent = error.message || 'No se pudo subir la imagen.';
+            if (activeMode === 'logo') status.textContent = uploadStatus.textContent;
             uploadFileInput.value = '';
         } finally {
             uploadInProgress = false;

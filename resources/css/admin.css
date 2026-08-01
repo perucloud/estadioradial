@@ -5090,6 +5090,51 @@ details.taxonomy-create {
     max-height: min(860px, calc(100dvh - 32px));
 }
 
+.settings-logo-dialog .media-dialog__grid {
+    min-height: 300px;
+    max-height: min(48dvh, 510px);
+    flex: 1 1 360px;
+    overflow-y: auto;
+    align-content: start;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    grid-auto-rows: max-content;
+    scrollbar-gutter: stable;
+    overscroll-behavior: contain;
+}
+
+.settings-logo-dialog .media-dialog__grid button {
+    min-width: 0;
+    min-height: 190px;
+    align-self: start;
+}
+
+.settings-logo-dialog .media-dialog__grid img {
+    width: 100%;
+    height: 132px;
+    min-height: 132px;
+    aspect-ratio: auto;
+    object-fit: cover;
+}
+
+.settings-logo-dialog .media-dialog__grid::-webkit-scrollbar {
+    width: 11px;
+}
+
+.settings-logo-dialog .media-dialog__grid::-webkit-scrollbar-track {
+    border-radius: 999px;
+    background: #eef0f4;
+}
+
+.settings-logo-dialog .media-dialog__grid::-webkit-scrollbar-thumb {
+    border: 3px solid #eef0f4;
+    border-radius: 999px;
+    background: #8e98a8;
+}
+
+.settings-logo-dialog .media-dialog__grid::-webkit-scrollbar-thumb:hover {
+    background: #c91725;
+}
+
 .settings-media-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
@@ -5306,5 +5351,22 @@ details.taxonomy-create {
     .settings-logo-picker__actions,
     .settings-logo-picker__actions .button {
         width: 100%;
+    }
+
+    .settings-logo-dialog .media-dialog__grid {
+        min-height: 260px;
+        max-height: 44dvh;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+        padding: 14px;
+    }
+
+    .settings-logo-dialog .media-dialog__grid button {
+        min-height: 158px;
+    }
+
+    .settings-logo-dialog .media-dialog__grid img {
+        height: 104px;
+        min-height: 104px;
     }
 }
