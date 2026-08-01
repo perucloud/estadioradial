@@ -71,6 +71,43 @@
             </div>
             @error('logo_media_id') <small class="field-error">{{ $message }}</small> @enderror
         </section>
+        <section id="favicon" class="settings-subsection">
+            <div>
+                <span class="eyebrow">Favicon</span>
+                <h3>Icono del portal</h3>
+                <p>Selecciona desde Media o sube una imagen cuadrada. Se mostrará en la pestaña del navegador del portal público.</p>
+            </div>
+            <input type="hidden" name="favicon_media_id" value="{{ old('favicon_media_id', $identity['favicon_media_id'] ?? null) }}" data-favicon-media-input>
+            <div class="settings-logo-picker settings-favicon-picker" data-favicon-media-preview>
+                <div class="settings-logo-picker__preview settings-favicon-picker__preview {{ $identityFavicon ? 'has-image' : '' }}">
+                    <img
+                        src="{{ $identityFavicon?->url('thumb') ?? '' }}"
+                        alt="{{ $identityFavicon?->alt_text ?? '' }}"
+                        data-favicon-media-image
+                        @if(!$identityFavicon) hidden @endif
+                    >
+                    <span data-favicon-media-placeholder @if($identityFavicon) hidden @endif>ER</span>
+                </div>
+                <div class="settings-logo-picker__content">
+                    <span class="eyebrow">Favicon seleccionado</span>
+                    <strong data-favicon-media-name>{{ $identityFavicon?->original_name ?? 'Favicon predeterminado' }}</strong>
+                    <small data-favicon-media-alt>{{ $identityFavicon?->alt_text ?? 'Se utilizará el icono predeterminado del portal.' }}</small>
+                    <div class="settings-logo-picker__actions">
+                        <button
+                            class="button button--primary settings-logo-picker__button"
+                            type="button"
+                            data-open-media-picker
+                            data-media-picker-mode="favicon"
+                            style="--genie-color:#c91725"
+                        >
+                            Elegir favicon desde Media
+                        </button>
+                        <button class="button button--quiet" type="button" data-remove-favicon @if(!$identityFavicon) hidden @endif>Usar favicon predeterminado</button>
+                    </div>
+                </div>
+            </div>
+            @error('favicon_media_id') <small class="field-error">{{ $message }}</small> @enderror
+        </section>
     @elseif ($section === 'contact')
         <div class="panel__header"><div><span class="eyebrow">Atención</span><h2>Datos de contacto</h2></div></div>
         <div class="settings-grid">
@@ -149,12 +186,12 @@
         <form class="media-dialog__upload" method="post" action="{{ route('admin.settings.media.store') }}" enctype="multipart/form-data" data-media-picker-upload hidden>
             @csrf
             <div class="media-dialog__upload-heading">
-                <div><span class="eyebrow">Nuevo logo</span><strong>Subir desde el ordenador</strong></div>
+                <div><span class="eyebrow">Nueva imagen</span><strong>Subir desde el ordenador</strong></div>
                 <button type="button" data-media-picker-upload-close aria-label="Cerrar formulario de carga">×</button>
             </div>
             <div class="media-dialog__upload-grid">
                 <label class="media-dialog__file">
-                    <span>Archivo del logo</span>
+                    <span>Archivo de imagen</span>
                     <input type="file" name="files[]" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" required>
                     <small>JPG, PNG, WebP o GIF. Máximo 8 MB. La carga es automática.</small>
                 </label>

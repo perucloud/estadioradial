@@ -38,6 +38,9 @@ class SystemSettingsController extends Controller
             'identityLogo' => filled($identity['logo_media_id'] ?? null)
                 ? Media::query()->find($identity['logo_media_id'])
                 : null,
+            'identityFavicon' => filled($identity['favicon_media_id'] ?? null)
+                ? Media::query()->find($identity['favicon_media_id'])
+                : null,
             'mediaItems' => $section === 'seo'
                 ? Media::query()->latest()->limit(24)->get()
                 : collect(),
@@ -54,6 +57,7 @@ class SystemSettingsController extends Controller
                 'slogan' => ['nullable', 'string', 'max:160'],
                 'frequency' => ['nullable', 'string', 'max:50'],
                 'logo_media_id' => ['nullable', 'integer', 'exists:media,id'],
+                'favicon_media_id' => ['nullable', 'integer', 'exists:media,id'],
             ]);
             PortalSettings::put('site.identity', $data, 'site');
         } elseif ($section === 'contact') {

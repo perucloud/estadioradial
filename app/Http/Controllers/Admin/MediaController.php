@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
 use App\Models\Media;
 use App\Support\MediaProcessor;
+use App\Support\PortalSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -179,7 +180,13 @@ class MediaController extends Controller
 
     public function destroy(Request $request, Media $media, MediaProcessor $processor): RedirectResponse
     {
-        if ($media->isInUse()) {
+        $identity = PortalSettings::get('site.identity');
+        $identityMediaIds = array_filter([
+            $identity['logo_media_id'] ?? null,
+            $identity['favicon_media_id'] ?? null,
+        ]);
+
+        if ($media->isInUse() || in_array($media->id, array_map('intval', $identityMediaIds), true)) {
             return back()->withErrors([
                 'media' => 'La imagen está siendo utilizada y no puede eliminarse.',
             ]);

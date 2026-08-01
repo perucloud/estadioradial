@@ -54,6 +54,8 @@ if (mediaPicker) {
             ? 'Usar como imagen destacada'
             : activeMode === 'logo'
                 ? 'Usar como logo'
+                : activeMode === 'favicon'
+                    ? 'Usar como favicon'
                 : 'Insertar en la noticia';
 
         grid.querySelectorAll('[data-media-picker-item]').forEach((button) => {
@@ -156,14 +158,18 @@ if (mediaPicker) {
             ? Number(ownerForm?.querySelector('[data-featured-media-input]')?.value) || undefined
             : activeMode === 'logo'
                 ? Number(ownerForm?.querySelector('[data-logo-media-input]')?.value) || undefined
+                : activeMode === 'favicon'
+                    ? Number(ownerForm?.querySelector('[data-favicon-media-input]')?.value) || undefined
                 : undefined;
         title.textContent = activeMode === 'featured'
             ? 'Seleccionar imagen destacada'
             : activeMode === 'logo'
                 ? 'Seleccionar logo del portal'
+                : activeMode === 'favicon'
+                    ? 'Seleccionar favicon del portal'
                 : 'Insertar imagen en la noticia';
-        uploadToggle.textContent = activeMode === 'logo'
-            ? 'Subir logo desde ordenador'
+        uploadToggle.textContent = ['logo', 'favicon'].includes(activeMode)
+            ? `Subir ${activeMode === 'favicon' ? 'favicon' : 'logo'} desde ordenador`
             : '+ Añadir nueva imagen';
         searchInput.value = '';
         uploadForm.hidden = true;
@@ -272,6 +278,26 @@ if (mediaPicker) {
         preview.querySelector('.settings-logo-picker__preview')?.classList.add('has-image');
     };
 
+    const updateFaviconPreview = (media) => {
+        const input = ownerForm?.querySelector('[data-favicon-media-input]');
+        const preview = ownerForm?.querySelector('[data-favicon-media-preview]');
+        if (!input || !preview) return;
+
+        input.value = media.id;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+        const image = preview.querySelector('[data-favicon-media-image]');
+        const placeholder = preview.querySelector('[data-favicon-media-placeholder]');
+        image.src = media.thumb_url;
+        image.alt = media.alt_text || media.name;
+        image.hidden = false;
+        placeholder.hidden = true;
+        preview.querySelector('[data-favicon-media-name]').textContent = media.name;
+        preview.querySelector('[data-favicon-media-alt]').textContent = media.alt_text || 'Favicon del portal';
+        preview.querySelector('[data-remove-favicon]').hidden = false;
+        preview.querySelector('.settings-logo-picker__preview')?.classList.add('has-image');
+    };
+
     document.querySelectorAll('[data-open-media-picker]').forEach((button) => {
         button.addEventListener('click', () => openPicker(button));
     });
@@ -285,7 +311,7 @@ if (mediaPicker) {
     });
 
     uploadToggle.addEventListener('click', () => {
-        if (activeMode === 'logo') {
+        if (['logo', 'favicon'].includes(activeMode)) {
             uploadForm.hidden = true;
             uploadStatus.textContent = automaticUploadMessage;
             uploadFileInput.click();
@@ -318,6 +344,7 @@ if (mediaPicker) {
         uploadFileInput.disabled = true;
         uploadStatus.textContent = 'Subiendo y procesando la imagen…';
         if (activeMode === 'logo') status.textContent = 'Subiendo y procesando el nuevo logo…';
+        if (activeMode === 'favicon') status.textContent = 'Subiendo y procesando el nuevo favicon…';
 
         try {
             const response = await fetch(uploadUrl, {
@@ -346,7 +373,7 @@ if (mediaPicker) {
             status.textContent = 'Imagen añadida correctamente y lista para utilizar.';
         } catch (error) {
             uploadStatus.textContent = error.message || 'No se pudo subir la imagen.';
-            if (activeMode === 'logo') status.textContent = uploadStatus.textContent;
+            if (['logo', 'favicon'].includes(activeMode)) status.textContent = uploadStatus.textContent;
             uploadFileInput.value = '';
         } finally {
             uploadInProgress = false;
@@ -392,6 +419,7 @@ if (mediaPicker) {
 
         if (activeMode === 'featured') updateFeaturedPreview(media);
         if (activeMode === 'logo') updateLogoPreview(media);
+        if (activeMode === 'favicon') updateFaviconPreview(media);
 
         ownerForm.dispatchEvent(new CustomEvent('media-picker:selected', {
             bubbles: true,
@@ -410,6 +438,20 @@ if (mediaPicker) {
         preview.querySelector('[data-logo-media-placeholder]').hidden = false;
         preview.querySelector('[data-logo-media-name]').textContent = 'Logo predeterminado';
         preview.querySelector('[data-logo-media-alt]').textContent = 'Se utilizará la identidad tipográfica del portal.';
+        preview.querySelector('.settings-logo-picker__preview')?.classList.remove('has-image');
+        event.currentTarget.hidden = true;
+    });
+
+    document.querySelector('[data-remove-favicon]')?.addEventListener('click', (event) => {
+        const form = event.currentTarget.closest('form');
+        const input = form?.querySelector('[data-favicon-media-input]');
+        const preview = form?.querySelector('[data-favicon-media-preview]');
+        if (!input || !preview) return;
+        input.value = '';
+        preview.querySelector('[data-favicon-media-image]').hidden = true;
+        preview.querySelector('[data-favicon-media-placeholder]').hidden = false;
+        preview.querySelector('[data-favicon-media-name]').textContent = 'Favicon predeterminado';
+        preview.querySelector('[data-favicon-media-alt]').textContent = 'Se utilizará el icono predeterminado del portal.';
         preview.querySelector('.settings-logo-picker__preview')?.classList.remove('has-image');
         event.currentTarget.hidden = true;
     });

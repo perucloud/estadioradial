@@ -19,6 +19,7 @@ class PortalSettings
                 'slogan' => 'Voces que conectan',
                 'frequency' => '',
                 'logo_media_id' => null,
+                'favicon_media_id' => null,
             ],
             'site.contact' => [
                 'address' => '',

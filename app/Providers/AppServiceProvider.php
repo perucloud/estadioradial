@@ -66,6 +66,9 @@ class AppServiceProvider extends ServiceProvider
             $logo = filled($identity['logo_media_id'] ?? null)
                 ? Media::query()->find($identity['logo_media_id'])
                 : null;
+            $favicon = filled($identity['favicon_media_id'] ?? null)
+                ? Media::query()->find($identity['favicon_media_id'])
+                : null;
             $ogImage = filled($seo['og_media_id'] ?? null)
                 ? Media::query()->find($seo['og_media_id'])
                 : null;
@@ -89,6 +92,7 @@ class AppServiceProvider extends ServiceProvider
                 'siteTheme' => $theme,
                 'siteSeo' => $seo,
                 'siteLogoUrl' => $logo?->url('thumb'),
+                'siteFaviconUrl' => $favicon?->url('thumb'),
                 'siteOgImageUrl' => $ogImage?->url('article'),
             ]);
         });

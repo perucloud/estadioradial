@@ -76,8 +76,10 @@ class SystemSettingsTest extends TestCase
             ->get(route('admin.settings.configure', 'identity'))
             ->assertOk()
             ->assertSee('Elegir logo desde Media')
+            ->assertSee('Elegir favicon desde Media')
             ->assertSee('Subir logo desde ordenador')
             ->assertSee('data-media-picker-mode="logo"', false)
+            ->assertSee('data-media-picker-mode="favicon"', false)
             ->assertSee('data-logo-media-preview', false)
             ->assertDontSee('class="settings-media-grid"', false);
 
@@ -96,10 +98,18 @@ class SystemSettingsTest extends TestCase
                 'slogan' => 'Voces que conectan',
                 'frequency' => '99.3 FM',
                 'logo_media_id' => $mediaId,
+                'favicon_media_id' => $mediaId,
             ])
             ->assertSessionHas('status');
 
         $this->assertSame($mediaId, PortalSetting::value('site.identity')['logo_media_id']);
+        $this->assertSame($mediaId, PortalSetting::value('site.identity')['favicon_media_id']);
+
+        PortalSettings::flush();
+        $faviconUrl = \App\Models\Media::query()->findOrFail($mediaId)->url('thumb');
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('rel="icon" href="'.$faviconUrl.'"', false);
     }
 
     public function test_identity_and_security_settings_are_persisted(): void
