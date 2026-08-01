@@ -131,9 +131,7 @@ select {
 
 .auth-body {
     min-height: 100vh;
-    background:
-        radial-gradient(circle at 15% 10%, rgb(23 63 115 / 14%), transparent 30rem),
-        linear-gradient(145deg, #f8f8f9, #eceef2);
+    background: #eef2f7;
 }
 
 .auth-shell {
@@ -290,12 +288,12 @@ select {
 
 .button--primary {
     color: var(--admin-white);
-    background: linear-gradient(135deg, var(--admin-blue), #20558f);
+    background: var(--admin-blue);
     box-shadow: 0 8px 20px rgb(23 63 115 / 16%);
 }
 
 .button--primary:hover {
-    background: linear-gradient(135deg, var(--admin-wine), var(--admin-wine-dark));
+    background: var(--admin-wine);
     box-shadow: 0 11px 24px rgb(139 30 63 / 24%);
 }
 
@@ -431,7 +429,7 @@ select {
     width: 250px;
     padding: 20px 15px;
     color: #eceef3;
-    background: linear-gradient(180deg, var(--admin-black) 0%, #101b29 72%, #0b1119 100%);
+    background: var(--admin-black);
     border-right: 1px solid rgb(23 63 115 / 45%);
 }
 
@@ -1057,9 +1055,7 @@ td small {
     min-height: 150px;
     padding: 28px;
     overflow: hidden;
-    background:
-        radial-gradient(circle at 12% 15%, rgb(201 23 36 / 9%), transparent 34%),
-        linear-gradient(135deg, #fff, #f8f9fc);
+    background: #f8fafc;
     border: 2px dashed #c9ced7;
     border-radius: 18px;
     cursor: pointer;
@@ -1070,9 +1066,7 @@ td small {
 .media-dropzone:focus-within,
 .media-dropzone.is-dragging {
     border-color: var(--admin-red);
-    background:
-        radial-gradient(circle at 12% 15%, rgb(201 23 36 / 14%), transparent 38%),
-        linear-gradient(135deg, #fffafa, #fff);
+    background: #f2f6fb;
     box-shadow: 0 16px 34px rgb(74 18 24 / 12%);
     transform: translateY(-2px);
 }
@@ -1102,7 +1096,7 @@ td small {
     width: 66px;
     height: 66px;
     color: #fff;
-    background: linear-gradient(145deg, #da2735, #a80e1a);
+    background: var(--admin-blue);
     border-radius: 18px;
     box-shadow: 0 12px 24px rgb(201 23 36 / 24%);
     place-items: center;
@@ -1141,7 +1135,7 @@ td small {
     justify-content: center;
     gap: 8px;
     color: #fff;
-    background: linear-gradient(135deg, #d51f2d, #ac101c);
+    background: var(--admin-blue);
     border: 1px solid #a90d19;
     border-radius: 11px;
     box-shadow: 0 9px 20px rgb(201 23 36 / 22%);
@@ -1173,7 +1167,7 @@ td small {
     display: block;
     width: 38%;
     height: 100%;
-    background: linear-gradient(90deg, var(--admin-blue), var(--admin-wine));
+    background: var(--admin-blue);
     border-radius: inherit;
     animation: media-upload-progress 1s ease-in-out infinite;
 }
@@ -1413,7 +1407,7 @@ td small {
     width: 44px;
     height: 44px;
     color: #fff;
-    background: linear-gradient(145deg, #7c3aed, #4f46e5);
+    background: var(--admin-blue);
     border-radius: 12px;
     box-shadow: 0 8px 20px rgb(109 40 217 / 25%);
     place-items: center;
@@ -1491,7 +1485,7 @@ td small {
     justify-content: center;
     gap: 8px;
     color: #fff;
-    background: linear-gradient(135deg, var(--admin-blue), var(--admin-wine));
+    background: var(--admin-blue);
     border: 1px solid var(--admin-blue);
     border-radius: 9px;
     box-shadow: 0 8px 18px rgb(201 23 37 / 18%);
@@ -1634,9 +1628,7 @@ td small {
     padding: 23px 24px 12px;
     align-items: flex-start;
     justify-content: space-between;
-    background:
-        radial-gradient(circle at 12% 10%, rgb(255 255 255 / 85%), transparent 30%),
-        linear-gradient(135deg, #fff4f5, #fff 70%);
+    background: #fff;
 }
 
 .admin-delete-modal__icon {
@@ -1644,7 +1636,7 @@ td small {
     width: 54px;
     height: 54px;
     color: #fff;
-    background: linear-gradient(145deg, #b91020, #e12636);
+    background: var(--admin-wine);
     border: 5px solid #ffe1e4;
     border-radius: 16px;
     box-shadow: 0 12px 28px rgb(201 23 37 / 25%);
@@ -1770,7 +1762,7 @@ td small {
     min-height: 44px;
     padding: 10px 18px;
     color: #fff;
-    background: linear-gradient(135deg, #b91020, #d91d2d);
+    background: var(--admin-wine);
     border: 1px solid #b91020;
     border-radius: 9px;
     box-shadow: 0 9px 20px rgb(185 16 32 / 20%);
@@ -1915,7 +1907,7 @@ td small {
     gap: 24px;
     align-items: center;
     padding: 20px;
-    background: linear-gradient(135deg, #f8f9fc, #fff);
+    background: #fff;
     border: 1px solid var(--admin-line);
     border-radius: 14px;
 }
@@ -1967,7 +1959,7 @@ td small {
     gap: 7px;
     padding: 9px 13px;
     color: #fff;
-    background: linear-gradient(135deg, #17191d, #30343a);
+    background: var(--admin-black);
     border: 1px solid rgb(255 255 255 / 12%);
     border-radius: 999px;
     box-shadow: 0 8px 18px rgb(24 27 31 / 18%);
@@ -2438,7 +2430,7 @@ td small {
     place-items: center;
     border-radius: 13px;
     color: #fff;
-    background: linear-gradient(145deg, #7c3aed, #4f46e5);
+    background: var(--admin-blue);
     box-shadow: 0 8px 20px rgba(109, 40, 217, .25);
     font-size: 1.5rem;
 }
@@ -2533,7 +2525,7 @@ td small {
     padding: 16px 18px;
     border: 1px solid #ddd6fe;
     border-radius: 12px;
-    background: linear-gradient(135deg, #faf5ff, #eef2ff);
+    background: #f3f6fb;
 }
 
 .schedule-dialog__summary span,
@@ -3187,9 +3179,7 @@ details.taxonomy-create {
     align-items: center;
     justify-content: space-between;
     gap: 22px;
-    background:
-        radial-gradient(circle at 90% 15%, rgb(201 23 37 / 8%), transparent 24%),
-        #fff;
+    background: #fff;
 }
 
 .category-create-launch > div {
@@ -3556,7 +3546,7 @@ details.taxonomy-create {
 }
 
 .category-editor-dialog__header {
-    background: linear-gradient(135deg, #f8fbff, #fff);
+    background: #fff;
     border-bottom: 1px solid var(--admin-line);
 }
 
@@ -3576,7 +3566,7 @@ details.taxonomy-create {
     width: 46px;
     height: 46px;
     color: #fff;
-    background: linear-gradient(145deg, var(--admin-blue), var(--admin-wine));
+    background: var(--admin-blue);
     border-radius: 13px;
     box-shadow: 0 9px 22px rgb(201 23 37 / 24%);
     place-items: center;
@@ -3585,7 +3575,7 @@ details.taxonomy-create {
 }
 
 .category-editor-dialog__icon--edit {
-    background: linear-gradient(145deg, #1769d2, #2f83ed);
+    background: var(--admin-blue);
     box-shadow: 0 9px 22px rgb(23 105 210 / 24%);
 }
 
@@ -4081,9 +4071,7 @@ details.taxonomy-create {
     grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
     gap: 14px;
-    background:
-        linear-gradient(135deg, rgb(23 63 115 / 7%), transparent 52%),
-        #fff;
+    background: #fff;
     border: 1px solid #e1e4e9;
     border-radius: 12px;
 }
@@ -4093,7 +4081,7 @@ details.taxonomy-create {
     width: 46px;
     height: 46px;
     color: #fff;
-    background: linear-gradient(135deg, #d71f2b, #9d1220);
+    background: var(--admin-wine);
     border-radius: 12px;
     box-shadow: 0 8px 18px rgb(183 21 34 / 22%);
     place-items: center;
@@ -4146,7 +4134,7 @@ details.taxonomy-create {
     justify-content: space-between;
     gap: 14px;
     color: #747d8b;
-    background: linear-gradient(135deg, #f5f7fa, #fff);
+    background: #f5f7fa;
     border: 1px dashed #cfd4dc;
     border-radius: 11px;
     font-size: .7rem;
@@ -4172,7 +4160,7 @@ details.taxonomy-create {
 
 .national-rule-preview b {
     color: #fff;
-    background: linear-gradient(135deg, #cf1f2b, #a4121e);
+    background: var(--admin-wine);
 }
 
 .national-rule-preview i {
@@ -4203,7 +4191,7 @@ details.taxonomy-create {
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    background: linear-gradient(135deg, #f4f6f9, #fff);
+    background: #f4f6f9;
     border: 1px solid #e0e4ea;
     border-radius: 11px;
 }
@@ -4232,11 +4220,11 @@ details.taxonomy-create {
 }
 
 .regional-badge-preview__province {
-    background: linear-gradient(135deg, #1769d2, #24428c);
+    background: var(--admin-blue);
 }
 
 .regional-badge-preview__district {
-    background: linear-gradient(135deg, #e76d16, #b42d13);
+    background: var(--admin-wine);
 }
 
 .regional-badge-preview small {
@@ -4894,7 +4882,7 @@ details.taxonomy-create {
 .settings-tabs a.is-active {
     color: #fff;
     border-color: var(--admin-blue);
-    background: linear-gradient(135deg, var(--admin-blue), var(--admin-wine));
+    background: var(--admin-blue);
     box-shadow: 0 13px 28px rgb(23 63 115 / 24%);
 }
 
@@ -5025,7 +5013,7 @@ details.taxonomy-create {
     padding: clamp(16px, 2vw, 24px);
     border: 1px solid #dce1e9;
     border-radius: 18px;
-    background: linear-gradient(135deg, #fff, #f7f8fb);
+    background: #fff;
 }
 
 .settings-logo-picker__preview {
@@ -5036,7 +5024,7 @@ details.taxonomy-create {
     overflow: hidden;
     color: #fff;
     border-radius: 14px;
-    background: linear-gradient(135deg, var(--admin-black), var(--admin-blue) 62%, var(--admin-wine));
+    background: var(--admin-blue);
     box-shadow: 0 12px 28px rgba(20, 26, 38, .14);
 }
 
@@ -5210,7 +5198,7 @@ details.taxonomy-create {
     display: grid;
     place-items: center;
     color: #fff;
-    background: linear-gradient(135deg, var(--admin-black), var(--admin-blue), var(--admin-wine));
+    background: var(--admin-blue);
     font-size: 2rem;
     font-weight: 900;
 }
@@ -5250,7 +5238,7 @@ details.taxonomy-create {
     padding: 22px;
     color: #fff;
     border-radius: 16px;
-    background: linear-gradient(135deg, var(--preview-secondary), var(--preview-primary));
+    background: var(--preview-primary);
 }
 
 .settings-preview strong {
@@ -5408,7 +5396,7 @@ details.taxonomy-create {
 .schedule-dialog__header,
 .category-editor-dialog__header,
 .admin-delete-modal__header {
-    background: linear-gradient(110deg, #fff 0%, #f2f6fb 72%, #f8eef2 100%);
+    background: #fff;
 }
 
 .media-dialog__footer,
@@ -5424,7 +5412,7 @@ details.taxonomy-create {
 .category-editor-dialog__icon,
 .schedule-dialog__icon {
     color: #fff;
-    background: linear-gradient(135deg, var(--admin-blue), var(--admin-wine));
+    background: var(--admin-blue);
     box-shadow: 0 10px 24px rgb(23 63 115 / 22%);
 }
 
@@ -5453,7 +5441,7 @@ details.taxonomy-create {
 }
 
 .media-dialog__grid button > i {
-    background: linear-gradient(135deg, var(--admin-blue), var(--admin-wine));
+    background: var(--admin-blue);
 }
 
 .settings-tabs a:hover,
@@ -5466,12 +5454,12 @@ details.taxonomy-create {
 .settings-tabs a.is-active {
     color: #fff;
     border-color: var(--admin-blue);
-    background: linear-gradient(135deg, var(--admin-blue), var(--admin-wine));
+    background: var(--admin-blue);
     box-shadow: 0 13px 28px rgb(23 63 115 / 24%);
 }
 
 .settings-logo-picker__preview {
-    background: linear-gradient(135deg, var(--admin-black), var(--admin-blue) 62%, var(--admin-wine));
+    background: var(--admin-blue);
 }
 
 .settings-logo-picker__button,
